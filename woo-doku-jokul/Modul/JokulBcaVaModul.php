@@ -156,7 +156,7 @@ class JokulBcaVaModul extends WC_Payment_Gateway
         $this->bcaVaService = new JokulBcaVaService();
         $response = $this->bcaVaService -> generated($config, $params);
         if( !is_wp_error( $response ) ) {
-            if ( $response['order']['invoice_number'] != '' ) {
+            if ( !isset($response['error']['message']) && isset($response['virtual_account_info']['virtual_account_number']) ) {
 //			    $order->payment_complete();
                 $order->reduce_order_stock();
                 
