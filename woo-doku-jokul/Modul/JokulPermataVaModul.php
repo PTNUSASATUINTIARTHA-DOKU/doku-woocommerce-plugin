@@ -11,9 +11,9 @@ class JokulPermataVaModul extends WC_Payment_Gateway
         $this->init_form_fields();
         $this->id                   = 'jokul_permatava';
         $this->has_fields           = true;
-        $this->method_code          = 'PERMATA VA';
+        $this->method_code          = 'Bank Permata VA';
         $this->title                = !empty($this->get_option('channel_name')) ? $this->get_option('channel_name') : $this->method_code;
-        $this->method_title         = __('Jokul PERMATA VA', 'woocommerce-gateway-jokul');
+        $this->method_title         = __('Jokul', 'woocommerce-gateway-jokul');
         $this->method_description   = sprintf(__('Accept payment through various payment channels with Jokul. Make it easy for your customers to purchase on your store.', 'woocommerce'));
         $this->checkout_msg         = 'Please transfer your payment to this payment code / VA Number :';
 
@@ -31,7 +31,7 @@ class JokulPermataVaModul extends WC_Payment_Gateway
         $this->channelName = $this->get_option('channel_name');
         $paymentDescription = $this->get_option('payment_description');
         if (empty($paymentDescription)){
-            $this->paymentDescription   = 'Bayar Pesanan Dengan Permata VA';
+            $this->paymentDescription   = 'Bayar pesanan dengan transfer dari Bank Permata';
         } else {
             $this->paymentDescription = $this->get_option('payment_description');
         }
@@ -240,7 +240,7 @@ class JokulPermataVaModul extends WC_Payment_Gateway
                 </li>
             </ul>
             <p>
-                <a href=<?php _e($howToPage, 'woocommerce' ); ?>>Click here to see payment instructions</a>
+                <a href=<?php _e($howToPage, 'woocommerce' ); ?> target="_blank">Click here to see payment instructions</a>
             </p>
         <?php
     }

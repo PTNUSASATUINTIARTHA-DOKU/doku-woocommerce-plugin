@@ -11,9 +11,9 @@ class JokulBsmVaModul extends WC_Payment_Gateway
         $this->init_form_fields();
         $this->id                   = 'jokul_bsmva';
         $this->has_fields           = true;
-        $this->method_code          = 'BSM VA';
+        $this->method_code          = 'Bank Syariah Indonesia VA';
         $this->title                = !empty($this->get_option('channel_name')) ? $this->get_option('channel_name') : $this->method_code;
-        $this->method_title         = __('Jokul BSM VA', 'woocommerce-gateway-jokul');
+        $this->method_title         = __('Jokul', 'woocommerce-gateway-jokul');
         $this->method_description   = sprintf(__('Accept payment through various payment channels with Jokul. Make it easy for your customers to purchase on your store.', 'woocommerce'));
         $this->checkout_msg         = 'Please transfer your payment to this payment code / VA Number :';
 
@@ -31,7 +31,7 @@ class JokulBsmVaModul extends WC_Payment_Gateway
         $this->channelName = $this->get_option('channel_name');
         $paymentDescription = $this->get_option('payment_description');
         if (empty($paymentDescription)){
-            $this->paymentDescription   = 'Bayar Pesanan Dengan BSM VA';
+            $this->paymentDescription   = 'Bayar pesanan dengan transfer dari Bank Syariah Indonesia';
         } else {
             $this->paymentDescription = $this->get_option('payment_description');
         }
@@ -240,7 +240,7 @@ class JokulBsmVaModul extends WC_Payment_Gateway
                 </li>
             </ul>
             <p>
-                <a href=<?php _e($howToPage, 'woocommerce' ); ?>>Click here to see payment instructions</a>
+                <a href=<?php _e($howToPage, 'woocommerce' ); ?> target="_blank">Click here to see payment instructions</a>
             </p>
         <?php
     }
