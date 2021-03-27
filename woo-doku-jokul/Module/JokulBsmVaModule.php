@@ -11,8 +11,9 @@ class JokulBsmVaModule extends WC_Payment_Gateway
         $this->init_form_fields();
         $this->id                   = 'jokul_bsmva';
         $this->has_fields           = true;
-        $this->method_code          = 'Bank Syariah Indonesia VA';
-        $this->title                = !empty($this->get_option('channel_name')) ? $this->get_option('channel_name') : $this->method_code;
+        $this->method_name          = 'Bank Syariah Indonesia VA';
+        $this->method_code          = 'VIRTUAL_ACCOUNT_BANK_SYARIAH_MANDIRI';
+        $this->title                = !empty($this->get_option('channel_name')) ? $this->get_option('channel_name') : $this->method_name;
         $this->method_title         = __('Jokul', 'woocommerce-gateway-jokul');
         $this->method_description   = sprintf(__('Accept payment through various payment channels with Jokul. Make it easy for your customers to purchase on your store.', 'woocommerce'));
         $this->checkout_msg         = 'Please transfer your payment to this payment code / VA Number :';
@@ -124,7 +125,7 @@ class JokulBsmVaModule extends WC_Payment_Gateway
         global $woocommerce;
         
         $order  = wc_get_order( $order_id );
-        $amount = $order->order_total;
+        $amount = $order->get_total();
         $params = array(
             'customerEmail' => ($a = get_userdata($order->get_user_id() )) ? $a->user_email : '',
             'customerName' => $order->get_billing_first_name()." ".$order->get_billing_last_name(),
@@ -155,13 +156,15 @@ class JokulBsmVaModule extends WC_Payment_Gateway
         $response = $this->bsmVaService -> generated($config, $params);
         if( !is_wp_error( $response ) ) {
             if ( !isset($response['error']['message']) && isset($response['virtual_account_info']['virtual_account_number']) ) {
-//			    $order->payment_complete();
-                $order->reduce_order_stock();
+
+                wc_reduce_stock_levels($order->get_id());
                 
+			    $this->checkout_msg .= $response['virtual_account_info']['virtual_account_number'];
 			    $order->add_order_note($this->checkout_msg, true );
                 $woocommerce->cart->empty_cart();
 
                 update_post_meta($order_id, 'jokul_va_amount', $amount);
+                update_post_meta($order_id, 'jokul_method_code', $this->method_code);
                 update_post_meta($order_id, 'jokul_va_number', $response['virtual_account_info']['virtual_account_number']);
                 update_post_meta($order_id, 'jokul_va_expired',$response['virtual_account_info']['expired_date']);
                 update_post_meta($order_id, 'jokul_va_how_to_page',$response['virtual_account_info']['how_to_pay_page']);
@@ -199,7 +202,7 @@ class JokulBsmVaModule extends WC_Payment_Gateway
         $trx['raw_post_data']           = file_get_contents('php://input');
         $trx['ip_address']              = $getIp;
 		$trx['amount']                  = $amount;
-		$trx['payment_channel']         = 'BSM VA';
+		$trx['payment_channel']         = $this->method_code;;
 		$trx['payment_code']            = $response['virtual_account_info']['virtual_account_number'];
 		$trx['doku_payment_datetime']   = $response['virtual_account_info']['expired_date'];
         $trx['process_datetime']        = gmdate("Y-m-d H:i:s");       
