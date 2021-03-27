@@ -3,7 +3,7 @@
 require_once(DOKU_JOKUL_PLUGIN_PATH . '/Service/JokulDokuVaService.php');
 require_once(DOKU_JOKUL_PLUGIN_PATH . '/Common/JokulDb.php');
 
-class JokulDokuVaModul extends WC_Payment_Gateway
+class JokulDokuVaModule extends WC_Payment_Gateway
 {
     public function __construct()
     {
@@ -169,19 +169,19 @@ class JokulDokuVaModul extends WC_Payment_Gateway
                 $order = wc_get_order($response['order']['invoice_number']);
                 $order->update_status('pending');
 
-                JokulDokuVaModul::addDb($response, $amount);
+                JokulDokuVaModule::addDb($response, $amount);
 
 			    return array(
 				    'result' => 'success',
 				    'redirect' => $this->get_return_url( $order )
 			    );
             } else {
-                JokulDokuVaModul::addDb($response, $amount);
+                JokulDokuVaModule::addDb($response, $amount);
 			    wc_add_notice(  'Please try again.', 'error' );
 			    return;
 		    }
         } else {
-            JokulDokuVaModul::addDb($response, $amount);
+            JokulDokuVaModule::addDb($response, $amount);
             wc_add_notice('Connection error.', 'error' );
             return;
         }

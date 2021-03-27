@@ -1,17 +1,17 @@
 <?php
 
-require_once(DOKU_JOKUL_PLUGIN_PATH . '/Service/JokulPermataVaService.php');
+require_once(DOKU_JOKUL_PLUGIN_PATH . '/Service/JokulBcaVaService.php');
 require_once(DOKU_JOKUL_PLUGIN_PATH . '/Common/JokulDb.php');
 
-class JokulPermataVaModul extends WC_Payment_Gateway
+class JokulBcaVaModule extends WC_Payment_Gateway
 {
     public function __construct()
     {
 
         $this->init_form_fields();
-        $this->id                   = 'jokul_permatava';
+        $this->id                   = 'jokul_bcava';
         $this->has_fields           = true;
-        $this->method_code          = 'Bank Permata VA';
+        $this->method_code          = 'BCA VA';
         $this->title                = !empty($this->get_option('channel_name')) ? $this->get_option('channel_name') : $this->method_code;
         $this->method_title         = __('Jokul', 'woocommerce-gateway-jokul');
         $this->method_description   = sprintf(__('Accept payment through various payment channels with Jokul. Make it easy for your customers to purchase on your store.', 'woocommerce'));
@@ -30,17 +30,19 @@ class JokulPermataVaModul extends WC_Payment_Gateway
         $this->enabled = $this->get_option( 'enabled' );
         $this->channelName = $this->get_option('channel_name');
         $paymentDescription = $this->get_option('payment_description');
+
         if (empty($paymentDescription)){
-            $this->paymentDescription   = 'Bayar pesanan dengan transfer dari Bank Permata';
+            $this->paymentDescription   = 'Bayar pesanan dengan transfer dari BCA';
         } else {
             $this->paymentDescription = $this->get_option('payment_description');
         }
+
         add_action('woocommerce_update_options_payment_gateways_' . $this->id, array($this, 'process_admin_options'));
-        add_action('woocommerce_thankyou_'. $this->id, array($this, 'thank_you_page_permata_va'), 1, 10);
+        add_action('woocommerce_thankyou_'. $this->id, array($this, 'thank_you_page_bca_va'), 1, 10);
     }
 
     public function init_form_fields() {
-		$this->form_fields = require(DOKU_JOKUL_PLUGIN_PATH . '/Form/JokulPermataVaSetting.php' );
+		$this->form_fields = require(DOKU_JOKUL_PLUGIN_PATH . '/Form/JokulBcaVaSetting.php' );
     }
 
     public function process_admin_options()
@@ -122,7 +124,7 @@ class JokulPermataVaModul extends WC_Payment_Gateway
 
     public function process_payment($order_id) {
         global $woocommerce;
-
+        
         $order  = wc_get_order( $order_id );
         $amount = $order->order_total;
         $params = array(
@@ -151,8 +153,8 @@ class JokulPermataVaModul extends WC_Payment_Gateway
             'environment' => $this->environmentPaymentJokul
         );
 
-        $this->permataVaService = new JokulPermataVaService();
-        $response = $this->permataVaService -> generated($config, $params);
+        $this->bcaVaService = new JokulBcaVaService();
+        $response = $this->bcaVaService -> generated($config, $params);
         if( !is_wp_error( $response ) ) {
             if ( !isset($response['error']['message']) && isset($response['virtual_account_info']['virtual_account_number']) ) {
 //			    $order->payment_complete();
@@ -169,19 +171,19 @@ class JokulPermataVaModul extends WC_Payment_Gateway
                 $order = wc_get_order($response['order']['invoice_number']);
                 $order->update_status('pending');
 
-                JokulPermataVaModul::addDb($response, $amount);
+                JokulBcaVaModule::addDb($response, $amount);
 
 			    return array(
 				    'result' => 'success',
 				    'redirect' => $this->get_return_url( $order )
 			    );
             } else {
-                JokulPermataVaModul::addDb($response, $amount);
+                JokulBcaVaModule::addDb($response, $amount);
 			    wc_add_notice(  'Please try again.', 'error' );
 			    return;
 		    }
         } else {
-            JokulPermataVaModul::addDb($response, $amount);
+            JokulBcaVaModule::addDb($response, $amount);
             wc_add_notice('Connection error.', 'error' );
             return;
         }
@@ -199,7 +201,7 @@ class JokulPermataVaModul extends WC_Payment_Gateway
         $trx['raw_post_data']           = file_get_contents('php://input');
         $trx['ip_address']              = $getIp;
 		$trx['amount']                  = $amount;
-		$trx['payment_channel']         = 'PERMATA VA';
+		$trx['payment_channel']         = 'BCA VA';
 		$trx['payment_code']            = $response['virtual_account_info']['virtual_account_number'];
 		$trx['doku_payment_datetime']   = $response['virtual_account_info']['expired_date'];
         $trx['process_datetime']        = gmdate("Y-m-d H:i:s");       
@@ -209,7 +211,7 @@ class JokulPermataVaModul extends WC_Payment_Gateway
         $this->jokulDb -> addData($trx);
     }
 
-    public function thank_you_page_permata_va($order_id)
+    public function thank_you_page_bca_va($order_id)
     {
         $vaNumber       = get_post_meta($order_id, 'jokul_va_number', true);
         $vaExpired      = get_post_meta($order_id, 'jokul_va_expired', true);

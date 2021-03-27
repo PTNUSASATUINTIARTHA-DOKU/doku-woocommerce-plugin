@@ -1,6 +1,6 @@
 <?php
 
-class JokulMainModul extends WC_Payment_Gateway
+class JokulMainModule extends WC_Payment_Gateway
 {
     public function __construct()
     {
