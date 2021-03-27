@@ -155,6 +155,11 @@ class JokulBsmVaModule extends WC_Payment_Gateway
         $this->bsmVaService = new JokulBsmVaService();
         $response = $this->bsmVaService -> generated($config, $params);
         if( !is_wp_error( $response ) ) {
+
+            $vaNumber = '';
+            $vaExpired = '';
+            $processType = 'PAYMENT_FAILED';
+
             if ( !isset($response['error']['message']) && isset($response['virtual_account_info']['virtual_account_number']) ) {
 
                 wc_reduce_stock_levels($order->get_id());
@@ -166,47 +171,57 @@ class JokulBsmVaModule extends WC_Payment_Gateway
                 update_post_meta($order_id, 'jokul_va_amount', $amount);
                 update_post_meta($order_id, 'jokul_method_code', $this->method_code);
                 update_post_meta($order_id, 'jokul_va_number', $response['virtual_account_info']['virtual_account_number']);
-                update_post_meta($order_id, 'jokul_va_expired',$response['virtual_account_info']['expired_date']);
-                update_post_meta($order_id, 'jokul_va_how_to_page',$response['virtual_account_info']['how_to_pay_page']);
+                update_post_meta($order_id, 'jokul_va_expired', $response['virtual_account_info']['expired_date']);
+                update_post_meta($order_id, 'jokul_va_how_to_page', $response['virtual_account_info']['how_to_pay_page']);
 
                 $order = wc_get_order($response['order']['invoice_number']);
                 $order->update_status('pending');
 
-                JokulBsmVaModule::addDb($response, $amount);
+                $vaNumber = get_post_meta($order_id, 'jokul_va_number', true);
+                $vaExpired = get_post_meta($orde_id, 'jokul_va_expired', true);
+                $processType = 'PAYMENT_PENDING';
+
+                JokulBsmVaModule::addDb($response, $amount, $order, $vaNumber, $vaExpired, $processType);
 
 			    return array(
 				    'result' => 'success',
 				    'redirect' => $this->get_return_url( $order )
 			    );
             } else {
-                JokulBsmVaModule::addDb($response, $amount);
-			    wc_add_notice(  'Please try again.', 'error' );
+                $this->checkout_msg = 'Error occured: ' . $response['error']['message'] . '. Please check Jokul WooCommerce plugin configuration or check your Jokul Back Office configuration.';
+                $order->add_order_note($this->checkout_msg, true );
+                
+                JokulBsmVaModule::addDb($response, $amount, $order, $vaNumber, $vaExpired, $processType);
+			    wc_add_notice(  'There is something wrong. Please try again.', 'error' );
 			    return;
 		    }
         } else {
-            JokulBsmVaModule::addDb($response, $amount);
-            wc_add_notice('Connection error.', 'error' );
+            $this->checkout_msg = 'Error occured: Connection error. Please try again in a few minutes. If still happening, please contact Jokul Support team (care@doku.com).';
+            $order->add_order_note($this->checkout_msg, true );
+            
+            JokulBsmVaModule::addDb($response, $amount, $order, $vaNumber, $vaExpired, $processType);
+            wc_add_notice('There is something wrong with the payment system. Please try again in a few minutes.', 'error' );
             return;
         }
     }
 
-    public function addDb($response, $amount) 
+    public function addDb($response, $amount, $order, $vaNumber, $vaExpired, $processType) 
     {
         $this->jokulUtils = new JokulUtils();
         $getIp = $this->jokulUtils -> getIpaddress();
 
         $trx = array();
-		$trx['invoice_number']          = $response['order']['invoice_number'];
+		$trx['invoice_number']          = $order->get_order_number();
 		$trx['result_msg']              = null;
-        $trx['process_type']            = 'PAYMENT_PENDING';  
+        $trx['process_type']            = $processType;  
         $trx['raw_post_data']           = file_get_contents('php://input');
         $trx['ip_address']              = $getIp;
 		$trx['amount']                  = $amount;
-		$trx['payment_channel']         = $this->method_code;;
-		$trx['payment_code']            = $response['virtual_account_info']['virtual_account_number'];
-		$trx['doku_payment_datetime']   = $response['virtual_account_info']['expired_date'];
+		$trx['payment_channel']         = $this->method_code;
+		$trx['payment_code']            = $vaNumber;
+		$trx['doku_payment_datetime']   = $vaExpired;
         $trx['process_datetime']        = gmdate("Y-m-d H:i:s");       
-        $trx['message']                 = "Payment Pending message come from Jokul. Success : completed";   
+        $trx['message']                 = $this->checkout_msg;
                 
         $this->jokulDb = new JokulDb();
         $this->jokulDb -> addData($trx);
