@@ -15,7 +15,7 @@ class JokulMandiriVaModul extends WC_Payment_Gateway
         $this->title                = !empty($this->get_option('channel_name')) ? $this->get_option('channel_name') : $this->method_code;
         $this->method_title         = __('Jokul Mandiri VA', 'woocommerce-gateway-jokul');
         $this->method_description   = sprintf(__('Accept payment through various payment channels with Jokul. Make it easy for your customers to purchase on your store.', 'woocommerce'));
-        $this->checkout_msg         = 'Please transfer your payment to this payment code / VA Number :';
+        $this->checkout_msg         = 'Please transfer your payment to this payment code / VA Number : ';
 
         $this->init_settings();
         $mainSettings = get_option('woocommerce_jokul_gateway_settings');
@@ -158,7 +158,7 @@ class JokulMandiriVaModul extends WC_Payment_Gateway
 //			    $order->payment_complete();
                 $order->reduce_order_stock();
                 
-			    $order->add_order_note($this->checkout_msg, true );
+			    $order->add_order_note($this->checkout_msg.$response['virtual_account_info']['virtual_account_number'], true );
                 $woocommerce->cart->empty_cart();
 
                 update_post_meta($order_id, 'jokul_va_amount', $amount);
@@ -236,7 +236,7 @@ class JokulMandiriVaModul extends WC_Payment_Gateway
 
                 <li class="woocommerce-order-overview__date date">
                     <?php _e( 'Make Your Payment Before:', 'woocommerce' ); ?>
-                    <strong><?php _e( $newDate->format('d M Y H:m'), 'woocommerce' ); ?></strong>
+                    <strong><?php _e( $newDate->format('d M Y H:i'), 'woocommerce' ); ?></strong>
                 </li>
             </ul>
             <p>
