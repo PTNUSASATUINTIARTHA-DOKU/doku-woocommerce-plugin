@@ -33,7 +33,8 @@ class JokulPermataVaService {
         );
 
         $this->jokulUtils = new JokulUtils();
-        $regId = $this->jokulUtils->guidv4();
+        error_log("PERMATA LINE 36");
+        $requestId = $this->jokulUtils->guidv4();
         $targetPath= "/permata-virtual-account/v2/payment-code";
         $dateTime = gmdate("Y-m-d H:i:s");
         $dateTime = date(DATE_ISO8601, strtotime($dateTime));
@@ -45,7 +46,7 @@ class JokulPermataVaService {
         $url = $getUrl.$targetPath;
 
         $header['Client-Id'] = $config['client_id'];
-        $header['Request-Id'] = $regId;
+        $header['Request-Id'] = $requestId;
         $header['Request-Timestamp'] = $dateTimeFinal;
         $header['Request-Target'] = $targetPath;
 
@@ -59,7 +60,7 @@ class JokulPermataVaService {
         curl_setopt($ch, CURLOPT_HTTPHEADER, array(
             'Content-Type: application/json',
             'Signature:'.$signature,
-            'Request-Id:'.$regId,
+            'Request-Id:'.$requestId,
             'Client-Id:'.$config['client_id'],
             'Request-Timestamp:'.$dateTimeFinal,
         

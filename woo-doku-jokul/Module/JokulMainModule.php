@@ -1,6 +1,6 @@
 <?php
 
-class JokulMainModul extends WC_Payment_Gateway
+class JokulMainModule extends WC_Payment_Gateway
 {
     public function __construct()
     {
@@ -8,8 +8,8 @@ class JokulMainModul extends WC_Payment_Gateway
         $this->init_form_fields();
         $this->id                   = 'jokul_gateway';
         $this->has_fields           = true;
-        $this->method_code          = 'Payment Gateway';
-        $this->title                = !empty($this->get_option('channel_name')) ? $this->get_option('channel_name') : $this->method_code;
+        $this->method_name          = 'General Configuration';
+        $this->title                = !empty($this->get_option('channel_name')) ? $this->get_option('channel_name') : $this->method_name;
         $this->method_title         = __('Jokul', 'woocommerce-gateway-jokul');
         $this->method_description   = sprintf(__('Accept payment through various payment channels with Jokul. Make it easy for your customers to purchase on your store.', 'woocommerce'));
 

@@ -42,7 +42,7 @@ function jokul_init_gateway_class() {
 
             public function init()
             {
-                require_once dirname(__FILE__) . '/Common/JokulListModul.php';
+                require_once dirname(__FILE__) . '/Common/JokulListModule.php';
                 add_filter('woocommerce_payment_gateways', array( $this, 'addJokulGateway' ));
             }
 
@@ -55,12 +55,12 @@ function jokul_init_gateway_class() {
             function addJokulGateway($methods)
             {
 				$mainSettings = get_option( 'woocommerce_jokul_gateway_settings' );
-                $methods[] = 'JokulMainModul';
-				$methods[] = 'JokulDokuVaModul';
-				$methods[] = 'JokulBsmVaModul';
-				$methods[] = 'JokulMandiriVaModul';
-				$methods[] = 'JokulBcaVaModul';
-                $methods[] = 'JokulPermataVaModul';
+                $methods[] = 'JokulMainModule';
+				$methods[] = 'JokulDokuVaModule';
+				$methods[] = 'JokulBsmVaModule';
+				$methods[] = 'JokulMandiriVaModule';
+				$methods[] = 'JokulBcaVaModule';
+                $methods[] = 'JokulPermataVaModule';
 
                 return $methods;
             }

@@ -6,15 +6,15 @@ return apply_filters(
         'channel_name' => array(
             'title' => __('Payment Channel Display Name', 'woocommerce-gateway-jokul'),
             'type' => 'text',
-            'description' => __('Default : DOKU VA', 'woocommerce-gateway-jokul'),
-            'placeholder' => 'DOKU VA',
+            'description' => __('Default : Other Banks (VA by DOKU)', 'woocommerce-gateway-jokul'),
+            'placeholder' => 'Other Banks (VA by DOKU)',
         ),
         'payment_description' => array(
             'title' => __('Payment Description', 'woocommerce-gateway-jokul'),
             'type' => 'textarea',
             'css' => 'width: 400px;',
             'description' => __('Change your payment description for DOKU VA', 'woocommerce-gateway-jokul'),
-            'placeholder' => 'Bayar pesanan dengan transfer DOKU VA',
+            'placeholder' => 'Bayar pesanan dengan transfer dari bank lain',
         )
     )
 );

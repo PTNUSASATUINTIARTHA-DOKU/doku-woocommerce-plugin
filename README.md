@@ -39,17 +39,17 @@ Jokul makes it easy for you accept payments from various channels. Jokul also hi
 1. Login to your WordPress Admin Panel
 1. Click Module > Settings
 1. Click Payments tab
-1. You will find "Jokul - Payment Gateway"
+1. You will find "Jokul - General Configuration"
 1. Toggle the Enabled to ON
 1. Here is the fileds that you required to set:
 
-    ![General Configuration](https://i.ibb.co/vsgW0kv/general-configuration.png)
+    ![General Configuration](https://i.ibb.co/y84krxh/Screen-Shot-2021-03-24-at-21-24-41.png)
 
     - **Environment**: For testing purpose, select Sandbox. For accepting real transactions, select Production
     - **Sandbox Client ID**: Client ID you retrieved from the Sandbox environment Jokul Back Office
-    - **Sandbox Shared Key**: Secret Key you retrieved from the Sandbox environment Jokul Back Office
+    - **Sandbox Secret Key**: Secret Key you retrieved from the Sandbox environment Jokul Back Office
     - **Production Client ID**: Client ID you retrieved from the Production environment Jokul Back Office
-    - **Production Shared Key**: Secret Key you retrieved from the Production environment Jokul Back Office
+    - **Production Secret Key**: Secret Key you retrieved from the Production environment Jokul Back Office
     - **Expiry Time**: Input the time that for VA expiration in minutes
     - **Notification URL**: Copy this URL and paste the URL into the Jokul Back Office. Learn more about how to setup Notification URL [here](https://jokul.doku.com/docs/docs/after-payment/setup-notification-url)
 1. Click Save Changes button
@@ -58,10 +58,10 @@ Jokul makes it easy for you accept payments from various channels. Jokul also hi
 
 ### VA Configuration
 
-![VA Configuration](https://i.ibb.co/RSm3M8X/va-configuration.png)
+![VA Configuration](https://i.ibb.co/3r73zdj/Screen-Shot-2021-03-24-at-21-25-53.png)
 
 To show the VA options to your customers, simply toggle the channel that you wish to show.
 
-![VA Configuration Details](https://i.ibb.co/Dbr9n7H/va-configuration-details.png)
+![VA Configuration Details](https://i.ibb.co/3dyW0j5/Screen-Shot-2021-03-24-at-21-25-22.png)
 
 You can also click Manage to edit how the VA channels will be shown to your customers by clicking the Manage button.

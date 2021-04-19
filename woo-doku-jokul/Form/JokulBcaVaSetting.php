@@ -14,7 +14,7 @@ return apply_filters(
             'type' => 'textarea',
             'css' => 'width: 400px;',
             'description' => __('Change your payment description for BCA VA', 'woocommerce-gateway-jokul'),
-            'placeholder' => 'Bayar pesanan dengan transfer BCA VA',
+            'placeholder' => 'Bayar pesanan dengan transfer dari BCA',
         )
     )
 );

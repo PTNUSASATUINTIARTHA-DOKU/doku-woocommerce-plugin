@@ -18,18 +18,10 @@ class JokulUtils
     public function generateSignatureNotification($headers, $body, $secret)
     {
         $digest = base64_encode(hash('sha256', $body, true));
-		$url = get_site_url();
-		$parsedUrl = parse_url($url);
-		$path = $parsedUrl['path'];
-		
-		if ( $path != "/" ) {
-			$path;
-		}
-		
         $rawSignature = "Client-Id:" . $headers['Client-Id'] . "\n"
             . "Request-Id:" . $headers['Request-Id'] . "\n"
             . "Request-Timestamp:" . $headers['Request-Timestamp'] . "\n"
-            . "Request-Target:" . $path . "/wp-json/jokul/notification". "\n"
+            . "Request-Target:" ."/wordpress/wp-json/jokul/notification". "\n"
             . "Digest:" . $digest;
 
         $signature = base64_encode(hash_hmac('sha256', $rawSignature, htmlspecialchars_decode($secret), true));
