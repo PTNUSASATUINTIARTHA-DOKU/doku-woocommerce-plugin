@@ -21,6 +21,9 @@ Jokul makes it easy for you accept payments from various channels. Jokul also hi
     - Permata VA
     - DOKU VA
 
+2. Credit Card
+3. Alfamart O2O
+
 ## How to Install
 
 1. Download the plugin from this Repository
@@ -65,3 +68,24 @@ To show the VA options to your customers, simply toggle the channel that you wis
 ![VA Configuration Details](https://i.ibb.co/3dyW0j5/Screen-Shot-2021-03-24-at-21-25-22.png)
 
 You can also click Manage to edit how the VA channels will be shown to your customers by clicking the Manage button.
+
+### Credit Card Configuration
+
+![Credit Card Configuration](https://i.ibb.co/Y02Tr3T/Screen-Shot-2021-05-06-at-14-35-31.png)
+
+To show the Credit Card options to your customers, simply toggle the channel that you wish to show.
+
+![Credit Card Configuration Details](https://i.ibb.co/hfFkXrr/Screen-Shot-2021-05-06-at-14-41-53.png)
+
+You can also click Manage to edit how the Credit Card channels will be shown to your customers by clicking the Manage button.
+
+### Alfamart O2O Configuration
+
+![Alfamart O2O Configuration](https://i.ibb.co/Y02Tr3T/Screen-Shot-2021-05-06-at-14-35-31.png)
+
+To show the Alfamart O2O options to your customers, simply toggle the channel that you wish to show.
+
+![Alfamart O2O Configuration Details](https://i.ibb.co/kDMrm45/Screen-Shot-2021-05-06-at-14-40-29.png)
+
+You can also click Manage to edit how the Alfamart O2O channels will be shown to your customers by clicking the Manage button.
+
