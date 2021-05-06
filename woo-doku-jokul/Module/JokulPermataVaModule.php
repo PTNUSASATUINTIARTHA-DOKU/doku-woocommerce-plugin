@@ -167,7 +167,6 @@ class JokulPermataVaModule extends WC_Payment_Gateway
 
                 wc_reduce_stock_levels($order->get_id());
 
-                $this->checkout_msg .= $response['virtual_account_info']['virtual_account_number'];
                 $order->add_order_note($this->checkout_msg . $response['virtual_account_info']['virtual_account_number'], true);
                 $woocommerce->cart->empty_cart();
 
@@ -181,7 +180,7 @@ class JokulPermataVaModule extends WC_Payment_Gateway
                 $order->update_status('pending');
 
                 $vaNumber = get_post_meta($order_id, 'jokul_va_number', true);
-                $vaExpired = get_post_meta($orde_id, 'jokul_va_expired', true);
+                $vaExpired = get_post_meta($order_id, 'jokul_va_expired', true);
                 $processType = 'PAYMENT_PENDING';
 
                 JokulPermataVaModule::addDb($response, $amount, $order, $vaNumber, $vaExpired, $processType);

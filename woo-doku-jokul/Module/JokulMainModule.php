@@ -14,7 +14,7 @@ class JokulMainModule extends WC_Payment_Gateway
         $this->method_description   = sprintf(__('Accept payment through various payment channels with Jokul. Make it easy for your customers to purchase on your store.', 'woocommerce'));
 
         $this->init_settings();
-        $this->enabled = $this->get_option( 'enabled' );
+        $this->enabled = $this->get_option('enabled');
         $this->environmentPaymentJokul = $this->get_option('environment_payment_jokul');
         $this->sandboxClientId = $this->get_option('sandbox_client_id');
         $this->sandboxSharedKey = $this->get_option('sandbox_shared_key');
@@ -28,8 +28,9 @@ class JokulMainModule extends WC_Payment_Gateway
         add_filter('woocommerce_available_payment_gateways', array(&$this, 'check_gateway_status'));
     }
 
-    public function init_form_fields() {
-		$this->form_fields = require( DOKU_JOKUL_PLUGIN_PATH . '/Form/JokulPgSetting.php' );
+    public function init_form_fields()
+    {
+        $this->form_fields = require(DOKU_JOKUL_PLUGIN_PATH . '/Form/JokulPgSetting.php');
     }
 
     public function process_admin_options()
@@ -41,7 +42,11 @@ class JokulMainModule extends WC_Payment_Gateway
         foreach ($this->get_form_fields() as $key => $field) {
             if ('title' !== $this->get_field_type($field)) {
                 try {
-                    $this->settings[$key] = $this->get_field_value($key, $field, $post_data);
+                    if ('expired_time' == $key && $post_data['woocommerce_' . $this->id . '_expired_time'] == null) {
+                        $this->settings[$key] = $this->get_field_default($field);
+                    } else {
+                        $this->settings[$key] = $this->get_field_value($key, $field, $post_data);
+                    }
                 } catch (Exception $e) {
                     $this->add_error($e->getMessage());
                 }
@@ -67,5 +72,3 @@ class JokulMainModule extends WC_Payment_Gateway
         }
     }
 }
-
-?>

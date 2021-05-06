@@ -61,6 +61,8 @@ function jokul_init_gateway_class() {
 				$methods[] = 'JokulMandiriVaModule';
 				$methods[] = 'JokulBcaVaModule';
                 $methods[] = 'JokulPermataVaModule';
+				$methods[] = 'JokulAlfaO2OModule';
+				$methods[] = 'JokulCreditCardModule';
 
                 return $methods;
             }
@@ -129,4 +131,51 @@ function order_update_status() {
 	return $response;
 }
 
+add_filter('woocommerce_order_button_html', 'remove_place_order_button_for_specific_payments' );
+function remove_place_order_button_for_specific_payments( $button ) {
+    $targeted_payments_methods = array('jokul_creditcard');
+    $chosen_payment_method     = WC()->session->get('chosen_payment_method');
+
+    if( in_array( $chosen_payment_method, $targeted_payments_methods ) && ! is_wc_endpoint_url() ) {
+        $button = ''; 
+    }
+    return $button;
+}
+
+add_action( 'wp_footer', 'custom_checkout_jquery_script' );
+function custom_checkout_jquery_script() {
+    if ( is_checkout() && ! is_wc_endpoint_url() ) :
+    	?>
+    	<script type="text/javascript">
+    		jQuery( function($){
+        		$('form.checkout').on('change', 'input[name="payment_method"]', function(){
+            		$(document.body).trigger('update_checkout');
+        		});
+    		});
+    	</script>
+    	<?php
+    endif;
+}
+
+add_action( 'woocommerce_thankyou', 'thank_you_page_credit_card', 1, 10 );
+function thank_you_page_credit_card($order_id) {
+	$chosen_payment_method     = WC()->session->get('chosen_payment_method');
+    if ($chosen_payment_method == 'jokul_creditcard') {
+		global $woocommerce;
+    	$woocommerce->cart->empty_cart();
+		wc_reduce_stock_levels($order_id);
+		update_post_meta(1000, 'jokul_cc_order_id', '');
+    	?>
+        <p class="woocommerce-notice woocommerce-notice--success woocommerce-thankyou-order-received">Your payment with Credit Card is success!</p>
+        <ul class="woocommerce-order-overview woocommerce-thankyou-order-details order_details">
+            <li class="woocommerce-order-overview__cc cc">
+                <?php _e('Payment Method', 'woocommerce'); ?>
+                <strong><?php _e("Credit Card", 'woocommerce'); ?></strong>
+            </li>
+        </ul>
+		<?php
+	}
+}
 ?>
+
+

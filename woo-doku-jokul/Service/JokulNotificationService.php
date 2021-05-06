@@ -7,7 +7,8 @@ require_once(DOKU_JOKUL_PLUGIN_PATH . '/Common/JokulDb.php');
 class JokulNotificationService
 {
 
-    function getallheaders() {
+    function getallheaders()
+    {
         $headers = [];
         foreach ($_SERVER as $name => $value) {
             if (substr($name, 0, 5) == 'HTTP_') {
@@ -22,7 +23,7 @@ class JokulNotificationService
         $raw_notification = json_decode(file_get_contents('php://input'), true);
         $mainSettings = get_option('woocommerce_jokul_gateway_settings');
         $headerData = JokulNotificationService::getallheaders();
-        
+
         if ($mainSettings['environment_payment_jokul'] == 'false') {
             $sharedKey = $mainSettings['sandbox_shared_key'];
         } else if ($mainSettings['environment_payment_jokul'] == 'true') {
@@ -30,7 +31,20 @@ class JokulNotificationService
         }
 
         $jokulDb = new JokulDb();
-        $responseDb = $jokulDb::checkTrx($raw_notification['order']['invoice_number'], $raw_notification['order']['amount'], $raw_notification['virtual_account_info']['virtual_account_number']);
+        $serviceType = $raw_notification['service']['id'];
+        $invoiceNumber = $raw_notification['order']['invoice_number'];
+        $amount = $raw_notification['order']['amount'];
+        $paymentChannel = $raw_notification['channel']['id'];
+        $transactionStatus = $raw_notification['transaction']['status'];
+        if ($serviceType == "ONLINE_TO_OFFLINE") {
+            $paymentCode = $raw_notification['online_to_offline_info']['payment_code'];
+            $paymentDate = $raw_notification['transaction']['date'];
+        } else {
+            $paymentCode = $raw_notification['virtual_account_info']['virtual_account_number'];
+            $paymentDate = $raw_notification['virtual_account_payment']['date'];
+        }
+
+        $responseDb = $jokulDb::checkTrx($invoiceNumber, $amount, $paymentCode);
 
         if ($responseDb != '') {
             $jokulUtils = new JokulUtils();
@@ -38,16 +52,27 @@ class JokulNotificationService
 
             if ($signature == $headerData['Signature']) {
                 $request = $raw_notification;
-                
-                $checkTrxStatus = $jokulDb::checkStatusTrx($raw_notification['order']['invoice_number'], $raw_notification['order']['amount'], $raw_notification['virtual_account_info']['virtual_account_number'], 'PAYMENT_COMPLETED');
 
-                if ($checkTrxStatus == '') {
-                    JokulNotificationService::addDb($request);
+                if (strtolower($raw_notification['transaction']['status']) == strtolower('SUCCESS')) {
+                    $checkTrxStatus = $jokulDb::checkStatusTrx($invoiceNumber, $amount, $paymentCode == "" ? "" : $paymentCode, 'PAYMENT_COMPLETED');
+
+                    if ($checkTrxStatus == '') {
+                        JokulNotificationService::addDb($invoiceNumber, $amount, $paymentCode, $paymentDate, $paymentChannel,$transactionStatus);
+                    }
+
+                    $order = wc_get_order($invoiceNumber);
+                    $order->update_status('processing');
+                    $order->payment_complete();
+                } else if (strtolower($raw_notification['transaction']['status']) == strtolower('FAILED')) {
+                    $checkTrxStatus = $jokulDb::checkStatusTrx($invoiceNumber, $amount, $paymentCode == "" ? "" : $paymentCode, 'PAYMENT_COMPLETED');
+
+                    if ($checkTrxStatus == '') {
+                        JokulNotificationService::addDb($invoiceNumber, $amount, $paymentCode, $paymentDate, $paymentChannel, $transactionStatus);
+                    }
+
+                    $order = wc_get_order($invoiceNumber);
+                    $order->update_status('failed');
                 }
-
-                $order = wc_get_order($raw_notification['order']['invoice_number']);
-                $order->update_status('processing');
-                $order->payment_complete();
             } else {
                 http_response_code(400);
                 echo http_response_code();
@@ -60,26 +85,25 @@ class JokulNotificationService
         }
     }
 
-    function addDb($request) 
+    function addDb($invoiceNumber, $amount, $paymentCode, $paymentDate, $channel, $transactionStatus)
     {
         $jokulUtils = new JokulUtils();
         $getIp = $jokulUtils::getIpaddress();
 
         $trx = array();
-		$trx['invoice_number']          = $request['order']['invoice_number'];
-		$trx['result_msg']              = null;
-        $trx['process_type']            = 'PAYMENT_COMPLETED';  
+        $trx['invoice_number']          = $invoiceNumber;
+        $trx['result_msg']              = null;
+        $trx['process_type']            = 'PAYMENT_COMPLETED';
         $trx['raw_post_data']           = file_get_contents('php://input');
         $trx['ip_address']              = $getIp;
-		$trx['amount']                  = $request['order']['amount'];
-		$trx['payment_channel']         = 'DOKU VA';
-		$trx['payment_code']            = $request['virtual_account_info']['virtual_account_number'];
-		$trx['doku_payment_datetime']   = $request['virtual_account_payment']['date'];
-        $trx['process_datetime']        = gmdate("Y-m-d H:i:s");       
-        $trx['message']                 = "Payment process message come from Jokul. Success : completed";   
-                                
+        $trx['amount']                  = $amount;
+        $trx['payment_channel']         = $channel;
+        $trx['payment_code']            = $paymentCode;
+        $trx['doku_payment_datetime']   = $paymentDate;
+        $trx['process_datetime']        = gmdate("Y-m-d H:i:s");
+        $trx['message']                 = "Payment process message come from Jokul. ". $transactionStatus ." : completed";
+
         $jokulDb = new JokulDb();
         $jokulDb::addData($trx);
     }
 }
-

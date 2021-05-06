@@ -1,22 +1,22 @@
 <?php
 
-require_once(DOKU_JOKUL_PLUGIN_PATH . '/Service/JokulBcaVaService.php');
+require_once(DOKU_JOKUL_PLUGIN_PATH . '/Service/JokulAlfaO2OService.php');
 require_once(DOKU_JOKUL_PLUGIN_PATH . '/Common/JokulDb.php');
 
-class JokulBcaVaModule extends WC_Payment_Gateway
+class JokulAlfaO2OModule extends WC_Payment_Gateway
 {
     public function __construct()
     {
 
         $this->init_form_fields();
-        $this->id                   = 'jokul_bcava';
+        $this->id                   = 'jokul_alfao2o';
         $this->has_fields           = true;
-        $this->method_name          = 'BCA VA';
-        $this->method_code          = 'VIRTUAL_ACCOUNT_BCA';
+        $this->method_name          = 'Alfamart';
+        $this->method_code          = 'ALFAMART';
         $this->title                = !empty($this->get_option('channel_name')) ? $this->get_option('channel_name') : $this->method_name;
         $this->method_title         = __('Jokul', 'woocommerce-gateway-jokul');
         $this->method_description   = sprintf(__('Accept payment through various payment channels with Jokul. Make it easy for your customers to purchase on your store.', 'woocommerce'));
-        $this->checkout_msg         = 'Please transfer your payment to this payment code / VA Number : ';
+        $this->checkout_msg         = 'Please transfer your payment using this payment code : ';
 
         $this->init_settings();
         $mainSettings = get_option('woocommerce_jokul_gateway_settings');
@@ -30,21 +30,18 @@ class JokulBcaVaModule extends WC_Payment_Gateway
 
         $this->enabled = $this->get_option('enabled');
         $this->channelName = $this->get_option('channel_name');
-        $paymentDescription = $this->get_option('payment_description');
-
-        if (empty($paymentDescription)) {
-            $this->paymentDescription   = 'Bayar pesanan dengan transfer dari BCA';
-        } else {
-            $this->paymentDescription = $this->get_option('payment_description');
-        }
-
+        $this->footerMessage = $this->get_option('footer_message');
+        $this->paymentDescription = $this->get_option('payment_description');
+        if (empty($this->$paymentDescription)) {
+            $this->paymentDescription   = 'Bayar pesanan dengan pembayaran melalui Alfamart';
+        } 
         add_action('woocommerce_update_options_payment_gateways_' . $this->id, array($this, 'process_admin_options'));
-        add_action('woocommerce_thankyou_' . $this->id, array($this, 'thank_you_page_bca_va'), 1, 10);
+        add_action('woocommerce_thankyou_' . $this->id, array($this, 'thank_you_page_alfa_o2o'), 1, 10);
     }
 
     public function init_form_fields()
     {
-        $this->form_fields = require(DOKU_JOKUL_PLUGIN_PATH . '/Form/JokulBcaVaSetting.php');
+        $this->form_fields = require(DOKU_JOKUL_PLUGIN_PATH . '/Form/JokulAlfaO2OSetting.php');
     }
 
     public function process_admin_options()
@@ -140,7 +137,8 @@ class JokulBcaVaModule extends WC_Payment_Gateway
             'info1' => '',
             'info2' => '',
             'info3' => '',
-            'reusableStatus' => false
+            'reusableStatus' => false,
+            'footerMessage' => $this->footerMessage
         );
 
         if ($this->environmentPaymentJokul == 'false') {
@@ -157,26 +155,26 @@ class JokulBcaVaModule extends WC_Payment_Gateway
             'environment' => $this->environmentPaymentJokul
         );
 
-        $this->bcaVaService = new JokulBcaVaService();
-        $response = $this->bcaVaService->generated($config, $params);
+        $this->alfaO2OService = new JokulAlfaO2OService();
+        $response = $this->alfaO2OService->generated($config, $params);
         if (!is_wp_error($response)) {
 
             $vaNumber = '';
             $vaExpired = '';
             $processType = 'PAYMENT_FAILED';
 
-            if (!isset($response['error']['message']) && isset($response['virtual_account_info']['virtual_account_number'])) {
+            if (!isset($response['error']['message']) && isset($response['online_to_offline_info']['payment_code'])) {
 
                 wc_reduce_stock_levels($order->get_id());
 
-                $order->add_order_note($this->checkout_msg . $response['virtual_account_info']['virtual_account_number'], true);
+                $order->add_order_note($this->checkout_msg . $response['online_to_offline_info']['payment_code'], true);
                 $woocommerce->cart->empty_cart();
 
                 update_post_meta($order_id, 'jokul_va_amount', $amount);
                 update_post_meta($order_id, 'jokul_method_code', $this->method_code);
-                update_post_meta($order_id, 'jokul_va_number', $response['virtual_account_info']['virtual_account_number']);
-                update_post_meta($order_id, 'jokul_va_expired', $response['virtual_account_info']['expired_date']);
-                update_post_meta($order_id, 'jokul_va_how_to_page', $response['virtual_account_info']['how_to_pay_page']);
+                update_post_meta($order_id, 'jokul_va_number', $response['online_to_offline_info']['payment_code']);
+                update_post_meta($order_id, 'jokul_va_expired', $response['online_to_offline_info']['expired_date']);
+                update_post_meta($order_id, 'jokul_va_how_to_page', $response['online_to_offline_info']['how_to_pay_page']);
 
                 $order = wc_get_order($response['order']['invoice_number']);
                 $order->update_status('pending');
@@ -185,7 +183,7 @@ class JokulBcaVaModule extends WC_Payment_Gateway
                 $vaExpired = get_post_meta($order_id, 'jokul_va_expired', true);
                 $processType = 'PAYMENT_PENDING';
 
-                JokulBcaVaModule::addDb($response, $amount, $order, $vaNumber, $vaExpired, $processType);
+                JokulAlfaO2OModule::addDb($response, $amount, $order, $vaNumber, $vaExpired, $processType);
 
                 return array(
                     'result' => 'success',
@@ -195,7 +193,7 @@ class JokulBcaVaModule extends WC_Payment_Gateway
                 $this->checkout_msg = 'Error occured: ' . $response['error']['message'] . '. Please check Jokul WooCommerce plugin configuration or check your Jokul Back Office configuration.';
                 $order->add_order_note($this->checkout_msg, true);
 
-                JokulBcaVaModule::addDb($response, $amount, $order, $vaNumber, $vaExpired, $processType);
+                JokulAlfaO2OModule::addDb($response, $amount, $order, $vaNumber, $vaExpired, $processType);
                 wc_add_notice('There is something wrong. Please try again.', 'error');
                 return;
             }
@@ -203,27 +201,27 @@ class JokulBcaVaModule extends WC_Payment_Gateway
             $this->checkout_msg = 'Error occured: Connection error. Please try again in a few minutes. If still happening, please contact Jokul Support team (care@doku.com).';
             $order->add_order_note($this->checkout_msg, true);
 
-            JokulBcaVaModule::addDb($response, $amount, $order, $vaNumber, $vaExpired, $processType);
+            JokulAlfaO2OModule::addDb($response, $amount, $order, $vaNumber, $vaExpired, $processType);
             wc_add_notice('There is something wrong with the payment system. Please try again in a few minutes.', 'error');
             return;
         }
     }
 
-    public function addDb($response, $amount, $order, $vaNumber, $vaExpired, $processType)
+    public function addDb($response, $amount, $order, $vaNumber, $vaExpired, $processType) 
     {
         $this->jokulUtils = new JokulUtils();
         $getIp = $this->jokulUtils->getIpaddress();
 
         $trx = array();
-        $trx['invoice_number']          = $order->get_order_number();
+		$trx['invoice_number']          = $order->get_order_number();
         $trx['result_msg']              = null;
-        $trx['process_type']            = $processType;
+        $trx['process_type']            = $processType;  
         $trx['raw_post_data']           = file_get_contents('php://input');
         $trx['ip_address']              = $getIp;
         $trx['amount']                  = $amount;
-        $trx['payment_channel']         = $this->method_code;
-        $trx['payment_code']            = $vaNumber;
-        $trx['doku_payment_datetime']   = $vaExpired;
+		$trx['payment_channel']         = $this->method_code;
+		$trx['payment_code']            = $vaNumber;
+		$trx['doku_payment_datetime']   = $vaExpired;
         $trx['process_datetime']        = gmdate("Y-m-d H:i:s");
         $trx['message']                 = $this->checkout_msg;
 
@@ -231,7 +229,7 @@ class JokulBcaVaModule extends WC_Payment_Gateway
         $this->jokulDb->addData($trx);
     }
 
-    public function thank_you_page_bca_va($order_id)
+    public function thank_you_page_alfa_o2o($order_id)
     {
         $vaNumber       = get_post_meta($order_id, 'jokul_va_number', true);
         $vaExpired      = get_post_meta($order_id, 'jokul_va_expired', true);
@@ -242,12 +240,12 @@ class JokulBcaVaModule extends WC_Payment_Gateway
 
         echo '<h2>Payment details</h2>';
     ?>
-        <p class="woocommerce-notice woocommerce-notice--success woocommerce-thankyou-order-received">Please transfer your payment to this payment code / VA number:</p>
+        <p class="woocommerce-notice woocommerce-notice--success woocommerce-thankyou-order-received">Please transfer your payment using this payment code:</p>
 
         <ul class="woocommerce-order-overview woocommerce-thankyou-order-details order_details">
 
             <li class="woocommerce-order-overview__va va">
-                <?php _e('VA Number:', 'woocommerce'); ?>
+                <?php _e('Payment Code:', 'woocommerce'); ?>
                 <strong><?php _e($vaNumber, 'woocommerce'); ?></strong>
             </li>
 
@@ -262,7 +260,7 @@ class JokulBcaVaModule extends WC_Payment_Gateway
             </li>
         </ul>
         <p>
-            <a href=<?php _e($howToPage, 'woocommerce'); ?> target="_blank">Click here to see payment instructions</a>
+        <a href=<?php _e($howToPage, 'woocommerce' ); ?> target="_blank">Click here to see payment instructions</a>
         </p>
 <?php
     }
