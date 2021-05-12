@@ -10,7 +10,7 @@ class JokulCreditCardService {
         $header = array();
         $this->jokulUtils = new JokulUtils();
 
-        $regId = $this->jokulUtils->guidv4();
+        $requestId = $this->jokulUtils->guidv4();
         $targetPath= "/credit-card/v1/payment-page";
         $dateTime = gmdate("Y-m-d H:i:s");
         $dateTime = date(DATE_ISO8601, strtotime($dateTime));
@@ -18,7 +18,7 @@ class JokulCreditCardService {
 
         $data = array(
             "customer" => array(
-                "id" => $regId,
+                "id" => $params['customerId'],
                 "name" => trim($params['customerName']),
                 "email" => $params['customerEmail'],
                 "phone" => $params['phone'],
@@ -55,9 +55,8 @@ class JokulCreditCardService {
         $getUrl = $this->jokulConfig -> getBaseUrl($valueEnv);
         $url = $getUrl.$targetPath;
 
-        $dataWords = JokulCreditCardService::generateWords($regId, $dateTimeFinal,$targetPath, $config, $data);
         $header['Client-Id'] = $config['client_id'];
-        $header['Request-Id'] = $regId;
+        $header['Request-Id'] = $requestId;
         $header['Request-Timestamp'] = $dateTimeFinal;
         $header['Request-Target'] = $targetPath;
 
@@ -71,7 +70,7 @@ class JokulCreditCardService {
         curl_setopt($ch, CURLOPT_HTTPHEADER, array(
             'Content-Type: application/json',
             'Signature:'.$signature,
-            'Request-Id:'.$regId,
+            'Request-Id:'.$requestId,
             'Client-Id:'.$config['client_id'],
             'Request-Timestamp:'.$dateTimeFinal,
         
@@ -87,21 +86,6 @@ class JokulCreditCardService {
             print_r($responseJson);
         }
     }
-
-    private function generateWords($regId, $dateTime, $targetPath, $config, $body)
-    {
-        $clearBody = str_replace(array("\r","\n"),array("\\r","\\n"),json_encode($body));
-
-        $body = base64_encode(hash("sha256", $clearBody, True));
-        $words ="Client-Id:".$config['client_id'] ."\n". 
-                    "Request-Id:".$regId . "\n".
-                    "Request-Timestamp:".$dateTime ."\n". 
-                    "Request-Target:".$targetPath ."\n".
-                    "Digest:".htmlspecialchars_decode($body); 
-
-        return $words;
-    }
-
 }
 
 ?>
