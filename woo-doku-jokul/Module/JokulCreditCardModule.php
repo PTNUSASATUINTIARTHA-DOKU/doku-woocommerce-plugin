@@ -131,7 +131,7 @@ class JokulCreditCardModule extends WC_Payment_Gateway
         }
 
         $params = array(
-            'customerId' => $order->get_customer_id() != "" ? $order->get_customer_id() : "",
+            'customerId' => 0 !== $order->get_customer_id() ? $order->get_customer_id() : null,
             'customerEmail' => $order->get_billing_email(),
             'customerName' => $order->get_billing_first_name()." ".$order->get_billing_last_name(),
             'amount' => $amount,
