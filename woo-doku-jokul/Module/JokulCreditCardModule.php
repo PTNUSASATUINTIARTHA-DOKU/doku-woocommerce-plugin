@@ -10,9 +10,10 @@ class JokulCreditCardModule extends WC_Payment_Gateway
         $this->init_form_fields();
         $this->id                   = 'jokul_creditcard';
         $this->has_fields           = true;
-        $this->method_code          = 'Credit Card';
-        $this->title                = !empty($this->get_option('channel_name')) ? $this->get_option('channel_name') : $this->method_code;
-        $this->method_title         = __('Jokul Credit Card', 'woocommerce-gateway-jokul');
+        $this->method_name          = 'Credit Card';
+        $this->method_code          = 'CREDIT_CARD';
+        $this->title                = !empty($this->get_option('channel_name')) ? $this->get_option('channel_name') : $this->method_name;
+        $this->method_title         = __('Jokul', 'woocommerce-gateway-jokul');
         $this->method_description   = sprintf(__('Accept payment through various payment channels with Jokul. Make it easy for your customers to purchase on your store.', 'woocommerce'));
         $this->checkout_msg         = 'This your payment on Credit Card : ';
 
@@ -130,6 +131,7 @@ class JokulCreditCardModule extends WC_Payment_Gateway
         }
 
         $params = array(
+            'customerId' => 0 !== $order->get_customer_id() ? $order->get_customer_id() : null,
             'customerEmail' => $order->get_billing_email(),
             'customerName' => $order->get_billing_first_name()." ".$order->get_billing_last_name(),
             'amount' => $amount,
@@ -170,7 +172,7 @@ class JokulCreditCardModule extends WC_Payment_Gateway
         $response = $this->creditCardService -> generated($config, $params);
         if( !is_wp_error( $response )) {
             if (!isset($response['error']['message']) && isset($response['credit_card_payment_page']['url'])) {
-                echo "<iframe src=".$response['credit_card_payment_page']['url']." title='Jokul Credit Card' height='350' width='100%'></iframe>";
+                echo "<iframe frameBorder='0' src=".$response['credit_card_payment_page']['url']." title='Jokul Credit Card' height='350' width='100%'></iframe>";
                 JokulCreditCardModule::addDb($response, $amount);
             } else {
                 wc_add_notice('There is something wrong. Please try again.', 'error');
@@ -298,7 +300,7 @@ class JokulCreditCardModule extends WC_Payment_Gateway
         $trx['raw_post_data']           = file_get_contents('php://input');
         $trx['ip_address']              = $getIp;
 		$trx['amount']                  = $amount;
-		$trx['payment_channel']         = 'Credit Card';
+		$trx['payment_channel']         = $this->method_code;
 		$trx['payment_code']            = null;
 		$trx['doku_payment_datetime']   = gmdate("Y-m-d H:i:s");
         $trx['process_datetime']        = gmdate("Y-m-d H:i:s");       
