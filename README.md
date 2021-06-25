@@ -27,7 +27,7 @@ Jokul makes it easy for you accept payments from various channels. Jokul also hi
 ## How to Install
 
 1. Download the plugin from this Repository
-1. Extract the plugin and compress the folder "jokul-woocommerce" into zip file
+1. Extract the plugin and compress the folder "woo-doku-jokul" into zip file
 1. Login to your WordPress Admin Panel
 1. Go to Plugins > Add New
 1. Click Upload Plugin and select the zip file
