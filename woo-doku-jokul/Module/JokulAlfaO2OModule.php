@@ -31,10 +31,11 @@ class JokulAlfaO2OModule extends WC_Payment_Gateway
         $this->enabled = $this->get_option('enabled');
         $this->channelName = $this->get_option('channel_name');
         $this->footerMessage = $this->get_option('footer_message');
-        $this->paymentDescription = $this->get_option('payment_description');
+        $paymentDescription = $this->get_option('payment_description');
+
         if (empty($this->$paymentDescription)) {
             $this->paymentDescription   = 'Bayar pesanan dengan pembayaran melalui Alfamart';
-        } 
+        }
         add_action('woocommerce_update_options_payment_gateways_' . $this->id, array($this, 'process_admin_options'));
         add_action('woocommerce_thankyou_' . $this->id, array($this, 'thank_you_page_alfa_o2o'), 1, 10);
     }
@@ -129,7 +130,7 @@ class JokulAlfaO2OModule extends WC_Payment_Gateway
         $order  = wc_get_order($order_id);
         $amount = $order->get_total();
         $params = array(
-            'customerEmail' => ($a = get_userdata($order->get_user_id())) ? $a->user_email : '',
+            'customerEmail' => $order->get_billing_email(),
             'customerName' => $order->get_billing_first_name() . " " . $order->get_billing_last_name(),
             'amount' => $amount,
             'invoiceNumber' => $order->get_order_number(),
@@ -184,6 +185,9 @@ class JokulAlfaO2OModule extends WC_Payment_Gateway
                 $processType = 'PAYMENT_PENDING';
 
                 JokulAlfaO2OModule::addDb($response, $amount, $order, $vaNumber, $vaExpired, $processType);
+                
+                $this->jokulUtils = new JokulUtils();
+                $this->jokulUtils->send_email($order, $params, $response['online_to_offline_info']['how_to_pay_api']);
 
                 return array(
                     'result' => 'success',
@@ -207,21 +211,21 @@ class JokulAlfaO2OModule extends WC_Payment_Gateway
         }
     }
 
-    public function addDb($response, $amount, $order, $vaNumber, $vaExpired, $processType) 
+    public function addDb($response, $amount, $order, $vaNumber, $vaExpired, $processType)
     {
         $this->jokulUtils = new JokulUtils();
         $getIp = $this->jokulUtils->getIpaddress();
 
         $trx = array();
-		$trx['invoice_number']          = $order->get_order_number();
+        $trx['invoice_number']          = $order->get_order_number();
         $trx['result_msg']              = null;
-        $trx['process_type']            = $processType;  
+        $trx['process_type']            = $processType;
         $trx['raw_post_data']           = file_get_contents('php://input');
         $trx['ip_address']              = $getIp;
         $trx['amount']                  = $amount;
-		$trx['payment_channel']         = $this->method_code;
-		$trx['payment_code']            = $vaNumber;
-		$trx['doku_payment_datetime']   = $vaExpired;
+        $trx['payment_channel']         = $this->method_code;
+        $trx['payment_code']            = $vaNumber;
+        $trx['doku_payment_datetime']   = $vaExpired;
         $trx['process_datetime']        = gmdate("Y-m-d H:i:s");
         $trx['message']                 = $this->checkout_msg;
 
@@ -260,7 +264,7 @@ class JokulAlfaO2OModule extends WC_Payment_Gateway
             </li>
         </ul>
         <p>
-        <a href=<?php _e($howToPage, 'woocommerce' ); ?> target="_blank">Click here to see payment instructions</a>
+            <a href=<?php _e($howToPage, 'woocommerce'); ?> target="_blank">Click here to see payment instructions</a>
         </p>
 <?php
     }

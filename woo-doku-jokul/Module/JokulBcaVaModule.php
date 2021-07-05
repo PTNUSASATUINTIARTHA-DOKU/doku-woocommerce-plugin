@@ -132,7 +132,7 @@ class JokulBcaVaModule extends WC_Payment_Gateway
         $order  = wc_get_order($order_id);
         $amount = $order->get_total();
         $params = array(
-            'customerEmail' => ($a = get_userdata($order->get_user_id())) ? $a->user_email : '',
+            'customerEmail' => $order->get_billing_email(),
             'customerName' => $order->get_billing_first_name() . " " . $order->get_billing_last_name(),
             'amount' => $amount,
             'invoiceNumber' => $order->get_order_number(),
@@ -186,6 +186,9 @@ class JokulBcaVaModule extends WC_Payment_Gateway
                 $processType = 'PAYMENT_PENDING';
 
                 JokulBcaVaModule::addDb($response, $amount, $order, $vaNumber, $vaExpired, $processType);
+
+                $this->jokulUtils = new JokulUtils();
+                $this->jokulUtils->send_email($order, $params, $response['virtual_account_info']['how_to_pay_api']);
 
                 return array(
                     'result' => 'success',

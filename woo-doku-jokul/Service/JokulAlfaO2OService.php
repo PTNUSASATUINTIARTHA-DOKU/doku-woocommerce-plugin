@@ -3,7 +3,8 @@
 require_once(DOKU_JOKUL_PLUGIN_PATH . '/Common/JokulConfig.php');
 require_once(DOKU_JOKUL_PLUGIN_PATH . '/Common/JokulUtils.php');
 
-class JokulAlfaO2OService {
+class JokulAlfaO2OService
+{
 
     public function generated($config, $params)
     {
@@ -29,8 +30,8 @@ class JokulAlfaO2OService {
                 "name" => trim($params['customerName']),
                 "email" => $params['customerEmail']
             ),
-            "additional_info" => array (
-                "integration" => array (
+            "additional_info" => array(
+                "integration" => array(
                     "name" => "woocommerce-plugin",
                     "version" => "1.0.1"
                 )
@@ -40,15 +41,15 @@ class JokulAlfaO2OService {
         $this->jokulUtils = new JokulUtils();
 
         $requestId = $this->jokulUtils->guidv4();
-        $targetPath= "/alfa-online-to-offline/v2/payment-code";
+        $targetPath = "/alfa-online-to-offline/v2/payment-code";
         $dateTime = gmdate("Y-m-d H:i:s");
         $dateTime = date(DATE_ISO8601, strtotime($dateTime));
-        $dateTimeFinal = substr($dateTime,0,19)."Z";
+        $dateTimeFinal = substr($dateTime, 0, 19) . "Z";
 
         $this->jokulConfig = new JokulConfig();
-        $valueEnv = $config['environment'] === 'true'? true: false;
-        $getUrl = $this->jokulConfig -> getBaseUrl($valueEnv);
-        $url = $getUrl.$targetPath;
+        $valueEnv = $config['environment'] === 'true' ? true : false;
+        $getUrl = $this->jokulConfig->getBaseUrl($valueEnv);
+        $url = $getUrl . $targetPath;
 
         $header['Client-Id'] = $config['client_id'];
         $header['Request-Id'] = $requestId;
@@ -64,14 +65,18 @@ class JokulAlfaO2OService {
 
         curl_setopt($ch, CURLOPT_HTTPHEADER, array(
             'Content-Type: application/json',
-            'Signature:'.$signature,
-            'Request-Id:'.$requestId,
-            'Client-Id:'.$config['client_id'],
-            'Request-Timestamp:'.$dateTimeFinal,
-        
+            'Signature:' . $signature,
+            'Request-Id:' . $requestId,
+            'Client-Id:' . $config['client_id'],
+            'Request-Timestamp:' . $dateTimeFinal,
+
         ));
 
         $responseJson = curl_exec($ch);
+
+        $this->jokulUtils->doku_log($this, 'O2O REQUEST : ' . json_encode($data), $params['invoiceNumber']);
+        $this->jokulUtils->doku_log($this, 'O2O REQUEST URL : ' . $url, $params['invoiceNumber']);
+        $this->jokulUtils->doku_log($this, 'O2O RESPONSE : ' . json_encode($responseJson, JSON_PRETTY_PRINT), $params['invoiceNumber']);
 
         curl_close($ch);
 

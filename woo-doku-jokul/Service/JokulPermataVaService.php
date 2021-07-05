@@ -33,7 +33,6 @@ class JokulPermataVaService {
         );
 
         $this->jokulUtils = new JokulUtils();
-        error_log("PERMATA LINE 36");
         $requestId = $this->jokulUtils->guidv4();
         $targetPath= "/permata-virtual-account/v2/payment-code";
         $dateTime = gmdate("Y-m-d H:i:s");

@@ -126,11 +126,10 @@ class JokulPermataVaModule extends WC_Payment_Gateway
     public function process_payment($order_id)
     {
         global $woocommerce;
-        error_log("PERMATA LINE 120");
         $order  = wc_get_order($order_id);
         $amount = $order->get_total();
         $params = array(
-            'customerEmail' => ($a = get_userdata($order->get_user_id())) ? $a->user_email : '',
+            'customerEmail' => $order->get_billing_email(),
             'customerName' => $order->get_billing_first_name() . " " . $order->get_billing_last_name(),
             'amount' => $amount,
             'invoiceNumber' => $order->get_order_number(),
@@ -184,6 +183,10 @@ class JokulPermataVaModule extends WC_Payment_Gateway
                 $processType = 'PAYMENT_PENDING';
 
                 JokulPermataVaModule::addDb($response, $amount, $order, $vaNumber, $vaExpired, $processType);
+
+                $this->jokulUtils = new JokulUtils();
+                $this->jokulUtils->send_email($order, $params, $response['virtual_account_info']['how_to_pay_api']);
+
                 return array(
                     'result' => 'success',
                     'redirect' => $this->get_return_url($order)

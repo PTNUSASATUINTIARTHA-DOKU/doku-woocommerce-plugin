@@ -70,6 +70,11 @@ class JokulMandiriVaService {
 
         curl_close($ch);
 
+        $this->jokulUtils->doku_log($this, 'MANDIRI VA REQUEST : '.json_encode($data), $params['invoiceNumber']);
+        $this->jokulUtils->doku_log($this, 'MANDIRI VA REQUEST URL : '.$url, $params['invoiceNumber']);
+        $this->jokulUtils->doku_log($this, 'MANDIRI VA RESPONSE : ' . json_encode($responseJson,JSON_PRETTY_PRINT), $params['invoiceNumber']);
+
+        
         if (is_string($responseJson)) {
             return json_decode($responseJson, true);
         } else {

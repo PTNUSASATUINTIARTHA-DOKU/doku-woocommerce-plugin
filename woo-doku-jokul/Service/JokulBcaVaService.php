@@ -3,7 +3,8 @@
 require_once(DOKU_JOKUL_PLUGIN_PATH . '/Common/JokulConfig.php');
 require_once(DOKU_JOKUL_PLUGIN_PATH . '/Common/JokulUtils.php');
 
-class JokulBcaVaService {
+class JokulBcaVaService
+{
 
     public function generated($config, $params)
     {
@@ -24,8 +25,8 @@ class JokulBcaVaService {
                 "name" => trim($params['customerName']),
                 "email" => $params['customerEmail']
             ),
-            "additional_info" => array (
-                "integration" => array (
+            "additional_info" => array(
+                "integration" => array(
                     "name" => "woocommerce-plugin",
                     "version" => "1.0.1"
                 )
@@ -35,15 +36,15 @@ class JokulBcaVaService {
         $this->jokulUtils = new JokulUtils();
 
         $requestId = $this->jokulUtils->guidv4();
-        $targetPath= "/bca-virtual-account/v2/payment-code";
+        $targetPath = "/bca-virtual-account/v2/payment-code";
         $dateTime = gmdate("Y-m-d H:i:s");
         $dateTime = date(DATE_ISO8601, strtotime($dateTime));
-        $dateTimeFinal = substr($dateTime,0,19)."Z";
+        $dateTimeFinal = substr($dateTime, 0, 19) . "Z";
 
         $this->jokulConfig = new JokulConfig();
-        $valueEnv = $config['environment'] === 'true'? true: false;
-        $getUrl = $this->jokulConfig -> getBaseUrl($valueEnv);
-        $url = $getUrl.$targetPath;
+        $valueEnv = $config['environment'] === 'true' ? true : false;
+        $getUrl = $this->jokulConfig->getBaseUrl($valueEnv);
+        $url = $getUrl . $targetPath;
 
         $header['Client-Id'] = $config['client_id'];
         $header['Request-Id'] = $requestId;
@@ -59,16 +60,19 @@ class JokulBcaVaService {
 
         curl_setopt($ch, CURLOPT_HTTPHEADER, array(
             'Content-Type: application/json',
-            'Signature:'.$signature,
-            'Request-Id:'.$requestId,
-            'Client-Id:'.$config['client_id'],
-            'Request-Timestamp:'.$dateTimeFinal,
-        
+            'Signature:' . $signature,
+            'Request-Id:' . $requestId,
+            'Client-Id:' . $config['client_id'],
+            'Request-Timestamp:' . $dateTimeFinal,
+
         ));
 
         $responseJson = curl_exec($ch);
 
         curl_close($ch);
+        $this->jokulUtils->doku_log($this, 'BCA REQUEST : ' . json_encode($data), $params['invoiceNumber']);
+        $this->jokulUtils->doku_log($this, 'BCA REQUEST URL : ' . $url, $params['invoiceNumber']);
+        $this->jokulUtils->doku_log($this, 'BCA RESPONSE : ' . json_encode($responseJson, JSON_PRETTY_PRINT), $params['invoiceNumber']);
 
         if (is_string($responseJson)) {
             return json_decode($responseJson, true);
@@ -76,7 +80,4 @@ class JokulBcaVaService {
             print_r($responseJson);
         }
     }
-
 }
-
-?>
