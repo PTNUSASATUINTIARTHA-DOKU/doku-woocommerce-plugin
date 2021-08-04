@@ -102,16 +102,20 @@ class JokulCreditCardModule extends WC_Payment_Gateway
         $order->set_total(WC()->cart->get_tax_totals(), 'tax');
         $order->set_total(0, 'shipping_tax');
         $order->set_total($cart_total, 'total');
-        update_post_meta(1000, 'jokul_cc_order_id', $order->id);
+        $post = $wp_query->post;
+        
+        update_post_meta($post->ID, 'jokul_cc_order_id', $order->id);
 
         return wc_get_order($order->id);
     }
 
     public function init_api_cc() {
         global $woocommerce;
-        $orderId = get_post_meta(1000, 'jokul_cc_order_id', true);
-        if (isset($orderId) && $orderId != '') {
+        $post = $wp_query->post;
+        $orderId = get_post_meta($post->ID, 'jokul_cc_order_id', true);
+        if (isset($orderId) && $orderId != '' && $orderId != null) {
             $order = wc_get_order($orderId);
+            
             $statusTransaction = $order->get_status();
             if ($statusTransaction != 'pending') {
                 $order = JokulCreditCardModule::createNewOrder(); 
