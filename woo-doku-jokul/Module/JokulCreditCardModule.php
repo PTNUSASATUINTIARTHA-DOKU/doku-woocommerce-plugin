@@ -102,23 +102,12 @@ class JokulCreditCardModule extends WC_Payment_Gateway
         $order->set_total(WC()->cart->get_tax_totals(), 'tax');
         $order->set_total(0, 'shipping_tax');
         $order->set_total($cart_total, 'total');
-        update_post_meta(1000, 'jokul_cc_order_id', $order->id);
 
         return wc_get_order($order->id);
     }
 
     public function init_api_cc() {
-        global $woocommerce;
-        $orderId = get_post_meta(1000, 'jokul_cc_order_id', true);
-        if (isset($orderId) && $orderId != '') {
-            $order = wc_get_order($orderId);
-            $statusTransaction = $order->get_status();
-            if ($statusTransaction != 'pending') {
-                $order = JokulCreditCardModule::createNewOrder(); 
-            }
-        } else {
-            $order = JokulCreditCardModule::createNewOrder();
-        }
+        $order = JokulCreditCardModule::createNewOrder();
         
         $amount = $order->order_total;
         $itemQty = array();
@@ -172,7 +161,7 @@ class JokulCreditCardModule extends WC_Payment_Gateway
         $response = $this->creditCardService -> generated($config, $params);
         if( !is_wp_error( $response )) {
             if (!isset($response['error']['message']) && isset($response['credit_card_payment_page']['url'])) {
-                echo "<iframe frameBorder='0' src=".$response['credit_card_payment_page']['url']." title='Jokul Credit Card' height='350' width='100%'></iframe>";
+                echo "<iframe style='border:none' frameBorder='0' src=".$response['credit_card_payment_page']['url']." title='Jokul Credit Card' height='350' width='100%'></iframe>";
                 JokulCreditCardModule::addDb($response, $amount);
             } else {
                 wc_add_notice('There is something wrong. Please try again.', 'error');
