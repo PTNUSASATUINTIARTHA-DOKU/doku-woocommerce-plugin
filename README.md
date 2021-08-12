@@ -32,7 +32,6 @@ This `doku_log` is useful to help simplify the process of checking if an issue o
     - BCA VA
     - Bank Mandiri VA
     - Bank Syariah Mandiri VA
-    - Permata VA
     - DOKU VA
 
 2. Credit Card
