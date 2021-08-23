@@ -79,6 +79,10 @@ class JokulCreditCardService {
         $responseJson = curl_exec($ch);
 
         curl_close($ch);
+        
+        $this->jokulUtils->doku_log($this, 'DOKU CC REQUEST : ' . json_encode($data), $params['invoiceNumber']);
+        $this->jokulUtils->doku_log($this, 'DOKU CC REQUEST URL : ' . $url, $params['invoiceNumber']);
+        $this->jokulUtils->doku_log($this, 'DOKU CC RESPONSE : ' . json_encode($responseJson, JSON_PRETTY_PRINT), $params['invoiceNumber']);
 
         if (is_string($responseJson)) {
             return json_decode($responseJson, true);
