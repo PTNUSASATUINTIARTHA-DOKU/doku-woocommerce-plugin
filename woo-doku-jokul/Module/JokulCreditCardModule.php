@@ -44,6 +44,10 @@ class JokulCreditCardModule extends WC_Payment_Gateway
         }
 
         add_action('woocommerce_update_options_payment_gateways_' . $this->id, array($this, 'process_admin_options'));
+        if ($_SERVER['QUERY_STRING'] == 'cc=show') {
+            add_filter( 'the_content', array($this, 'my_disruptive_filter'));
+        }
+
         if ($_SERVER['QUERY_STRING'] == 'status=failed') {
             $chosen_payment_method = WC()->session->get('chosen_payment_method');
             if ($chosen_payment_method == 'jokul_creditcard') {
@@ -52,63 +56,28 @@ class JokulCreditCardModule extends WC_Payment_Gateway
         }
     }
 
-    public function createNewOrder()
-    {
-        global $woocommerce;
-        $cart = $woocommerce->cart;
-        $cart_total = $woocommerce->cart->get_cart_total();
-        $customer_id = get_current_user_id();
-
-        $post_data = $this->get_post_data();
-        $post = json_decode(json_encode($post_data), true);
-
-        $postDetail = array();
-        $vars = explode('&', $post['post_data']);
-        foreach ($vars as $k => $value) {
-            $v = explode('=', urldecode($value));
-            $postDetail[$v[0]] = $v[1];
-        }
-
-        $order_data = array('status' => 'pending', 'customer_id' => $customer_id, 'customer_note' => '', 'total' => $cart_total);
-        $order = wc_create_order($order_data);
-        
-        $discount_total = 0;
-        foreach( WC()->cart->get_cart() as $cart_item ){
-            $product_id = $cart_item['product_id'];
-            $quantity = $cart_item['quantity']; 
-            $item_id = $order->add_product(get_product($product_id), $quantity);
-
-            $product = $cart_item['data'];
-            if ( $product->is_on_sale() ) {
-                $regular_price = $product->get_regular_price();
-                $sale_price = $product->get_sale_price();
-                $discount = ( $regular_price - $sale_price ) * $values['quantity'];
-                $discount_total += $discount;
-            }
-        }
-        
-        $billing_address = array('country' => $post['country'], 'first_name' => $postDetail['billing_first_name'], 'last_name' => $postDetail['billing_last_name'], 'company' => $postDetail['billing_company'], 'address_1' => $postDetail['billing_address_1'], 'address_2' => $postDetail['billing_address_2'], 'postcode' => $postDetail['billing_postcode'], 'city' => $postDetail['billing_city'], 'state' => $postDetail['billing_state'], 'email' => $postDetail['billing_email'], 'phone' => $postDetail['billing_phone']);
-        $order->set_address($billing_address, 'billing');
-        
-        $shipping_taxes = WC_Tax::calc_shipping_tax($cart_total, WC_Tax::get_shipping_tax_rates());
-        $order->add_shipping(new WC_Shipping_Rate('flat_rate_shipping', 'Flat rate shipping', '0', $shipping_taxes, 'flat_rate'));
-        
-        $payment_gateways = WC()->payment_gateways->payment_gateways();
-        $order->set_payment_method($payment_gateways['jokul_creditcard']);
-        
-        $order->set_total(WC()->cart->get_cart_shipping_total(), 'shipping');
-        $order->set_total($discount_total, 'cart_discount');
-        $order->set_total(0, 'cart_discount_tax');
-        $order->set_total(WC()->cart->get_tax_totals(), 'tax');
-        $order->set_total(0, 'shipping_tax');
-        $order->set_total($cart_total, 'total');
-
-        return wc_get_order($order->id);
+    function my_disruptive_filter($content) {
+        ?>
+        <script> 
+            #align-center{ 
+               display: block; 
+               justify-content: center; 
+             }
+        </script>
+        <?php
+    
+        $urlCC= get_post_meta('12', 'ccPageUrl', true);
+    
+        $url = "<div id='align_center'><iframe style='border:none' frameBorder='0' src=".$urlCC." title='Jokul Credit Card' height='350' width='100%'></iframe></div>";
+    
+        return $url;
     }
 
-    public function init_api_cc() {
-        $order = JokulCreditCardModule::createNewOrder();
-        
+    public function process_payment($order_id)
+    {
+        global $woocommerce;
+
+        $order  = wc_get_order($order_id);
         $amount = $order->order_total;
         $itemQty = array();
         
@@ -161,8 +130,12 @@ class JokulCreditCardModule extends WC_Payment_Gateway
         $response = $this->creditCardService -> generated($config, $params);
         if( !is_wp_error( $response )) {
             if (!isset($response['error']['message']) && isset($response['credit_card_payment_page']['url'])) {
-                echo "<iframe style='border:none' frameBorder='0' src=".$response['credit_card_payment_page']['url']." title='Jokul Credit Card' height='350' width='100%'></iframe>";
+                update_post_meta('12', 'ccPageUrl', $response['credit_card_payment_page']['url']);
                 JokulCreditCardModule::addDb($response, $amount);
+                return array(
+                    'result' => 'success',
+                    'redirect' => wc_get_page_permalink('checkout')."?cc=show"
+                );
             } else {
                 wc_add_notice('There is something wrong. Please try again.', 'error');
             }
@@ -246,34 +219,10 @@ class JokulCreditCardModule extends WC_Payment_Gateway
         <?php
     }
 
-    public function payment_fields() {
-        global $woocommerce;
-        $chosen_payment_method     = WC()->session->get('chosen_payment_method');
-        $post_data = $this->get_post_data();
-        $post = json_decode(json_encode($post_data), true);
-        if ($chosen_payment_method == 'jokul_creditcard') {
-            if (isset($post['security'])) {
-
-                $postDetail = array();
-                $vars = explode('&', $post['post_data']);
-                foreach ($vars as $k => $value) {
-                    $v = explode('=', urldecode($value));
-                    $postDetail[$v[0]] = $v[1];
-                }
-                
-                if ($postDetail['billing_first_name'] != '' 
-                && $postDetail['billing_last_name'] != '' 
-                && $postDetail['billing_address_1'] != '' 
-                && $postDetail['billing_city'] != ''
-                && $postDetail['billing_postcode'] != ''
-                && $postDetail['billing_phone'] != ''
-                && $postDetail['billing_email'] != ''
-                && filter_var($postDetail['billing_email'], FILTER_VALIDATE_EMAIL)) {
-                    $this->init_api_cc();
-                } else {
-                    wc_add_notice('Please fill in all the required fields with valid data', 'error');
-                }
-            }
+    public function payment_fields() 
+    {
+        if ($this->paymentDescription) {
+            echo wpautop(wp_kses_post($this->paymentDescription));
         }
     }
 

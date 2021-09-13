@@ -3,7 +3,7 @@
  * Plugin Name: Jokul - WooCommerce
  * Plugin URI: http://www.doku.com
  * Description: Accept payment through various payment channels with Jokul. Make it easy for your customers to purchase on your store.
- * Version: 1.1.3
+ * Version: 1.1.4
  * Author: DOKU
  * Author URI: http://www.doku.com
  * WC requires at least: 2.2
@@ -135,34 +135,6 @@ function order_update_status()
 	$notificationService = new JokulNotificationService();
 	$response = $notificationService->getNotification();
 	return $response;
-}
-
-add_filter('woocommerce_order_button_html', 'remove_place_order_button_for_specific_payments');
-function remove_place_order_button_for_specific_payments($button)
-{
-	$targeted_payments_methods = array('jokul_creditcard');
-	$chosen_payment_method     = WC()->session->get('chosen_payment_method');
-
-	if (in_array($chosen_payment_method, $targeted_payments_methods) && !is_wc_endpoint_url()) {
-		$button = '';
-	}
-	return $button;
-}
-
-add_action('wp_footer', 'custom_checkout_jquery_script');
-function custom_checkout_jquery_script()
-{
-	if (is_checkout() && !is_wc_endpoint_url()) :
-?>
-		<script type="text/javascript">
-			jQuery(function($) {
-				$('form.checkout').on('change', 'input[name="payment_method"]', function() {
-					$(document.body).trigger('update_checkout');
-				});
-			});
-		</script>
-	<?php
-	endif;
 }
 
 add_action('woocommerce_thankyou', 'thank_you_page_credit_card', 1, 10);
