@@ -45,7 +45,7 @@ class JokulCreditCardService {
             "additional_info" => array (
                 "integration" => array (
                     "name" => "woocommerce-plugin",
-                    "version" => "1.0.1"
+                    "version" => "1.2.0"
                 )
             )
         );
