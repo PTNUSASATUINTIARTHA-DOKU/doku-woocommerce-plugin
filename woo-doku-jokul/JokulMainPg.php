@@ -66,6 +66,7 @@ function jokul_init_gateway_class()
 				$methods[] = 'JokulPermataVaModule';
 				$methods[] = 'JokulAlfaO2OModule';
 				$methods[] = 'JokulCreditCardModule';
+				$methods[] = 'JokulBriVaModule';
 
 				return $methods;
 			}
