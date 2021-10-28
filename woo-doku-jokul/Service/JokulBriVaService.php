@@ -28,7 +28,7 @@ class JokulBriVaService
             "additional_info" => array(
                 "integration" => array(
                     "name" => "woocommerce-plugin",
-                    "version" => "1.2.0"
+                    "version" => "1.1.5"
                 )
             )
         );

@@ -66,10 +66,12 @@ class JokulCreditCardModule extends WC_Payment_Gateway
         </script>
         <?php
     
-        $urlCC= get_post_meta('12', 'ccPageUrl', true);
-    
-        $url = "<div id='align_center'><iframe style='border:none' frameBorder='0' src=".$urlCC." title='Jokul Credit Card' height='350' width='100%'></iframe></div>";
-    
+        $url = "";
+        if ( is_singular() && in_the_loop() && is_main_query() ) {
+            $urlCC= get_post_meta('12', 'ccPageUrl', true);
+            $url = "<div id='align_center'><iframe style='border:none' frameBorder='0' src=".$urlCC." title='Jokul Credit Card' height='350' width='100%'></iframe></div>";
+        }
+             
         return $url;
     }
 
