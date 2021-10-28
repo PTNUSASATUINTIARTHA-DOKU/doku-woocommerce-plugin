@@ -28,7 +28,7 @@ class JokulDokuVaService
             "additional_info" => array(
                 "integration" => array(
                     "name" => "woocommerce-plugin",
-                    "version" => "1.1.5"
+                    "version" => "1.2.1"
                 )
             )
         );
