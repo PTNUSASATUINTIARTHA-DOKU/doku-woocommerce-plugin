@@ -24,7 +24,7 @@ require_once(DOKU_JOKUL_PLUGIN_PATH . '/Module/JokulPermataVaModule.php');
 require_once(DOKU_JOKUL_PLUGIN_PATH . '/Module/JokulAlfaO2OModule.php');
 require_once(DOKU_JOKUL_PLUGIN_PATH . '/Module/JokulCreditCardModule.php');
 require_once(DOKU_JOKUL_PLUGIN_PATH . '/Module/JokulBriVaModule.php');
-
+require_once(DOKU_JOKUL_PLUGIN_PATH . '/Module/JokulCheckoutModule.php');
 
 //API End Point
 require_once(DOKU_JOKUL_PLUGIN_PATH . '/Service/JokulNotificationService.php');
