@@ -38,7 +38,7 @@ class JokulCheckoutService {
             "additional_info" => array (
                 "integration" => array (
                     "name" => "woocommerce-plugin",
-                    "version" => "1.3.0"
+                    "version" => "1.3.1"
                 )
             )
         );
