@@ -43,13 +43,15 @@ class JokulCheckoutModule extends WC_Payment_Gateway
         add_action('woocommerce_update_options_payment_gateways_' . $this->id, array($this, 'process_admin_options'));
 
         $haystack = explode("&", $_SERVER['QUERY_STRING']);
-        $chosen_payment_method = WC()->session->get('chosen_payment_method');
-        if ($chosen_payment_method == 'jokul_checkout') {
-            if ($haystack[1] == 'jokul=show') {
-                add_filter('the_title',  array($this, 'woo_title_order_pending'));
-                add_action('woocommerce_thankyou_' . $this->id, array($this, 'thank_you_page_pending'), 1, 10);
-            } else {
-                add_filter('the_title',  array($this, 'woo_title_order_received'));
+        if( WC()->session != null ){
+                $chosen_payment_method = WC()->session->get('chosen_payment_method');
+            if ($chosen_payment_method == 'jokul_checkout') {
+                if ($haystack[1] == 'jokul=show') {
+                    add_filter('the_title',  array($this, 'woo_title_order_pending'));
+                    add_action('woocommerce_thankyou_' . $this->id, array($this, 'thank_you_page_pending'), 1, 10);
+                } else {
+                    add_filter('the_title',  array($this, 'woo_title_order_received'));
+                }
             }
         }
 
