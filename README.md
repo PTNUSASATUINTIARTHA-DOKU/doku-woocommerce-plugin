@@ -28,6 +28,7 @@ This `doku_log` is useful to help simplify the process of checking if an issue o
 
 ## Payment Channels Supported
 
+**Jokul Direct**
 1. Virtual Account:
     - BCA VA
     - Bank Mandiri VA
@@ -36,6 +37,8 @@ This `doku_log` is useful to help simplify the process of checking if an issue o
 
 2. Credit Card
 3. Alfamart O2O
+
+**Jokul Checkout**
 
 ## How to Install
 
