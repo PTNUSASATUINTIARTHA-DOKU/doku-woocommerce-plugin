@@ -15,21 +15,19 @@ class JokulPermataVaService {
             ),
             "virtual_account_info" => array(
                 "expired_time" => $params['expiryTime'],
-                "reusable_status" => $params['reusableStatus'],
-                "info1" => $params['info1'],
-                "info2" => $params['info2'],
-                "info3" => $params['info3'],
+                "reusable_status" => $params['reusableStatus']
             ),
             "customer" => array(
                 "name" => trim($params['customerName']),
                 "email" => $params['customerEmail']
+            ),
+            "additional_info" => array(
+                "integration" => array(
+                    "name" => "woocommerce-plugin",
+                    "version" => "1.3.4"
+                ),
+                "method" => "Jokul Direct"
             )
-//            "additional_info" => array (
-//                "integration" => array (
-//                    "name" => "woocommerce-plugin",
-//                    "version" => "1.0.1"
-//                )
-//            )
         );
 
         $this->jokulUtils = new JokulUtils();
@@ -68,6 +66,11 @@ class JokulPermataVaService {
         $responseJson = curl_exec($ch);
 
         curl_close($ch);
+
+        $this->jokulUtils->doku_log($this, 'PERMATA VA REQUEST : '.json_encode($data), $params['invoiceNumber']);
+        $this->jokulUtils->doku_log($this, 'PERMATA VA REQUEST URL : '.$url, $params['invoiceNumber']);
+        $this->jokulUtils->doku_log($this, 'PERMATA VA RESPONSE : ' . $responseJson, $params['invoiceNumber']);
+
 
         if (is_string($responseJson)) {
             return json_decode($responseJson, true);

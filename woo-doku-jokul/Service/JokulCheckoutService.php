@@ -33,13 +33,17 @@ class JokulCheckoutService {
                 "email" => $params['customerEmail'],
                 "phone" => $params['phone'],
                 "country" => $params['country'],
+                "postcode" => $params['postcode'],
+                "state" => $params['state'],
+                "city" => $params['city'],
                 "address" => $params['address']
             ),
             "additional_info" => array (
                 "integration" => array (
                     "name" => "woocommerce-plugin",
-                    "version" => "1.3.3"
-                )
+                    "version" => "1.3.4"
+                ),
+                "method" => "Jokul Checkout"
             )
         );
 
