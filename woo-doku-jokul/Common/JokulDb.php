@@ -21,7 +21,7 @@ class JokulDb {
         global $wpdb;
         $db_prefix = $wpdb->prefix;
 
-        $query="SELECT * FROM ".$db_prefix."jokuldb where invoice_number='".$order_id."' and amount='".$amount."' and payment_code='".$vaNumber."' ORDER BY trx_id DESC LIMIT 1";
+        $query="SELECT * FROM ".$db_prefix."jokuldb where invoice_number='".$order_id."' and amount='".$amount."' ORDER BY trx_id DESC LIMIT 1";
         $result = $wpdb->get_var($query);
 
         return $result;
@@ -31,7 +31,7 @@ class JokulDb {
     {
         global $wpdb;
         $db_prefix = $wpdb->prefix;
-        $query="SELECT payment_code FROM ".$db_prefix."jokuldb where invoice_number='".$order_id."' and amount='".$amount."' and payment_code='".$vaNumber."' and process_type = 'PAYMENT_COMPLETED' ORDER BY trx_id DESC LIMIT 1";
+        $query="SELECT payment_code FROM ".$db_prefix."jokuldb where invoice_number='".$order_id."' and amount='".$amount."' and process_type = 'PAYMENT_COMPLETED' ORDER BY trx_id DESC LIMIT 1";
         $result = $wpdb->get_var($query);
         return $result;
     }

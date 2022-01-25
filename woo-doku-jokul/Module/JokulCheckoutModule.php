@@ -43,17 +43,70 @@ class JokulCheckoutModule extends WC_Payment_Gateway
         add_action('woocommerce_update_options_payment_gateways_' . $this->id, array($this, 'process_admin_options'));
 
         $haystack = explode("&", $_SERVER['QUERY_STRING']);
-        $chosen_payment_method = WC()->session->get('chosen_payment_method');
-        if ($chosen_payment_method == 'jokul_checkout') {
-            if ($haystack[1] == 'jokul=show') {
-                add_filter('the_title',  array($this, 'woo_title_order_pending'));
-                add_action('woocommerce_thankyou_' . $this->id, array($this, 'thank_you_page_pending'), 1, 10);
-            } else {
-                add_filter('the_title',  array($this, 'woo_title_order_received'));
+        if( WC()->session != null ){
+                $chosen_payment_method = WC()->session->get('chosen_payment_method');
+            if ($chosen_payment_method == 'jokul_checkout') {
+                if ($haystack[1] == 'jokul=show') {
+                    add_filter('the_title',  array($this, 'woo_title_order_pending'));
+                    add_action('woocommerce_thankyou_' . $this->id, array($this, 'thank_you_page_pending'), 1, 10);
+                } else {
+                    add_filter('the_title',  array($this, 'woo_title_order_received'));
+                }
             }
         }
 
-        $this->orderId;
+    }
+
+    public function get_order_data($order)
+    {
+        $order_post = get_post($order->id);
+        $dp = wc_get_price_decimals();
+        $order_data = array();
+        // add line items
+        foreach ($order->get_items() as $item_id => $item) {
+            $product = $order->get_product_from_item($item);
+            $term_names = wp_get_post_terms( $item->get_product_id(), 'product_cat', array('fields' => 'names') );
+            $categories_string = implode(',', $term_names);
+            $product_id = null;
+            $product_sku = null;
+            // Check if the product exists.
+            if (is_object($product)) {
+                $product_id = isset($product->variation_id) ? $product->variation_id : $product->id;
+                $product_sku = $product->get_sku();
+            }
+            $meta = new WC_Order_Item_Meta($item, $product);
+            $item_meta = array();
+            foreach ($meta->get_formatted(null) as $meta_key => $formatted_meta) {
+                $item_meta[] = array('key' => $meta_key, 'label' => $formatted_meta['label'], 'value' => $formatted_meta['value']);
+            }
+            $order_data[] = array('price' => wc_format_decimal($order->get_item_total($item, false, false), $dp), 'quantity' => wc_stock_amount($item['qty']), 'name' => $item['name'], 'sku' => $product_sku, 'category' => $categories_string);
+        }
+        // Add shipping.
+        foreach ($order->get_shipping_methods() as $shipping_item_id => $shipping_item) {
+            if (wc_format_decimal($shipping_item['cost'], $dp) > 0) {
+                $order_data[] = array('name' => $shipping_item['name'], 'price' => wc_format_decimal($shipping_item['cost'], $dp), 'quantity' => '1', 'sku' => '0', 'category' => 'uncategorized');
+            }
+        }
+        // Add taxes.
+        foreach ($order->get_tax_totals() as $tax_code => $tax) {
+            if (wc_format_decimal($tax->amount, $dp) > 0) {
+                $order_data[] = array('name' => $tax->label, 'price' => wc_format_decimal($tax->amount, $dp), 'quantity' => '1', 'sku' => '0', 'category' => 'uncategorized');
+            }
+        }
+        // Add fees.
+        foreach ($order->get_fees() as $fee_item_id => $fee_item) {
+            if (wc_format_decimal($order->get_line_total($fee_item), $dp) > 0) {
+                $order_data[] = array('name' => $fee_item['name'], 'price' => wc_format_decimal($order->get_line_total($fee_item), $dp), 'quantity' => '1', 'sku' => '0', 'category' => 'uncategorized');
+            }
+        }
+        // Add coupons.
+        foreach ($order->get_items('coupon') as $coupon_item_id => $coupon_item) {
+            if (wc_format_decimal($coupon_item['discount_amount'], $dp) > 0) {
+                $order_data[] = array('name' => $coupon_item['name'], 'price' => wc_format_decimal($coupon_item['discount_amount'], $dp), 'quantity' => '1', 'sku' => '0', 'category' => 'uncategorized');
+            }
+        }
+        $order_data = apply_filters('woocommerce_cli_order_data', $order_data);
+        return $order_data;
     }
 
     public function process_payment($order_id)
@@ -62,14 +115,7 @@ class JokulCheckoutModule extends WC_Payment_Gateway
 
         $order  = wc_get_order($order_id);
         $amount = $order->order_total;
-        $itemQty = array();
-
-        foreach ($order->get_items() as $item_id => $item) {
-            $_product = wc_get_product($item->get_product_id());
-            $Price = $_product->get_price();
-
-            $itemQty[] = array('name' => $item->get_name(), 'price' => $Price, 'quantity' => $item->get_quantity());
-        }
+        $order_data = $order->get_data();
 
         $params = array(
             'customerId' => 0 !== $order->get_customer_id() ? $order->get_customer_id() : null,
@@ -81,8 +127,11 @@ class JokulCheckoutModule extends WC_Payment_Gateway
             'phone' => $order->billing_phone,
             'country' => $order->billing_country,
             'address' => $order->shipping_address_1,
-            'itemQty' => $itemQty,
+            'itemQty' => $this->get_order_data($order),
             'payment_method' => $this->payment_method,
+            'postcode' => $order_data['billing']['postcode'],
+            'state' => $order_data['billing']['state'],
+            'city' => $order_data['billing']['city'],
             'info1' => '',
             'info2' => '',
             'info3' => '',
@@ -212,7 +261,6 @@ class JokulCheckoutModule extends WC_Payment_Gateway
         
         $this->jokulUtils = new JokulUtils();
         $getIp = $this->jokulUtils->getIpaddress();
-$this->jokulUtils->doku_log($jokulUtils, 'Response   : ' . $response['response']['order']['invoice_number'], $raw_notification['order']['invoice_number']);
         $trx = array();
         $trx['invoice_number']          = $response['response']['order']['invoice_number'];
         $trx['result_msg']              = null;
@@ -226,7 +274,6 @@ $this->jokulUtils->doku_log($jokulUtils, 'Response   : ' . $response['response']
         $trx['process_datetime']        = gmdate("Y-m-d H:i:s");
         $trx['message']                 = "Payment Pending message come from Jokul. Success : completed";
         
-        $this->jokulUtils->doku_log($jokulUtils, 'INVOICE NUMBER Data  : ' . $response['order']['invoice_number'], $raw_notification['order']['invoice_number']);
 
         $this->jokulDb = new JokulDb();
         $this->jokulDb->addData($trx);

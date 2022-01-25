@@ -27,7 +27,6 @@ class JokulCreditCardService {
             ),
             "order" => array(
                 "invoice_number" => $params['invoiceNumber'],
-                "line_items" => $params['itemQty'],
                 "amount" => $params['amount'],
                 "failed_url" => $params['urlFail'],
                 "callback_url" => $params['urlSuccess'],
@@ -45,8 +44,9 @@ class JokulCreditCardService {
             "additional_info" => array (
                 "integration" => array (
                     "name" => "woocommerce-plugin",
-                    "version" => "1.3.1"
-                )
+                    "version" => "1.3.4"
+                ),
+                "method" => "Jokul Direct"
             )
         );
 
