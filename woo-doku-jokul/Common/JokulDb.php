@@ -15,6 +15,12 @@ class JokulDb {
                     
         $wpdb->query("INSERT INTO ".$wpdb->prefix."jokuldb SET $SQL");
     } 
+    
+    function updateData($invoice, $status) 
+    {
+        global $wpdb;
+        $wpdb->query("UPDATE ".$wpdb->prefix."jokuldb SET process_type='".$status."' WHERE invoice_number='".$invoice."'");
+    } 
 
     function checkTrx($order_id, $amount, $vaNumber)
     {

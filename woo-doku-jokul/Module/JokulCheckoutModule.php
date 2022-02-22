@@ -1,6 +1,7 @@
 <?php
 
 require_once(DOKU_JOKUL_PLUGIN_PATH . '/Service/JokulCheckoutService.php');
+require_once(DOKU_JOKUL_PLUGIN_PATH . '/Service/JokulCheckStatusService.php');
 require_once(DOKU_JOKUL_PLUGIN_PATH . '/Common/JokulDb.php');
 require_once(DOKU_JOKUL_PLUGIN_PATH . '/Common/JokulUtils.php');
 
@@ -84,7 +85,7 @@ class JokulCheckoutModule extends WC_Payment_Gateway
         // Add shipping.
         foreach ($order->get_shipping_methods() as $shipping_item_id => $shipping_item) {
             if (wc_format_decimal($shipping_item['cost'], $dp) > 0) {
-                $order_data[] = array('name' => $shipping_item['name'], 'price' => wc_format_decimal($shipping_item['cost'], $dp), 'quantity' => '1', 'sku' => '0', 'category' => 'uncategorized');
+                $order_data[] = array('name' => str_replace(array( '(', ')' ), '', $shipping_item['name']), 'price' => wc_format_decimal($shipping_item['cost'], $dp), 'quantity' => '1', 'sku' => '0', 'category' => 'uncategorized');
             }
         }
         // Add taxes.
@@ -152,6 +153,9 @@ class JokulCheckoutModule extends WC_Payment_Gateway
             'shared_key' => $sharedKey,
             'environment' => $this->environmentPaymentJokul
         );
+        
+        update_post_meta($order_id, 'checkoutParams', $params);
+        update_post_meta($order_id, 'checkoutConfig', $config);
 
         $this->jokulCheckoutService = new JokulCheckoutService();
         $response = $this->jokulCheckoutService->generated($config, $params);
@@ -306,19 +310,43 @@ class JokulCheckoutModule extends WC_Payment_Gateway
             return $title;
         }
     }
+    
     function woo_title_order_received($title)
     {
         global $woocommerce;
 
-        if (
-            function_exists('is_order_received_page')
-            && is_order_received_page()
-            && $title === 'Order received'
-        ) {
+        if (function_exists('is_order_received_page') && is_order_received_page() && $title === 'Order received') {
             $haystack = explode("&", $_SERVER['QUERY_STRING']);
             $order  = wc_get_order($haystack[1]);
             $woocommerce->cart->empty_cart();
             wc_reduce_stock_levels($order->get_id());
+
+            $paramsValue       = get_post_meta($order->get_id(), 'checkoutParams', true);
+            $configValue       = get_post_meta($order->get_id(), 'checkoutConfig', true);
+
+            $this->jokulCheckStatusService = new JokulCheckStatusService();
+            $response = $this->jokulCheckStatusService->generated($configValue, $paramsValue);
+
+            if (!is_wp_error($response)) {
+                if (strtolower($response['acquirer']['id']) == strtolower('OVO')) {
+                    $jokulUtils = new JokulUtils();
+                    $jokulDb = new JokulDb();
+                    $jokulUtils->doku_log($jokulUtils, 'Jokul Acquirer : ' . $response['acquirer']['id'], $paramsValue['invoiceNumber']);
+                    if (strtolower($response['transaction']['status']) == strtolower('SUCCESS')) {
+                        $jokulDb->updateData($paramsValue['invoiceNumber'], $response['transaction']['status']);
+                        $order = wc_get_order($paramsValue['invoiceNumber']);
+                        $order->update_status('processing');
+                        $order->payment_complete();
+                        $jokulUtils->doku_log($jokulUtils, 'Jokul Check Status Update Status : ' . 'processing', $paramsValue['invoiceNumber']);
+                    } else {
+                        $jokulDb->updateData($paramsValue['invoiceNumber'], $response['transaction']['status']);
+                        $order = wc_get_order($paramsValue['invoiceNumber']);
+                        $order->update_status('failed');
+                        $jokulUtils->doku_log($jokulUtils, 'Jokul Check Status Update Status : ' . 'failed', $paramsValue['invoiceNumber']);
+                    }
+                }
+            }
+
             return "Order Received";
         } else {
             return $title;

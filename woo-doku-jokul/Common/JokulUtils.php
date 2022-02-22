@@ -3,6 +3,17 @@ define("HTML_EMAIL_HEADERS", array('Content-Type: text/html; charset=UTF-8'));
 
 class JokulUtils
 {
+    public function generateSignatureCheckStatus($headers, $secret)
+    {
+        $rawSignature = "Client-Id:" . $headers['Client-Id'] . "\n"
+            . "Request-Id:" . $headers['Request-Id'] . "\n"
+            . "Request-Timestamp:" . $headers['Request-Timestamp'] . "\n"
+            . "Request-Target:" . $headers['Request-Target'];
+
+        $signature = base64_encode(hash_hmac('sha256', $rawSignature, htmlspecialchars_decode($secret), true));
+        return 'HMACSHA256=' . $signature;
+    }
+    
     public function generateSignature($headers, $body, $secret)
     {
         $digest = base64_encode(hash('sha256', $body, true));

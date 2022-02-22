@@ -28,7 +28,7 @@ class JokulBriVaService
             "additional_info" => array(
                 "integration" => array(
                     "name" => "woocommerce-plugin",
-                    "version" => "1.3.4"
+                    "version" => "1.3.5"
                 ),
                 "method" => "Jokul Direct"
             )
