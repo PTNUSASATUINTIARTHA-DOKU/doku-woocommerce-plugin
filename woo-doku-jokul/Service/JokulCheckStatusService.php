@@ -45,7 +45,6 @@ class JokulCheckStatusService {
 
         curl_close($ch);
 
-        $this->jokulUtils->doku_log($this, 'Jokul Check Status REQUEST : ' . json_encode($params), $params['invoiceNumber']);
         $this->jokulUtils->doku_log($this, 'Jokul Check Status REQUEST URL : ' . $url, $params['invoiceNumber']);
         $this->jokulUtils->doku_log($this, 'Jokul Check Status RESPONSE : ' . json_encode($responseJson, JSON_PRETTY_PRINT), $params['invoiceNumber']);
 

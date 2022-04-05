@@ -33,6 +33,10 @@ class JokulAlfaO2OModule extends WC_Payment_Gateway
         $this->footerMessage = $this->get_option('footer_message');
         $paymentDescription = $this->get_option('payment_description');
 
+        $this->sac_check = $mainSettings['sac_check' ];
+        $this->sac_textbox = $mainSettings['sac_textbox'];
+
+
         if (empty($this->$paymentDescription)) {
             $this->paymentDescription   = 'Bayar pesanan dengan pembayaran melalui Alfamart';
         }
@@ -139,7 +143,11 @@ class JokulAlfaO2OModule extends WC_Payment_Gateway
             'info2' => '',
             'info3' => '',
             'reusableStatus' => false,
-            'footerMessage' => $this->footerMessage
+            'woo_version' => $woocommerce->version,
+            'footerMessage' => $this->footerMessage,
+            'sac_check' => $this->sac_check,
+            'sac_textbox' => $this->sac_textbox,
+
         );
 
         if ($this->environmentPaymentJokul == 'false') {

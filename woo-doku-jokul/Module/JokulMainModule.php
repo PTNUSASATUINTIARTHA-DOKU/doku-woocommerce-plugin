@@ -71,4 +71,30 @@ class JokulMainModule extends WC_Payment_Gateway
             return $gateways;
         }
     }
+
+    public function admin_options()
+    {
+        parent::admin_options();
+        ?>
+        <script type="text/javascript">
+            jQuery(document).ready(function($) {
+                checkbox_sac_select();
+                
+                $('#woocommerce_<?= $this->id; ?>_sac_check').click(function() {
+                    checkbox_sac_select();
+                })
+
+                function checkbox_sac_select() {
+                    if($('#woocommerce_<?= $this->id; ?>_sac_check').is(':checked')) {
+                        $('table tr:last').fadeIn();
+                        $('#woocommerce_<?= $this->id; ?>_sac_textbox').prop('required',true);
+                    } else {
+                        $('table tr:last').fadeOut();
+                        $('#woocommerce_<?= $this->id; ?>_sac_textbox').prop('required',false);
+                    }
+                }; 
+            })
+        </script>
+        <?php
+    }
 }

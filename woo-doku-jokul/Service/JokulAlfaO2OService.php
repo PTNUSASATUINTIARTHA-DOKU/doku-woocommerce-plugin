@@ -8,8 +8,9 @@ class JokulAlfaO2OService
 
     public function generated($config, $params)
     {
+
         $header = array();
-        $data = array(
+        $data = $params['sac_check'] === 'yes' ? array(
             "order" => array(
                 "invoice_number" => $params['invoiceNumber'],
                 "amount" => $params['amount']
@@ -33,11 +34,44 @@ class JokulAlfaO2OService
             "additional_info" => array(
                 "integration" => array(
                     "name" => "woocommerce-plugin",
-                    "version" => "1.3.5"
+                    "version" => "1.3.6",
+                    "cms_version" => $params['woo_version']
+                ),
+                "account" => array(
+                    "id" =>  $params['sac_textbox']
                 ),
                 "method" => "Jokul Direct"
             )
-        );
+        ) : array(
+            "order" => array(
+                "invoice_number" => $params['invoiceNumber'],
+                "amount" => $params['amount']
+            ),
+            "online_to_offline_info" => array(
+                "expired_time" => $params['expiryTime'],
+                "reusable_status" => $params['reusableStatus'],
+                "info1" => $params['info1'],
+                "info2" => $params['info2'],
+                "info3" => $params['info3'],
+            ),
+            "alfa_info" => array(
+                "receipt" => array(
+                    "footer_message" => $params['footerMessage'],
+                )
+            ),
+            "customer" => array(
+                "name" => trim($params['customerName']),
+                "email" => $params['customerEmail']
+            ),
+            "additional_info" => array(
+                "integration" => array(
+                    "name" => "woocommerce-plugin",
+                    "version" => "1.3.6",
+                    "cms_version" => $params['woo_version']
+                ),
+                "method" => "Jokul Direct"
+            )
+        ) ;
 
         $this->jokulUtils = new JokulUtils();
 
