@@ -31,6 +31,9 @@ class JokulCreditCardModule extends WC_Payment_Gateway
         $this->channelName = $this->get_option('channel_name');
         $paymentDescription = $this->get_option('payment_description');
 
+        $this->sac_check = $mainSettings['sac_check' ];
+        $this->sac_textbox = $mainSettings['sac_textbox'];
+
         $this->language = $this->get_option('language_payment_jokul');
         $this->backgroundColor = $this->get_option('payment_background_color');
         $this->fontColor = $this->get_option('payment_font_color');
@@ -111,9 +114,12 @@ class JokulCreditCardModule extends WC_Payment_Gateway
             'info1' => '',
             'info2' => '',
             'info3' => '',
+            'woo_version' => $woocommerce->version,
             'reusableStatus' => false,
             'urlSuccess' => $this->get_return_url($order),
-            'urlFail' => wc_get_page_permalink('checkout')."?status=failed"
+            'urlFail' => wc_get_page_permalink('checkout')."?status=failed",
+            'sac_check' => $this->sac_check,
+            'sac_textbox' => $this->sac_textbox,
         );  
 
         if ($this->environmentPaymentJokul == 'false') {

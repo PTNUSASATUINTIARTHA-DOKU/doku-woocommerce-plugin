@@ -34,6 +34,9 @@ class JokulCheckoutModule extends WC_Payment_Gateway
         $paymentDescription = $this->get_option('payment_description');
 
         $this->payment_method = $this->get_option('payment_method');
+        
+        $this->sac_check = $mainSettings['sac_check' ];
+        $this->sac_textbox = $mainSettings['sac_textbox'];
 
         if (empty($paymentDescription)) {
             $this->paymentDescription   = 'Bayar Pesanan Dengan Jokul Checkout';
@@ -80,7 +83,9 @@ class JokulCheckoutModule extends WC_Payment_Gateway
             foreach ($meta->get_formatted(null) as $meta_key => $formatted_meta) {
                 $item_meta[] = array('key' => $meta_key, 'label' => $formatted_meta['label'], 'value' => $formatted_meta['value']);
             }
-            $order_data[] = array('price' => wc_format_decimal($order->get_item_total($item, false, false), $dp), 'quantity' => wc_stock_amount($item['qty']), 'name' => $item['name'], 'sku' => $product_sku, 'category' => $categories_string);
+            $order_data[] = array('price' => wc_format_decimal($order->get_item_total($item, false, false), $dp), 'quantity' => wc_stock_amount($item['qty']), 'name' => str_replace(array( '(', ')' ), '', $item['name']), 'sku' => $product_sku, 'category' => $categories_string);
+
+            
         }
         // Add shipping.
         foreach ($order->get_shipping_methods() as $shipping_item_id => $shipping_item) {
@@ -136,8 +141,11 @@ class JokulCheckoutModule extends WC_Payment_Gateway
             'info1' => '',
             'info2' => '',
             'info3' => '',
+            'woo_version' => $woocommerce->version,
             'reusableStatus' => false,
             'callback_url' => $this->get_return_url($order) . '&' . $order_id,
+            'sac_check' => $this->sac_check,
+            'sac_textbox' => $this->sac_textbox,
         );
 
         if ($this->environmentPaymentJokul == 'false') {

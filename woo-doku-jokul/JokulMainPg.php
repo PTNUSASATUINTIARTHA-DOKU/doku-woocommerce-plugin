@@ -3,7 +3,7 @@
  * Plugin Name: Jokul - WooCommerce
  * Plugin URI: http://www.doku.com
  * Description: Accept payment through various payment channels with Jokul. Make it easy for your customers to purchase on your store.
- * Version: 1.3.5
+ * Version: 1.3.6
  * Author: DOKU
  * Author URI: http://www.doku.com
  * WC requires at least: 2.2
@@ -137,6 +137,22 @@ function order_update_status()
 	$notificationService = new JokulNotificationService();
 	$response = $notificationService->getNotification();
 	return $response;
+}
+
+add_action('rest_api_init', 'qris_register_route');
+function qris_register_route()
+{
+	register_rest_route('jokul', 'qrisnotification', array(
+		'methods' => 'POST',
+		'callback' => 'order_update_status_qris',
+		'permission_callback' => '__return_true'
+	));
+}
+
+function order_update_status_qris()
+{
+	$qrisNotificationService = new JokulQrisNotificationService();
+	$response = $qrisNotificationService->getQrisNotification();
 }
 
 add_action('woocommerce_thankyou', 'thank_you_page_credit_card', 1, 10);

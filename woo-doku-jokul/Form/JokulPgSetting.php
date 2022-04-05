@@ -68,13 +68,40 @@ return apply_filters(
             'default' => __(get_bloginfo('url').'/wp-json/jokul/notification', 'jokul'),
         ),
 
+        'notif_url_qris' => array(
+            'style' => '',
+            'title' => __('QRIS Notification URL:', 'jokul'),
+            'type' => 'text',
+            'custom_attributes' => array('readonly' => 'readonly'),
+            'description' => __('Set this URL to your Jokul Back Office', 'jokul'),
+            'default' => __(get_bloginfo('url').'/wp-json/jokul/qrisnotification', 'jokul'),
+        ),
+
         'email_notifications' => array(
             'title' => __('Email Notifications :', 'jokul'),
             'type' => 'checkbox',
             'label' => __('Send email instruction to customer for virtual account and convenience store', 'jokul'),
             'default' => 'yes'
         ),
-
+        'sac_check' => array(
+            'title' => __('Enabling Sub Account :', 'jokul'),
+            'type' => 'checkbox',
+            'label' => __('Enable Your Sub Account in Woocomerce', 'jokul'),
+            'description' => __( 'Enable Your Sub Account in Woocomerce', 'jokul' ),
+            'desc_tip'    => true,
+            'default' => 'no'
+        ),
+        'sac_textbox' => array(
+            'style' => '',
+            'class'         => array('jokul_class'),
+            'title' => __('On Behalf Of:', 'jokul'),
+            'type' => 'text',
+            'description' => __('Route to yout Jokul Sub Account ID. All transactions will be linked to this account', 'jokul'),
+            'placeholder' => _x('e.g. SAC-Xxxxxx', 'placeholder', 'jokul'),
+            'default' => __('', 'jokul'),
+            'required'    => true
+        ),
     )
 );
+
 ?>
