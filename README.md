@@ -39,6 +39,7 @@ This `doku_log` is useful to help simplify the process of checking if an issue o
 3. Alfamart O2O
 
 **Jokul Checkout**
+Easily embed our well-crafted yet customizable Jokul payment page for your website. With a single integration, you can start accepting payments on your web. With a single integration, Jokul Checkout allows you to accept payments from various Jokul payment channels. You can check t
 
 ## How to Install
 
@@ -104,4 +105,6 @@ To show the Alfamart O2O options to your customers, simply toggle the channel th
 ![Alfamart O2O Configuration Details](https://i.ibb.co/kDMrm45/Screen-Shot-2021-05-06-at-14-40-29.png)
 
 You can also click Manage to edit how the Alfamart O2O channels will be shown to your customers by clicking the Manage button.
+
+
 
