@@ -31,6 +31,10 @@ class JokulDokuVaModule extends WC_Payment_Gateway
         $this->enabled = $this->get_option('enabled');
         $this->channelName = $this->get_option('channel_name');
         $paymentDescription = $this->get_option('payment_description');
+
+        $this->sac_check = $mainSettings['sac_check' ];
+        $this->sac_textbox = $mainSettings['sac_textbox'];
+
         if (empty($paymentDescription)) {
             $this->paymentDescription   = 'Bayar pesanan dengan transfer dari bank lain';
         } else {
@@ -138,7 +142,10 @@ class JokulDokuVaModule extends WC_Payment_Gateway
             'info1' => '',
             'info2' => '',
             'info3' => '',
-            'reusableStatus' => false
+            'woo_version' => $woocommerce->version,
+            'reusableStatus' => false,
+            'sac_check' => $this->sac_check,
+            'sac_textbox' => $this->sac_textbox,
         );
 
         if ($this->environmentPaymentJokul == 'false') {
