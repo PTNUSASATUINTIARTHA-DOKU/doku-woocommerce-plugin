@@ -83,32 +83,32 @@ class JokulCheckoutModule extends WC_Payment_Gateway
             foreach ($meta->get_formatted(null) as $meta_key => $formatted_meta) {
                 $item_meta[] = array('key' => $meta_key, 'label' => $formatted_meta['label'], 'value' => $formatted_meta['value']);
             }
-            $order_data[] = array('price' => wc_format_decimal($order->get_item_total($item, false, false), $dp), 'quantity' => wc_stock_amount($item['qty']), 'name' => str_replace(array( '(', ')' ), '', $item['name']), 'sku' => $product_sku, 'category' => $categories_string);
+            $order_data[] = array('price' => wc_format_decimal($order->get_item_total($item, false, false), $dp), 'quantity' => wc_stock_amount($item['qty']), 'name' => str_replace(array( '(', ')', ','), '', $item['name']), 'sku' => $product_sku, 'category' => $categories_string);
 
             
         }
         // Add shipping.
         foreach ($order->get_shipping_methods() as $shipping_item_id => $shipping_item) {
             if (wc_format_decimal($shipping_item['cost'], $dp) > 0) {
-                $order_data[] = array('name' => str_replace(array( '(', ')' ), '', $shipping_item['name']), 'price' => wc_format_decimal($shipping_item['cost'], $dp), 'quantity' => '1', 'sku' => '0', 'category' => 'uncategorized');
+                $order_data[] = array('name' => str_replace(array( '(', ')' ), '', $shipping_item['name']), 'price' => wc_format_decimal($shipping_item['cost'], $dp), 'quantity' => '1', 'sku' => 'ship-01', 'category' => 'uncategorized');
             }
         }
         // Add taxes.
         foreach ($order->get_tax_totals() as $tax_code => $tax) {
             if (wc_format_decimal($tax->amount, $dp) > 0) {
-                $order_data[] = array('name' => $tax->label, 'price' => wc_format_decimal($tax->amount, $dp), 'quantity' => '1', 'sku' => '0', 'category' => 'uncategorized');
+                $order_data[] = array('name' => $tax->label, 'price' => wc_format_decimal($tax->amount, $dp), 'quantity' => '1', 'sku' => 'tax-01', 'category' => 'uncategorized');
             }
         }
         // Add fees.
         foreach ($order->get_fees() as $fee_item_id => $fee_item) {
             if (wc_format_decimal($order->get_line_total($fee_item), $dp) > 0) {
-                $order_data[] = array('name' => $fee_item['name'], 'price' => wc_format_decimal($order->get_line_total($fee_item), $dp), 'quantity' => '1', 'sku' => '0', 'category' => 'uncategorized');
+                $order_data[] = array('name' => $fee_item['name'], 'price' => wc_format_decimal($order->get_line_total($fee_item), $dp), 'quantity' => '1', 'sku' => 'fee-01', 'category' => 'uncategorized');
             }
         }
         // Add coupons.
         foreach ($order->get_items('coupon') as $coupon_item_id => $coupon_item) {
             if (wc_format_decimal($coupon_item['discount_amount'], $dp) > 0) {
-                $order_data[] = array('name' => $coupon_item['name'], 'price' => wc_format_decimal($coupon_item['discount_amount'], $dp), 'quantity' => '1', 'sku' => '0', 'category' => 'uncategorized');
+                $order_data[] = array('name' => $coupon_item['name'], 'price' => wc_format_decimal($coupon_item['discount_amount'], $dp), 'quantity' => '1', 'sku' => 'coupon-01', 'category' => 'uncategorized');
             }
         }
         $order_data = apply_filters('woocommerce_cli_order_data', $order_data);
@@ -124,19 +124,19 @@ class JokulCheckoutModule extends WC_Payment_Gateway
         $order_data = $order->get_data();
 
         $params = array(
-            'customerId' => 0 !== $order->get_customer_id() ? $order->get_customer_id() : null,
+            'customerId' => 0 !== $order->get_customer_id() ? $order->get_customer_id() : preg_replace('/[^0-9]/', '', $order->billing_phone),
             'customerEmail' => $order->get_billing_email(),
             'customerName' => $order->get_billing_first_name() . " " . $order->get_billing_last_name(),
             'amount' => $amount,
             'invoiceNumber' => $order->get_order_number(),
             'expiryTime' => $this->expiredTime,
-            'phone' => $order->billing_phone,
+            'phone' => preg_replace('/[^0-9]/', '', $order->billing_phone),
             'country' => $order->billing_country,
             'address' => $order->shipping_address_1,
             'itemQty' => $this->get_order_data($order),
             'payment_method' => $this->payment_method,
             'postcode' => $order_data['billing']['postcode'],
-            'state' => $order_data['billing']['state'],
+            'state' => $order_data['billing']['state'] !== null ? $order_data['billing']['state'] : "",
             'city' => $order_data['billing']['city'],
             'info1' => '',
             'info2' => '',
