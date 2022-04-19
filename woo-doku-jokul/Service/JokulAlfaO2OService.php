@@ -34,7 +34,7 @@ class JokulAlfaO2OService
             "additional_info" => array(
                 "integration" => array(
                     "name" => "woocommerce-plugin",
-                    "version" => "1.3.6",
+                    "version" => "1.3.7",
                     "cms_version" => $params['woo_version']
                 ),
                 "account" => array(
@@ -66,7 +66,7 @@ class JokulAlfaO2OService
             "additional_info" => array(
                 "integration" => array(
                     "name" => "woocommerce-plugin",
-                    "version" => "1.3.6",
+                    "version" => "1.3.7",
                     "cms_version" => $params['woo_version']
                 ),
                 "method" => "Jokul Direct"
