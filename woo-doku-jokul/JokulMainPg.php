@@ -3,7 +3,7 @@
  * Plugin Name: Jokul - WooCommerce
  * Plugin URI: http://www.doku.com
  * Description: Accept payment through various payment channels with Jokul. Make it easy for your customers to purchase on your store.
- * Version: 1.3.7
+ * Version: 1.3.8
  * Author: DOKU
  * Author URI: http://www.doku.com
  * WC requires at least: 2.2

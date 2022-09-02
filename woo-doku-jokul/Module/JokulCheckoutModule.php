@@ -63,6 +63,7 @@ class JokulCheckoutModule extends WC_Payment_Gateway
 
     public function get_order_data($order)
     {
+        $pattern = "/[^A-Za-z0-9? .,_-]/";
         $order_post = get_post($order->id);
         $dp = wc_get_price_decimals();
         $order_data = array();
@@ -83,32 +84,32 @@ class JokulCheckoutModule extends WC_Payment_Gateway
             foreach ($meta->get_formatted(null) as $meta_key => $formatted_meta) {
                 $item_meta[] = array('key' => $meta_key, 'label' => $formatted_meta['label'], 'value' => $formatted_meta['value']);
             }
-            $order_data[] = array('price' => wc_format_decimal($order->get_item_total($item, false, false), $dp), 'quantity' => wc_stock_amount($item['qty']), 'name' => str_replace(array( '(', ')', ','), '', $item['name']), 'sku' => $product_sku, 'category' => $categories_string);
+            $order_data[] = array('price' => wc_format_decimal($order->get_item_total($item, false, false), $dp), 'quantity' => wc_stock_amount($item['qty']), 'name' => preg_replace($pattern, "", $item['name']), 'sku' => $product_sku, 'category' => $categories_string);
 
             
         }
         // Add shipping.
         foreach ($order->get_shipping_methods() as $shipping_item_id => $shipping_item) {
             if (wc_format_decimal($shipping_item['cost'], $dp) > 0) {
-                $order_data[] = array('name' => str_replace(array( '(', ')' ), '', $shipping_item['name']), 'price' => wc_format_decimal($shipping_item['cost'], $dp), 'quantity' => '1', 'sku' => 'ship-01', 'category' => 'uncategorized');
+                $order_data[] = array('name' => preg_replace($pattern, "", $shipping_item['name']), 'price' => wc_format_decimal($shipping_item['cost'], $dp), 'quantity' => '1', 'sku' => '0', 'category' => 'uncategorized');
             }
         }
         // Add taxes.
         foreach ($order->get_tax_totals() as $tax_code => $tax) {
             if (wc_format_decimal($tax->amount, $dp) > 0) {
-                $order_data[] = array('name' => $tax->label, 'price' => wc_format_decimal($tax->amount, $dp), 'quantity' => '1', 'sku' => 'tax-01', 'category' => 'uncategorized');
+                $order_data[] = array('name' => preg_replace($pattern, "", $tax->label), 'price' => wc_format_decimal($tax->amount, $dp), 'quantity' => '1', 'sku' => '0', 'category' => 'uncategorized');
             }
         }
         // Add fees.
         foreach ($order->get_fees() as $fee_item_id => $fee_item) {
             if (wc_format_decimal($order->get_line_total($fee_item), $dp) > 0) {
-                $order_data[] = array('name' => $fee_item['name'], 'price' => wc_format_decimal($order->get_line_total($fee_item), $dp), 'quantity' => '1', 'sku' => 'fee-01', 'category' => 'uncategorized');
+                $order_data[] = array('name' => preg_replace($pattern, "", $fee_item['name']), 'price' => wc_format_decimal($order->get_line_total($fee_item), $dp), 'quantity' => '1', 'sku' => '0', 'category' => 'uncategorized');
             }
         }
         // Add coupons.
         foreach ($order->get_items('coupon') as $coupon_item_id => $coupon_item) {
             if (wc_format_decimal($coupon_item['discount_amount'], $dp) > 0) {
-                $order_data[] = array('name' => $coupon_item['name'], 'price' => wc_format_decimal($coupon_item['discount_amount'], $dp), 'quantity' => '1', 'sku' => 'coupon-01', 'category' => 'uncategorized');
+                $order_data[] = array('name' => preg_replace($pattern, "", $coupon_item['name']), 'price' => wc_format_decimal($coupon_item['discount_amount'], $dp), 'quantity' => '1', 'sku' => '0', 'category' => 'uncategorized');
             }
         }
         $order_data = apply_filters('woocommerce_cli_order_data', $order_data);
@@ -118,6 +119,7 @@ class JokulCheckoutModule extends WC_Payment_Gateway
     public function process_payment($order_id)
     {
         global $woocommerce;
+        $pattern = "/[^A-Za-z0-9? .-\/+,=_:@]/";
 
         $order  = wc_get_order($order_id);
         $amount = $order->order_total;
@@ -132,7 +134,7 @@ class JokulCheckoutModule extends WC_Payment_Gateway
             'expiryTime' => $this->expiredTime,
             'phone' => preg_replace('/[^0-9]/', '', $order->billing_phone),
             'country' => $order->billing_country,
-            'address' => $order->shipping_address_1,
+            'address' => preg_replace($pattern, "", $order->shipping_address_1),
             'itemQty' => $this->get_order_data($order),
             'payment_method' => $this->payment_method,
             'postcode' => $order_data['billing']['postcode'],
