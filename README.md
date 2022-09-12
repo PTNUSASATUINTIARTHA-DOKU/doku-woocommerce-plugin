@@ -1,6 +1,6 @@
-# Jokul WooCommerce Plugin
+# DOKU WooCommerce Plugin
 
-Jokul makes it easy for you accept payments from various channels. Jokul also highly concerned the payment experience for your customers when they are on your store. With this plugin, you can set it up on your WooCommerce website easily and make great payment experience for your customers.
+DOKU makes it easy for you accept payments from various channels. DOKU also highly concerned the payment experience for your customers when they are on your store. With this plugin, you can set it up on your WooCommerce website easily and make great payment experience for your customers.
 
 ## Requirements
 
@@ -8,13 +8,13 @@ Jokul makes it easy for you accept payments from various channels. Jokul also hi
 - WooCommerce 4.9.0 or higher. This plugin is tested with WooCommerce v4.9.0
 - PHP v5.6 or higher
 - MySQL v5.6 or higher
-- Jokul account:
+- DOKU account:
     - For testing purpose, please register to the Sandbox environment and retrieve the Client ID & Secret Key. Learn more about the sandbox environment [here](https://jokul.doku.com/docs/docs/getting-started/explore-sandbox)
     - For real transaction, please register to the Production environment and retrieve the Client ID & Secret Key. Learn more about the production registration process [here](https://jokul.doku.com/docs/docs/getting-started/register-user)
 
-## Jokul WooComerce Already Supported `doku_log`
+## DOKU WooComerce Already Supported `doku_log`
 ​
-This `doku_log` is useful to help simplify the process of checking if an issue occurs related to the payment process using the Jokul Plugin. If there are problems or problems using the plugin, you can contact our team by sending this doku_log file. `Doku_log` will record all transaction processes from any channel by date.
+This `doku_log` is useful to help simplify the process of checking if an issue occurs related to the payment process using the DOKU Plugin. If there are problems or problems using the plugin, you can contact our team by sending this doku_log file. `Doku_log` will record all transaction processes from any channel by date.
 
 ​
 ## How to use and take doku_log file?
@@ -28,7 +28,7 @@ This `doku_log` is useful to help simplify the process of checking if an issue o
 
 ## Payment Channels Supported
 
-**Jokul Direct**
+**Direct API**
 1. Virtual Account:
     - BCA VA
     - Bank Mandiri VA
@@ -38,8 +38,9 @@ This `doku_log` is useful to help simplify the process of checking if an issue o
 2. Credit Card
 3. Alfamart O2O
 
-**Jokul Checkout**
-Easily embed our well-crafted yet customizable Jokul payment page for your website. With a single integration, you can start accepting payments on your web. With a single integration, Jokul Checkout allows you to accept payments from various Jokul payment channels. 
+**Checkout**
+Easily embed our well-crafted yet customizable DOKU payment page for your website. With a single integration, you can start accepting payments on your web. With a single integration, Checkout allows you to accept payments from various DOKU payment channels. 
+
 ## How to Install
 
 1. Download the plugin from this Repository
@@ -65,13 +66,13 @@ Easily embed our well-crafted yet customizable Jokul payment page for your websi
     ![General Configuration](https://i.ibb.co/kqYzzC5/screencapture-sandboxenv-devwoolatest-wp-admin-admin-php-2022-04-06-09-26-39.png)
 
     - **Environment**: For testing purpose, select Sandbox. For accepting real transactions, select Production
-    - **Sandbox Client ID**: Client ID you retrieved from the Sandbox environment Jokul Back Office
-    - **Sandbox Secret Key**: Secret Key you retrieved from the Sandbox environment Jokul Back Office
-    - **Production Client ID**: Client ID you retrieved from the Production environment Jokul Back Office
-    - **Production Secret Key**: Secret Key you retrieved from the Production environment Jokul Back Office
+    - **Sandbox Client ID**: Client ID you retrieved from the Sandbox environment DOKU Back Office
+    - **Sandbox Secret Key**: Secret Key you retrieved from the Sandbox environment DOKU Back Office
+    - **Production Client ID**: Client ID you retrieved from the Production environment DOKU Back Office
+    - **Production Secret Key**: Secret Key you retrieved from the Production environment DOKU Back Office
     - **Expiry Time**: Input the time that for VA expiration in minutes
-    - **Notification URL**: Copy this URL and paste the URL into the Jokul Back Office. Learn more about how to setup Notification URL [here](https://jokul.doku.com/docs/docs/after-payment/setup-notification-url)
-    - **QRIS Notification URL** : Copy this URL and and contact our support team to help paste in QRIS Backoffice. This channel only support if youre enabling Jokul Checkout as a payment method.
+    - **Notification URL**: Copy this URL and paste the URL into the DOKU Back Office. Learn more about how to setup Notification URL [here](https://jokul.doku.com/docs/docs/after-payment/setup-notification-url)
+    - **QRIS Notification URL** : Copy this URL and and contact our support team to help paste in QRIS Backoffice. This channel only support if youre enabling Checkout as a payment method.
     - **Email Notifications** : You can activated the feature send emails for VA and O2O channels. This email contains how to pay for the VA or Paycode.
     - **Sub Account Feature** : This feature helps you to routing your payment into your Sub Account ID. You can see the details for payment flow if youre using this feature [here](https://jokul.doku.com/docs/docs/jokul-sub-account/jokul-sub-account-overview)
 1. Click Save Changes button
@@ -108,16 +109,17 @@ To show the Alfamart O2O options to your customers, simply toggle the channel th
 
 You can also click Manage to edit how the Alfamart O2O channels will be shown to your customers by clicking the Manage button.
 
-### Jokul Checkout Configuration
+### Checkout Configuration
 
 ![Jokul Checkout Configuration](https://i.ibb.co/v4LqSfj/Screen-Shot-2022-04-06-at-10-16-05.png)
 
-To show the Jokul Checkout options to your customers, simply toggle the channel that you wish to show. Jokul Checkout allows you to accept payments from various Jokul payment channels. You can enable or disable the payment channel that you want to show in your store view in Jokul Backoffice Configuration.
+To show the Checkout options to your customers, simply toggle the channel that you wish to show. DOKU Checkout allows you to accept payments from various DOKU payment channels. You can enable or disable the payment channel that you want to show in your store view in DOKU Backoffice Configuration.
 
 ![Jokul Checkout Configuration Details](https://i.ibb.co/MPGD1B1/Screen-Shot-2022-04-06-at-10-19-44.png)
 
-You can also click Manage to edit how the Jokul Checkout channels will be shown to your customers by clicking the Manage button. 
+You can also click Manage to edit how the Checkout channels will be shown to your customers by clicking the Manage button. 
 Below you can update the QRIS Credential that youre already get from our Support Team.
+
 
 
 
