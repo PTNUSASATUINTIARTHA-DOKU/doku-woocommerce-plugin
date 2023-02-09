@@ -63,7 +63,7 @@ Easily embed our well-crafted yet customizable DOKU payment page for your websit
 1. Toggle the Enabled to ON
 1. Here is the fileds that you required to set:
 
-    ![General Configuration](https://i.ibb.co/kqYzzC5/screencapture-sandboxenv-devwoolatest-wp-admin-admin-php-2022-04-06-09-26-39.png)
+    ![General Configuration](https://i.ibb.co/rMbyngg/screencapture-sandboxenv-devwoolatest-wp-admin-admin-php-2022-04-06-09-26-39.png)
 
     - **Environment**: For testing purpose, select Sandbox. For accepting real transactions, select Production
     - **Sandbox Client ID**: Client ID you retrieved from the Sandbox environment DOKU Back Office
