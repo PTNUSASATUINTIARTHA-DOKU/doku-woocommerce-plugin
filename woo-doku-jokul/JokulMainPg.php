@@ -3,7 +3,7 @@
  * Plugin Name: Jokul - WooCommerce
  * Plugin URI: http://www.doku.com
  * Description: Accept payment through various payment channels with Jokul. Make it easy for your customers to purchase on your store.
- * Version: 1.3.8
+ * Version: 1.3.9
  * Author: DOKU
  * Author URI: http://www.doku.com
  * WC requires at least: 2.2
@@ -59,14 +59,6 @@ function jokul_init_gateway_class()
 			{
 				$mainSettings = get_option('woocommerce_jokul_gateway_settings');
 				$methods[] = 'JokulMainModule';
-				$methods[] = 'JokulDokuVaModule';
-				$methods[] = 'JokulBsmVaModule';
-				$methods[] = 'JokulMandiriVaModule';
-				$methods[] = 'JokulBcaVaModule';
-				$methods[] = 'JokulPermataVaModule';
-				$methods[] = 'JokulAlfaO2OModule';
-				$methods[] = 'JokulCreditCardModule';
-				$methods[] = 'JokulBriVaModule';
 				$methods[] = 'JokulCheckoutModule';
 
 				return $methods;
