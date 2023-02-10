@@ -55,6 +55,8 @@ class JokulNotificationService
             $signature = $jokulUtils->generateSignatureNotification($headerData, file_get_contents('php://input'), $sharedKey);
 
             if ($signature == $headerData['Signature']) {
+                        $jokulUtils->doku_log($jokulUtils, 'TRANSACTION SIGNATURE VALID', $raw_notification['order']['invoice_number']);
+
                 if (strtolower($raw_notification['transaction']['status']) == strtolower('SUCCESS')) {
                     $checkTrxStatus = $jokulDb->checkStatusTrx($invoiceNumber, $amount, $paymentCode == "" ? "" : $paymentCode, 'PAYMENT_COMPLETED');
 

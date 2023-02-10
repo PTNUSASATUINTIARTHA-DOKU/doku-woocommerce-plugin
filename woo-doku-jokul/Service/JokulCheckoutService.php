@@ -17,7 +17,15 @@ class JokulCheckoutService {
         $dateTimeFinal = substr($dateTime,0,19)."Z";
 
         $data = $params['sac_check'] === 'yes' ? array(
-            "order" => array(
+            "order" => $params['auto_redirect'] === 'true' ? array(
+                "invoice_number" => $params['invoiceNumber'],
+                "line_items" => $params['itemQty'],
+                "amount" => $params['amount'],
+                "callback_url" => $params['callback_url'],
+                "currency" => "IDR",
+                "auto_redirect" => true,
+                "disable_retry_payment" => true
+            ): array(
                 "invoice_number" => $params['invoiceNumber'],
                 "line_items" => $params['itemQty'],
                 "amount" => $params['amount'],
@@ -38,19 +46,36 @@ class JokulCheckoutService {
                 "city" => $params['city'],
                 "address" => $params['address']
             ),
+            "shipping_address" => array(
+                "first_name" => $params['first_name_shipping'],
+                "address" => trim($params['address_shipping']),
+                "city" => $params['city_shipping'],
+                "postal_code" => $params['postal_code_shipping'],
+                "phone" => $params['phone'],
+                "country_code" => "ID"
+            ),
             "additional_info" => array (
                 "integration" => array (
                     "name" => "woocommerce-plugin",
-                    "version" => "1.3.8",
+                    "version" => "1.3.9",
                     "cms_version" => $params['woo_version']
                 ),
                 "account" => array(
                     "id" =>  $params['sac_textbox']
                 ),
-                "method" => "Jokul Checkout"
+                "method" => "Jokul Checkout",
+                "doku_wallet_notify_url" => ""
             )
         ) :  array(
-            "order" => array(
+            "order" => $params['auto_redirect'] === 'true' ? array(
+                "invoice_number" => $params['invoiceNumber'],
+                "line_items" => $params['itemQty'],
+                "amount" => $params['amount'],
+                "callback_url" => $params['callback_url'],
+                "currency" => "IDR",
+                "auto_redirect" => true,
+                "disable_retry_payment" => true
+            ): array(
                 "invoice_number" => $params['invoiceNumber'],
                 "line_items" => $params['itemQty'],
                 "amount" => $params['amount'],
@@ -71,13 +96,22 @@ class JokulCheckoutService {
                 "city" => $params['city'],
                 "address" => $params['address']
             ),
+            "shipping_address" => array(
+                "first_name" => $params['first_name_shipping'],
+                "address" => trim($params['address_shipping']),
+                "city" => $params['city_shipping'],
+                "postal_code" => $params['postal_code_shipping'],
+                "phone" => $params['phone'],
+                "country_code" => "ID"
+            ),
             "additional_info" => array (
                 "integration" => array (
                     "name" => "woocommerce-plugin",
-                    "version" => "1.3.8",
+                    "version" => "1.3.9",
                     "cms_version" => $params['woo_version']
                 ),
-                "method" => "Jokul Checkout"
+                "method" => "Jokul Checkout",
+                "doku_wallet_notify_url" => ""
             )
         );
 
@@ -104,13 +138,13 @@ class JokulCheckoutService {
             'Request-Id:'.$requestId,
             'Client-Id:'.$config['client_id'],
             'Request-Timestamp:'.$dateTimeFinal,
-        
+
         ));
 
         $responseJson = curl_exec($ch);
 
         curl_close($ch);
-        
+
         $this->jokulUtils->doku_log($this, 'Jokul Checkout REQUEST : ' . json_encode($data), $params['invoiceNumber']);
         $this->jokulUtils->doku_log($this, 'Jokul Checkout REQUEST URL : ' . $url, $params['invoiceNumber']);
         $this->jokulUtils->doku_log($this, 'Jokul Checkout RESPONSE : ' . json_encode($responseJson, JSON_PRETTY_PRINT), $params['invoiceNumber']);

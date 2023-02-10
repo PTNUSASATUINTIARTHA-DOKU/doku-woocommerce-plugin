@@ -6,7 +6,7 @@ return apply_filters(
         'enabled' => array(
             'title' => __('Enable :', 'jokul'),
             'type' => 'checkbox',
-            'label' => __('Enable Jokul', 'jokul'),
+            'label' => __('Enable DOKU', 'jokul'),
             'default' => 'no',
         ),
 
@@ -24,7 +24,7 @@ return apply_filters(
             'style' => '',
             'title' => __('Sandbox Client ID:', 'jokul'),
             'type' => 'text',
-            'description' => __('Sandbox Client ID you retrieved from Jokul Back Office', 'jokul'),
+            'description' => __('Sandbox Client ID you retrieved from DOKU Back Office', 'jokul'),
             'default' => __('', 'jokul'),
         ),
 
@@ -32,7 +32,7 @@ return apply_filters(
             'style' => '',
             'title' => __('Sandbox Secret Key:', 'jokul'),
             'type' => 'text',
-            'description' => __('Sandbox Secret Key you retrieved from Jokul Back Office', 'jokul'),
+            'description' => __('Sandbox Secret Key you retrieved from DOKU Back Office', 'jokul'),
             'default' => __('', 'jokul'),
         ),
 
@@ -40,7 +40,7 @@ return apply_filters(
             'style' => '',
             'title' => __('Production Client ID:', 'jokul'),
             'type' => 'text',
-            'description' => __('Production Client ID you retrieved from Jokul Back Office', 'jokul'),
+            'description' => __('Production Client ID you retrieved from DOKU Back Office', 'jokul'),
             'default' => __('', 'jokul'),
         ),
 
@@ -64,7 +64,7 @@ return apply_filters(
             'title' => __('Notification URL:', 'jokul'),
             'type' => 'text',
             'custom_attributes' => array('readonly' => 'readonly'),
-            'description' => __('Set this URL to your Jokul Back Office', 'jokul'),
+            'description' => __('Set this URL to your DOKU Back Office', 'jokul'),
             'default' => __(get_bloginfo('url').'/wp-json/jokul/notification', 'jokul'),
         ),
 
@@ -73,7 +73,7 @@ return apply_filters(
             'title' => __('QRIS Notification URL:', 'jokul'),
             'type' => 'text',
             'custom_attributes' => array('readonly' => 'readonly'),
-            'description' => __('Set this URL to your Jokul Back Office', 'jokul'),
+            'description' => __('Set this URL to your DOKU Back Office', 'jokul'),
             'default' => __(get_bloginfo('url').'/wp-json/jokul/qrisnotification', 'jokul'),
         ),
 
@@ -96,7 +96,7 @@ return apply_filters(
             'class'         => array('jokul_class'),
             'title' => __('On Behalf Of:', 'jokul'),
             'type' => 'text',
-            'description' => __('Route to yout Jokul Sub Account ID. All transactions will be linked to this account', 'jokul'),
+            'description' => __('Route to your DOKU Sub Account ID. All transactions will be linked to this account', 'jokul'),
             'placeholder' => _x('e.g. SAC-Xxxxxx', 'placeholder', 'jokul'),
             'default' => __('', 'jokul'),
             'required'    => true

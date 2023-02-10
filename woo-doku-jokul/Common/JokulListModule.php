@@ -16,14 +16,6 @@ if (!function_exists('json_decode')) {
 
 // Modules
 require_once(DOKU_JOKUL_PLUGIN_PATH . '/Module/JokulMainModule.php');
-require_once(DOKU_JOKUL_PLUGIN_PATH . '/Module/JokulDokuVaModule.php');
-require_once(DOKU_JOKUL_PLUGIN_PATH . '/Module/JokulBsmVaModule.php');
-require_once(DOKU_JOKUL_PLUGIN_PATH . '/Module/JokulMandiriVaModule.php');
-require_once(DOKU_JOKUL_PLUGIN_PATH . '/Module/JokulBcaVaModule.php');
-require_once(DOKU_JOKUL_PLUGIN_PATH . '/Module/JokulPermataVaModule.php');
-require_once(DOKU_JOKUL_PLUGIN_PATH . '/Module/JokulAlfaO2OModule.php');
-require_once(DOKU_JOKUL_PLUGIN_PATH . '/Module/JokulCreditCardModule.php');
-require_once(DOKU_JOKUL_PLUGIN_PATH . '/Module/JokulBriVaModule.php');
 require_once(DOKU_JOKUL_PLUGIN_PATH . '/Module/JokulCheckoutModule.php');
 
 //API End Point

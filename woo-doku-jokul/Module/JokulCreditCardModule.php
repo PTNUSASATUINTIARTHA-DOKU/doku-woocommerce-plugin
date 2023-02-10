@@ -79,7 +79,7 @@ class JokulCreditCardModule extends WC_Payment_Gateway
              
         return $url;
     }
-
+    
     public function get_order_data($order)
     {
         $pattern = "/[^A-Za-z0-9? .,_-]/";
@@ -142,6 +142,7 @@ class JokulCreditCardModule extends WC_Payment_Gateway
 
         $order  = wc_get_order($order_id);
         $amount = $order->order_total;
+        $itemQty = array();
 
         $params = array(
             'customerId' => 0 !== $order->get_customer_id() ? $order->get_customer_id() : null,

@@ -39,6 +39,15 @@ return apply_filters(
             'type' => 'text',
             'description' => __('Default: Merchant PAN', 'woocommerce-gateway-jokul'),
             'placeholder' => '0',
+        ),
+        'auto_redirect_jokul' => array(
+            'title' => __('Auto Redirect', 'woocommerce-gateway-jokul'),
+            'type' => 'select',
+            'default' => 'false',
+            'options' => array(
+                'false' => __('FALSE', 'woocommerce-gateway-jokul'),
+                'true' => __('TRUE', 'woocommerce-gateway-jokul'),
+            ),
         )
     )
 );
