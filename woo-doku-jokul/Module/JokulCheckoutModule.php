@@ -177,7 +177,7 @@ class JokulCheckoutModule extends WC_Payment_Gateway
         $response = $this->jokulCheckoutService->generated($config, $params);
         if (!is_wp_error($response)) {
             if ($response['message'][0] == "SUCCESS" && isset($response['response']['payment']['url'])) {
-                update_post_meta('13', 'checkoutUrl', $response['response']['payment']['url']);
+                update_post_meta($order_id, 'checkoutUrl', $response['response']['payment']['url']);
                 JokulCheckoutModule::addDb($response, $amount);
                 $this->orderId = $order_id;
                 return array(
@@ -300,7 +300,7 @@ class JokulCheckoutModule extends WC_Payment_Gateway
 
     public function thank_you_page_pending($order_id)
     {
-        $jokulCheckoutURL       = get_post_meta('13', 'checkoutUrl', true);
+        $jokulCheckoutURL       = get_post_meta($order_id, 'checkoutUrl', true);
     ?>
         <div style="text-align: center;">
             <button style="text-align:center;background-color: red;color: white;" onclick="openPopup()"> Proceed to Payment</button>
@@ -331,8 +331,10 @@ class JokulCheckoutModule extends WC_Payment_Gateway
         global $woocommerce;
 
         if (function_exists('is_order_received_page') && is_order_received_page() && $title === 'Order received') {
-            $haystack = explode('/', $_SERVER['REQUEST_URI']);
-            $order  = wc_get_order($haystack[4]);
+            global $wp;
+            $order_id = absint($wp->query_vars['order-received']);            
+            $order  = wc_get_order($order_id);
+            
             $woocommerce->cart->empty_cart();
             wc_reduce_stock_levels($order->get_id());
 
