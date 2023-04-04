@@ -4,8 +4,8 @@ DOKU makes it easy for you accept payments from various channels. DOKU also high
 
 ## Requirements
 
-- WordPress 5.6 or higher. This plugin is tested with Wordpress 5.6
-- WooCommerce 4.9.0. This plugin is tested with WooCommerce v4.9.0
+- WordPress 5.6 or higher. This plugin is tested with Wordpress 6.2
+- WooCommerce 4.9.0 or higher. This plugin is tested with WooCommerce v7.2.1
 - PHP v5.6 or higher
 - MySQL v5.6 or higher
 - DOKU account:
