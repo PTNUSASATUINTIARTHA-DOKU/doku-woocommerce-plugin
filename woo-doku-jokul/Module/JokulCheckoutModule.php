@@ -35,7 +35,7 @@ class JokulCheckoutModule extends WC_Payment_Gateway
 
         $this->payment_method = $this->get_option('payment_method');
         $this->auto_redirect_jokul = $this->get_option('auto_redirect_jokul');
-        
+
         $this->sac_check = $mainSettings['sac_check' ];
         $this->sac_textbox = $mainSettings['sac_textbox'];
 
@@ -51,10 +51,12 @@ class JokulCheckoutModule extends WC_Payment_Gateway
         if( WC()->session != null ){
                 $chosen_payment_method = WC()->session->get('chosen_payment_method');
             if ($chosen_payment_method == 'jokul_checkout') {
-                if ($haystack[1] == 'jokul=show') {
+                if (strpos($_SERVER['QUERY_STRING'], "jokul=show") !== false) {
+
                     add_filter('the_title',  array($this, 'woo_title_order_pending'));
                     add_action('woocommerce_thankyou_' . $this->id, array($this, 'thank_you_page_pending'), 1, 10);
                 } else {
+
                     add_filter('the_title',  array($this, 'woo_title_order_received'));
                 }
             }
@@ -87,7 +89,7 @@ class JokulCheckoutModule extends WC_Payment_Gateway
             }
             $order_data[] = array('price' => wc_format_decimal($order->get_item_total($item, false, false), $dp), 'quantity' => wc_stock_amount($item['qty']), 'name' => preg_replace($pattern, "", $item['name']), 'sku' => $product_sku, 'category' => $categories_string, 'url' => 'https://www.doku.com/');
 
-            
+
         }
         // Add shipping.
         foreach ($order->get_shipping_methods() as $shipping_item_id => $shipping_item) {
@@ -169,7 +171,7 @@ class JokulCheckoutModule extends WC_Payment_Gateway
             'shared_key' => $sharedKey,
             'environment' => $this->environmentPaymentJokul
         );
-        
+
         update_post_meta($order_id, 'checkoutParams', $params);
         update_post_meta($order_id, 'checkoutConfig', $config);
 
@@ -277,7 +279,7 @@ class JokulCheckoutModule extends WC_Payment_Gateway
 
     public function addDb($response, $amount)
     {
-        
+
         $this->jokulUtils = new JokulUtils();
         $getIp = $this->jokulUtils->getIpaddress();
         $trx = array();
@@ -292,7 +294,7 @@ class JokulCheckoutModule extends WC_Payment_Gateway
         $trx['doku_payment_datetime']   = gmdate("Y-m-d H:i:s");
         $trx['process_datetime']        = gmdate("Y-m-d H:i:s");
         $trx['message']                 = "Payment Pending message come from Jokul. Success : completed";
-        
+
 
         $this->jokulDb = new JokulDb();
         $this->jokulDb->addData($trx);
@@ -325,16 +327,16 @@ class JokulCheckoutModule extends WC_Payment_Gateway
             return $title;
         }
     }
-    
+
     function woo_title_order_received($title)
     {
         global $woocommerce;
 
         if (function_exists('is_order_received_page') && is_order_received_page() && $title === 'Order received') {
             global $wp;
-            $order_id = absint($wp->query_vars['order-received']);            
+            $order_id = absint($wp->query_vars['order-received']);
             $order  = wc_get_order($order_id);
-            
+
             $woocommerce->cart->empty_cart();
             wc_reduce_stock_levels($order->get_id());
 

@@ -74,7 +74,7 @@ class JokulUtils
     {
 
         $log_filename = "doku_log";
-        $log_header = date(DATE_ATOM, time()) . ' ' . get_class($class) . '---> ' . $invoice_number . " : ";
+        $log_header = date(DATE_ATOM, time()) . ' '  . '---> ' . $invoice_number . " : ";
         if (!file_exists($log_filename)) {
             // create directory/folder uploads.
             mkdir($log_filename, 0777, true);
