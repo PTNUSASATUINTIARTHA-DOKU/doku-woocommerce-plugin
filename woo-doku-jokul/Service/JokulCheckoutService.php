@@ -64,7 +64,7 @@ class JokulCheckoutService {
                     "id" =>  $params['sac_textbox']
                 ),
                 "method" => "Jokul Checkout",
-                "doku_wallet_notify_url" => ""
+                "doku_wallet_notify_url" => get_site_url() .'/wp-json/jokul/notification'
             )
         ) :  array(
             "order" => $params['auto_redirect'] === 'true' ? array(
@@ -111,7 +111,7 @@ class JokulCheckoutService {
                     "cms_version" => $params['woo_version']
                 ),
                 "method" => "Jokul Checkout",
-                "doku_wallet_notify_url" => ""
+                "doku_wallet_notify_url" => get_site_url() .'/wp-json/jokul/notification'
             )
         );
 
