@@ -28,7 +28,7 @@ class JokulDokuVaService
             "additional_info" => array(
                 "integration" => array(
                     "name" => "woocommerce-plugin",
-                    "version" => "1.3.9",
+                    "version" => "1.3.10",
                     "cms_version" => $params['woo_version']
                 ),
                 "account" => array(
@@ -55,7 +55,7 @@ class JokulDokuVaService
             "additional_info" => array(
                 "integration" => array(
                     "name" => "woocommerce-plugin",
-                    "version" => "1.3.9",
+                    "version" => "1.3.10",
                     "cms_version" => $params['woo_version']
                 ),
                 "method" => "Jokul Direct"
