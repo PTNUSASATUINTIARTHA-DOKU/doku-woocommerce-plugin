@@ -41,7 +41,7 @@ class JokulUtils
         $rawSignature = "Client-Id:" . $headers['Client-Id'] . "\n"
             . "Request-Id:" . $headers['Request-Id'] . "\n"
             . "Request-Timestamp:" . $headers['Request-Timestamp'] . "\n"
-            . "Request-Target:" . $path . "/wp-json/jokul/notification" . "\n"
+            . "Request-Target:" . $path . "/wp-json/doku/notification" . "\n"
             . "Digest:" . $digest;
 
         $signature = base64_encode(hash_hmac('sha256', $rawSignature, htmlspecialchars_decode($secret), true));

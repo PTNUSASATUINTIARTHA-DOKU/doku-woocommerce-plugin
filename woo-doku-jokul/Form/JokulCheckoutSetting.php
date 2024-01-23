@@ -7,14 +7,14 @@ return apply_filters(
             'title' => __('Payment Channel Display Name', 'woocommerce-gateway-jokul'),
             'type' => 'text',
             'description' => __('Default: Checkout', 'woocommerce-gateway-jokul'),
-            'placeholder' => 'Jokul Checkout',
+            'placeholder' => 'DOKU Checkout',
         ),
         'payment_description' => array(
             'title' => __('Payment Description', 'woocommerce-gateway-jokul'),
             'type' => 'textarea',
             'css' => 'width: 400px;',
-            'description' => __('Change your payment description for Jokul Checkout', 'woocommerce-gateway-jokul'),
-            'placeholder' => 'Bayar pesanan dengan Jokul Checkout',
+            'description' => __('Change your payment description for DOKU Checkout', 'woocommerce-gateway-jokul'),
+            'placeholder' => 'Bayar pesanan dengan DOKU Checkout',
         ),
         'QRIS_Credential' => array(
             'title' => __('QRIS Credential', 'woocommerce-gateway-jokul'),

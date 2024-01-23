@@ -48,7 +48,7 @@ return apply_filters(
             'style' => '',
             'title' => __('Production Secret Key:', 'jokul'),
             'type' => 'text',
-            'description' => __('Unique Production Secret Key Id you retrieved from Jokul Back Office', 'jokul'),
+            'description' => __('Unique Production Secret Key Id you retrieved from DOKU Back Office', 'jokul'),
             'default' => __('', 'jokul'),
         ),
 
@@ -65,7 +65,7 @@ return apply_filters(
             'type' => 'text',
             'custom_attributes' => array('readonly' => 'readonly'),
             'description' => __('Set this URL to your DOKU Back Office', 'jokul'),
-            'default' => __(get_bloginfo('url').'/wp-json/jokul/notification', 'jokul'),
+            'default' => __(get_bloginfo('url').'/wp-json/doku/notification', 'jokul'),
         ),
 
         'notif_url_qris' => array(
@@ -74,7 +74,7 @@ return apply_filters(
             'type' => 'text',
             'custom_attributes' => array('readonly' => 'readonly'),
             'description' => __('Set this URL to your DOKU Back Office', 'jokul'),
-            'default' => __(get_bloginfo('url').'/wp-json/jokul/qrisnotification', 'jokul'),
+            'default' => __(get_bloginfo('url').'/wp-json/doku/qrisnotification', 'jokul'),
         ),
 
         'email_notifications' => array(
