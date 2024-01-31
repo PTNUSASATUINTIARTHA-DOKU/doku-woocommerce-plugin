@@ -134,4 +134,14 @@ class JokulUtils
         $responseJson = json_decode($response, true);
         return $responseJson['payment_instruction'];
     }
+
+    function formatPhoneNumber($phoneNumber) {
+        // Check if the phone number starts with '08'
+        if (substr($phoneNumber, 0, 2) == '08') {
+            // Replace '08' with '62'
+            return '62' . substr($phoneNumber, 2);
+        }
+        return $phoneNumber;
+    }
+    
 }

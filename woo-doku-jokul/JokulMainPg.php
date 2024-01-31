@@ -3,7 +3,7 @@
  * Plugin Name: DOKU - WooCommerce
  * Plugin URI: http://www.doku.com
  * Description: Accept payment through various payment channels with DOKU. Make it easy for your customers to purchase on your store.
- * Version: 1.3.11
+ * Version: 1.3.12
  * Author: DOKU
  * Author URI: http://www.doku.com
  * WC requires at least: 2.2

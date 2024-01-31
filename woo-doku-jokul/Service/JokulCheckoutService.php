@@ -11,6 +11,7 @@ class JokulCheckoutService {
         $this->jokulUtils = new JokulUtils();
 
         $requestId = $this->jokulUtils->guidv4();
+        $formattedPhoneNumber = $this->jokulUtils->formatPhoneNumber($params['phone']);
         $targetPath= "/checkout/v1/payment";
         $dateTime = gmdate("Y-m-d H:i:s");
         $dateTime = date(DATE_ISO8601, strtotime($dateTime));
@@ -39,7 +40,7 @@ class JokulCheckoutService {
                 "id" => $params['customerId'],
                 "name" => trim($params['customerName']),
                 "email" => $params['customerEmail'],
-                "phone" => $params['phone'],
+                "phone" => $formattedPhoneNumber,
                 "country" => $params['country'],
                 "postcode" => $params['postcode'],
                 "state" => $params['state'],
@@ -51,13 +52,13 @@ class JokulCheckoutService {
                 "address" => trim($params['address_shipping']),
                 "city" => $params['city_shipping'],
                 "postal_code" => $params['postal_code_shipping'],
-                "phone" => $params['phone'],
+                "phone" => $formattedPhoneNumber,
                 "country_code" => "ID"
             ),
             "additional_info" => array (
                 "integration" => array (
                     "name" => "woocommerce-plugin",
-                    "version" => "1.3.11",
+                    "version" => "1.3.12",
                     "cms_version" => $params['woo_version']
                 ),
                 "account" => array(
@@ -89,7 +90,7 @@ class JokulCheckoutService {
                 "id" => $params['customerId'],
                 "name" => trim($params['customerName']),
                 "email" => $params['customerEmail'],
-                "phone" => $params['phone'],
+                "phone" => $formattedPhoneNumber,
                 "country" => $params['country'],
                 "postcode" => $params['postcode'],
                 "state" => $params['state'],
@@ -101,13 +102,13 @@ class JokulCheckoutService {
                 "address" => trim($params['address_shipping']),
                 "city" => $params['city_shipping'],
                 "postal_code" => $params['postal_code_shipping'],
-                "phone" => $params['phone'],
+                "phone" => $formattedPhoneNumber,
                 "country_code" => "ID"
             ),
             "additional_info" => array (
                 "integration" => array (
                     "name" => "woocommerce-plugin",
-                    "version" => "1.3.11",
+                    "version" => "1.3.12",
                     "cms_version" => $params['woo_version']
                 ),
                 "method" => "Jokul Checkout",
