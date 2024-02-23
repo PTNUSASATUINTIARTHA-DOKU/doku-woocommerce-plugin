@@ -41,8 +41,7 @@ class JokulNotificationService
         $paymentChannel = $raw_notification['channel']['id'];
         $transactionStatus = $raw_notification['transaction']['status'];
         $notifyUrl = $raw_notification['additional_info']['doku_wallet_notify_url'];
-        // $notificationPath = '/'. explode('wp-json', stripslashes($notifyUrl), 2)[1];
-        $notificationPath = explode('/wp-json', stripslashes($notifyUrl), 2)[1];
+        $notificationPath = explode('/wp-json', $notifyUrl, 2)[1];
         $requestTarget =  '/wp-json' . $notificationPath;
         if ($serviceType == "ONLINE_TO_OFFLINE") {
             $paymentCode = $raw_notification['online_to_offline_info']['payment_code'];
