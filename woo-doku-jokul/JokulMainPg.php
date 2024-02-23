@@ -124,6 +124,16 @@ function notif_register_route()
 	));
 }
 
+add_action('rest_api_init', 'notif_register_route_jokul');
+function notif_register_route_jokul()
+{
+    register_rest_route('jokul', 'notification', array(
+        'methods' => 'POST',
+        'callback' => 'order_update_status',
+        'permission_callback' => '__return_true'
+    ));
+}
+
 function order_update_status()
 {
 	$notificationService = new JokulNotificationService();
