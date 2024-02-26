@@ -11,6 +11,7 @@ class JokulCreditCardService {
         $this->jokulUtils = new JokulUtils();
 
         $requestId = $this->jokulUtils->guidv4();
+        $formattedPhoneNumber = $this->jokulUtils->formatPhoneNumber($params['phone']);
         $targetPath= "/credit-card/v1/payment-page";
         $dateTime = gmdate("Y-m-d H:i:s");
         $dateTime = date(DATE_ISO8601, strtotime($dateTime));
@@ -21,7 +22,7 @@ class JokulCreditCardService {
                 "id" => $params['customerId'],
                 "name" => trim($params['customerName']),
                 "email" => $params['customerEmail'],
-                "phone" => $params['phone'],
+                "phone" => $formattedPhoneNumber,
                 "country" => $params['country'],
                 "address" => $params['address']
             ),
@@ -44,7 +45,7 @@ class JokulCreditCardService {
             "additional_info" => array (
                 "integration" => array (
                     "name" => "woocommerce-plugin",
-                    "version" => "1.3.11",
+                    "version" => "1.3.12",
                     "cms_version" => $params['woo_version']
                 ),
                 "account" => array(
@@ -57,7 +58,7 @@ class JokulCreditCardService {
                 "id" => $params['customerId'],
                 "name" => trim($params['customerName']),
                 "email" => $params['customerEmail'],
-                "phone" => $params['phone'],
+                "phone" => $formattedPhoneNumber,
                 "country" => $params['country'],
                 "address" => $params['address']
             ),
@@ -80,7 +81,7 @@ class JokulCreditCardService {
             "additional_info" => array (
                 "integration" => array (
                     "name" => "woocommerce-plugin",
-                    "version" => "1.3.11",
+                    "version" => "1.3.12",
                     "cms_version" => $params['woo_version']
                 ),
                 "method" => "Jokul Direct"

@@ -3,7 +3,7 @@
  * Plugin Name: DOKU - WooCommerce
  * Plugin URI: http://www.doku.com
  * Description: Accept payment through various payment channels with DOKU. Make it easy for your customers to purchase on your store.
- * Version: 1.3.11
+ * Version: 1.3.12
  * Author: DOKU
  * Author URI: http://www.doku.com
  * WC requires at least: 2.2
@@ -114,20 +114,30 @@ function installDb()
 	add_option('jokuldb_db_version', $db_version);
 }
 
-add_action('rest_api_init', 'notif_register_route');
-function notif_register_route()
-{
-	register_rest_route('doku', 'notification', array(
-		'methods' => 'POST',
-		'callback' => 'order_update_status',
-		'permission_callback' => '__return_true'
-	));
-}
+add_action('rest_api_init', function () {
+    // Register route for Doku
+    register_rest_route('doku', 'notification', array(
+        'methods' => 'POST',
+        'callback' => function ($request) {
+            return order_update_status('doku');
+        },
+        'permission_callback' => '__return_true'
+    ));
 
-function order_update_status()
+    // Register route for Jokul
+    register_rest_route('jokul', 'notification', array(
+        'methods' => 'POST',
+        'callback' => function ($request) {
+            return order_update_status('jokul');
+        },
+        'permission_callback' => '__return_true'
+    ));
+});
+
+function order_update_status($path)
 {
 	$notificationService = new JokulNotificationService();
-	$response = $notificationService->getNotification();
+	$response = $notificationService->getNotification($path);
 	return $response;
 }
 

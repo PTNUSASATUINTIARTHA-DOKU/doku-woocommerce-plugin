@@ -18,7 +18,7 @@ class JokulNotificationService
         return $headers;
     }
 
-    public function getNotification()
+    public function getNotification($path)
     {
         $jokulUtils = new JokulUtils();
         $raw_notification = json_decode(file_get_contents('php://input'), true);
@@ -40,6 +40,7 @@ class JokulNotificationService
         $amount = $raw_notification['order']['amount'];
         $paymentChannel = $raw_notification['channel']['id'];
         $transactionStatus = $raw_notification['transaction']['status'];
+        $requestTarget =  '/wp-json/' . $path . '/notification';
         if ($serviceType == "ONLINE_TO_OFFLINE") {
             $paymentCode = $raw_notification['online_to_offline_info']['payment_code'];
             $paymentDate = $raw_notification['transaction']['date'];
@@ -52,7 +53,7 @@ class JokulNotificationService
 
         if ($transaction != '') {
 
-            $signature = $jokulUtils->generateSignatureNotification($headerData, file_get_contents('php://input'), $sharedKey);
+            $signature = $jokulUtils->generateSignatureNotification($headerData, file_get_contents('php://input'), $sharedKey, $requestTarget);
 
             if ($signature == $headerData['Signature']) {
                         $jokulUtils->doku_log($jokulUtils, 'TRANSACTION SIGNATURE VALID', $raw_notification['order']['invoice_number']);

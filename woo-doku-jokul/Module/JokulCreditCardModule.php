@@ -125,12 +125,6 @@ class JokulCreditCardModule extends WC_Payment_Gateway
                 $order_data[] = array('name' => preg_replace($pattern, "", $fee_item['name']), 'price' => wc_format_decimal($order->get_line_total($fee_item), $dp), 'quantity' => '1', 'sku' => '0', 'category' => 'uncategorized');
             }
         }
-        // Add coupons.
-        foreach ($order->get_items('coupon') as $coupon_item_id => $coupon_item) {
-            if (wc_format_decimal($coupon_item['discount_amount'], $dp) > 0) {
-                $order_data[] = array('name' => preg_replace($pattern, "", $coupon_item['name']), 'price' => wc_format_decimal($coupon_item['discount_amount'], $dp), 'quantity' => '1', 'sku' => '0', 'category' => 'uncategorized');
-            }
-        }
         $order_data = apply_filters('woocommerce_cli_order_data', $order_data);
         return $order_data;
     }
@@ -144,6 +138,9 @@ class JokulCreditCardModule extends WC_Payment_Gateway
         $amount = $order->order_total;
         $itemQty = array();
 
+        $this->jokulUtils = new JokulUtils();
+        $formattedPhoneNumber = $this->jokulUtils->formatPhoneNumber($order->billing_phone);
+
         $params = array(
             'customerId' => 0 !== $order->get_customer_id() ? $order->get_customer_id() : null,
             'customerEmail' => $order->get_billing_email(),
@@ -151,7 +148,7 @@ class JokulCreditCardModule extends WC_Payment_Gateway
             'amount' => $amount,
             'invoiceNumber' => $order->get_order_number(),
             'expiryTime' => $this->expiredTime,
-            'phone' => $order->billing_phone,
+            'phone' => $formattedPhoneNumber,
             'country' => $order->billing_country,
             'address' => preg_replace($pattern, "", $order->shipping_address_1),
             'itemQty' => $this->get_order_data($order),

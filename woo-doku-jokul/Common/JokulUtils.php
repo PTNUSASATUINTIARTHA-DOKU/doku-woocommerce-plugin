@@ -27,7 +27,7 @@ class JokulUtils
         return 'HMACSHA256=' . $signature;
     }
 
-    public function generateSignatureNotification($headers, $body, $secret)
+    public function generateSignatureNotification($headers, $body, $secret, $requestTarget)
     {
         $digest = base64_encode(hash('sha256', $body, true));
         $url = get_site_url();
@@ -41,9 +41,8 @@ class JokulUtils
         $rawSignature = "Client-Id:" . $headers['Client-Id'] . "\n"
             . "Request-Id:" . $headers['Request-Id'] . "\n"
             . "Request-Timestamp:" . $headers['Request-Timestamp'] . "\n"
-            . "Request-Target:" . $path . "/wp-json/doku/notification" . "\n"
+            . "Request-Target:" . $path . $requestTarget . "\n"
             . "Digest:" . $digest;
-
         $signature = base64_encode(hash_hmac('sha256', $rawSignature, htmlspecialchars_decode($secret), true));
         return 'HMACSHA256=' . $signature;
     }
@@ -134,4 +133,14 @@ class JokulUtils
         $responseJson = json_decode($response, true);
         return $responseJson['payment_instruction'];
     }
+
+    function formatPhoneNumber($phoneNumber) {
+        // Check if the phone number starts with '08'
+        if (substr($phoneNumber, 0, 2) == '08') {
+            // Replace '0' with '62'
+            return '62' . substr($phoneNumber, 1);
+        }
+        return $phoneNumber;
+    }
+    
 }
