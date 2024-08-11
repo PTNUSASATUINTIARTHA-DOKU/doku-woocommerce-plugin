@@ -134,6 +134,12 @@ add_action('rest_api_init', function () {
     ));
 });
 
+add_action( 'before_woocommerce_init', function() {
+    if ( class_exists( \Automattic\WooCommerce\Utilities\FeaturesUtil::class ) ) {
+        \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'custom_order_tables', __FILE__, true );
+    }
+} );
+
 function order_update_status($path)
 {
 	$notificationService = new JokulNotificationService();
@@ -162,10 +168,11 @@ function thank_you_page_credit_card($order_id)
 {
 	$chosen_payment_method     = WC()->session->get('chosen_payment_method');
 	if ($chosen_payment_method == 'jokul_creditcard') {
-		global $woocommerce;
-		$woocommerce->cart->empty_cart();
-		wc_reduce_stock_levels($order_id);
-		update_post_meta(1000, 'jokul_cc_order_id', '');
+		$order = wc_get_order($order_id);
+		WC()->cart->empty_cart();
+		$order->reduce_order_stock();
+		$order->update_meta_data('jokul_cc_order_id', '');
+		$order->save();
 	?>
 		<p class="woocommerce-notice woocommerce-notice--success woocommerce-thankyou-order-received">Your payment with Credit Card is success!</p>
 		<ul class="woocommerce-order-overview woocommerce-thankyou-order-details order_details">
