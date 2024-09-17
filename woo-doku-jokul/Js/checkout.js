@@ -1,7 +1,7 @@
-const settings = window.wc.wcSettings.getSetting( 'my_custom_gateway_data', {} );
+const settings = window.wc.wcSettings.getSetting( 'jokul_checkout_data', {} );
 const label = window.wp.htmlEntities.decodeEntities( settings.title ) || window.wp.i18n.__( 'DOKU', 'jokul_checkout' );
 const Content = () => {
-    return window.wp.htmlEntities.decodeEntities( settings.description || '' );
+    return window.wp.htmlEntities.decodeEntities( settings.description || window.wp.i18n.__( 'Bayar Pesanan Dengan DOKU Checkout', 'jokul_checkout' ) );
 };
 const Block_Gateway = {
     name: 'jokul_checkout',
