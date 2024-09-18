@@ -50,7 +50,7 @@ class JokulCheckoutModule extends WC_Payment_Gateway
         $haystack = explode("&", $_SERVER['QUERY_STRING']);
         if( WC()->session != null ){
                 $chosen_payment_method = WC()->session->get('chosen_payment_method');
-            if ($chosen_payment_method == 'jokul_checkout') {
+            if ($this->id == 'jokul_checkout') {
                 if (strpos($_SERVER['QUERY_STRING'], "jokul=show") !== false) {
 
                     add_filter('the_title',  array($this, 'woo_title_order_pending'));
@@ -87,14 +87,27 @@ class JokulCheckoutModule extends WC_Payment_Gateway
             foreach ($meta->get_formatted(null) as $meta_key => $formatted_meta) {
                 $item_meta[] = array('key' => $meta_key, 'label' => $formatted_meta['label'], 'value' => $formatted_meta['value']);
             }
-            $order_data[] = array('price' => wc_format_decimal($order->get_item_total($item, false, false), $dp), 'quantity' => wc_stock_amount($item['qty']), 'name' => preg_replace($pattern, "", $item['name']), 'sku' => $product_sku, 'category' => $categories_string, 'url' => 'https://www.doku.com/');
-
             
+            $order_data[] = array(
+                'price' => wc_format_decimal($order->get_item_total($item, false, false), $dp), 
+                'quantity' => wc_stock_amount($item['qty']), 
+                'name' => preg_replace($pattern, "", $item['name']), 
+                'sku' => $product_sku, 
+                'category' => $categories_string, 
+                'url' => 'https://www.doku.com/'
+            );
         }
         // Add shipping.
         foreach ($order->get_shipping_methods() as $shipping_item_id => $shipping_item) {
             if (wc_format_decimal($shipping_item['cost'], $dp) > 0) {
-                $order_data[] = array('name' => preg_replace($pattern, "", $shipping_item['name']), 'price' => wc_format_decimal($shipping_item['cost'], $dp), 'quantity' => '1', 'sku' => '0', 'category' => 'uncategorized', 'url' => 'https://www.doku.com/');
+                $order_data[] = array(
+                    'name' => preg_replace($pattern, "", $shipping_item['name']), 
+                    'price' => wc_format_decimal($shipping_item['cost'], $dp), 
+                    'quantity' => '1',
+                    'sku' => '0', 
+                    'category' => 'uncategorized', 
+                    'url' => 'https://www.doku.com/'
+                );
             }
         }
         // Add taxes.
@@ -170,7 +183,7 @@ class JokulCheckoutModule extends WC_Payment_Gateway
         );
         
         update_post_meta($order_id, 'checkoutParams', $params);
-        update_post_meta($order_id, 'checkoutConfig', $config);
+        update_post_meta($order_id, 'checkoutConfig', $config); 
 
         $this->jokulCheckoutService = new JokulCheckoutService();
         $response = $this->jokulCheckoutService->generated($config, $params);
@@ -184,7 +197,7 @@ class JokulCheckoutModule extends WC_Payment_Gateway
                     'redirect' => $this->get_return_url($order) . "&jokul=show&" . $order_id
                 );
             } else {
-                wc_add_notice('There is something wrong. Please try again.', 'error');
+                wc_add_notice('There is something wrong. Please try again. ' . $response['message'][0], 'error');
             }
         } else {
             wc_add_notice('There is something wrong. Please try again.', 'error');

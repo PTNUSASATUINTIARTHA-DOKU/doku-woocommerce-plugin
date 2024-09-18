@@ -178,6 +178,28 @@ function thank_you_page_credit_card($order_id)
 	}
 }
 
+
+add_action('before_woocommerce_init', 'declare_cart_checkout_blocks_compatibility');
+function declare_cart_checkout_blocks_compatibility() {
+    if (class_exists('\Automattic\WooCommerce\Utilities\FeaturesUtil')) {
+        \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility('cart_checkout_blocks', __FILE__, true);
+    }
+}
+
+add_action('woocommerce_blocks_loaded', 'doku_register_payment_method_type');
+function doku_register_payment_method_type() {
+    if (!class_exists('Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType')) {
+        return;
+    }
+
+    require_once plugin_dir_path(__FILE__) . 'Block/DokuCheckoutBlock.php';
+	
+    add_action('woocommerce_blocks_payment_method_type_registration',
+    function (Automattic\WooCommerce\Blocks\Payments\PaymentMethodRegistry $payment_method_registry) {
+        $payment_method_registry->register(new Doku_Checkout_Blocks);
+    });
+}
+
 add_filter('woocommerce_locate_template', 'woo_adon_plugin_template', 1, 3);
 function woo_adon_plugin_template($template, $template_name, $template_path)
 {
