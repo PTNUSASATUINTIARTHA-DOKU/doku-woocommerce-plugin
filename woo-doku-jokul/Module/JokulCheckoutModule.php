@@ -241,8 +241,8 @@ class JokulCheckoutModule extends WC_Payment_Gateway
 ?>
         <script>
             jQuery(document).ready(function($) {
-                $('.channel-name-format').text('<?= $this->title; ?>');
-                $('#woocommerce_<?= $this->id; ?>_channel_name').change(
+                $('.channel-name-format').text('<?php $this->title; ?>');
+                $('#woocommerce_<?php $this->id; ?>_channel_name').change(
                     function() {
                         $('.channel-name-format').text($(this).val());
                     }
@@ -258,7 +258,7 @@ class JokulCheckoutModule extends WC_Payment_Gateway
 
                     e.preventDefault();
 
-                    var paymentDescription = $('#woocommerce_<?= $this->id; ?>_payment_description').val();
+                    var paymentDescription = $('#woocommerce_<?php $this->id; ?>_payment_description').val();
                     if (paymentDescription.length > 250) {
                         return swal({
                             text: 'Text is too long, please reduce the message and ensure that the length of the character is less than 250.',

@@ -80,17 +80,17 @@ class JokulMainModule extends WC_Payment_Gateway
             jQuery(document).ready(function($) {
                 checkbox_sac_select();
                 
-                $('#woocommerce_<?= $this->id; ?>_sac_check').click(function() {
+                $('#woocommerce_<?php $this->id; ?>_sac_check').click(function() {
                     checkbox_sac_select();
                 })
 
                 function checkbox_sac_select() {
-                    if($('#woocommerce_<?= $this->id; ?>_sac_check').is(':checked')) {
+                    if($('#woocommerce_<?php $this->id; ?>_sac_check').is(':checked')) {
                         $('table tr:last').fadeIn();
-                        $('#woocommerce_<?= $this->id; ?>_sac_textbox').prop('required',true);
+                        $('#woocommerce_<?php $this->id; ?>_sac_textbox').prop('required',true);
                     } else {
                         $('table tr:last').fadeOut();
-                        $('#woocommerce_<?= $this->id; ?>_sac_textbox').prop('required',false);
+                        $('#woocommerce_<?php $this->id; ?>_sac_textbox').prop('required',false);
                     }
                 }; 
             })
