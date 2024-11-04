@@ -15,11 +15,11 @@ do_action( 'woocommerce_email_header', $email_heading, $email ); ?>
             <ol>
                 <?php foreach ($instructions as $paymentInstruction) : ?>
                     <li>
-                        <p><b>Cara pembayaran via <?= $paymentInstruction['channel'] ?></b></p>
+                        <p><b>Cara pembayaran via <?php $paymentInstruction["channel"]; ?></b></p>
                         <ol>
                             <?php foreach ($paymentInstruction['step'] as $step) : ?>
                                 <li>
-                                    <?= $step ?>
+                                    <?php $step; ?>
                                 </li>
                             <?php endforeach; ?>
                         </ol>

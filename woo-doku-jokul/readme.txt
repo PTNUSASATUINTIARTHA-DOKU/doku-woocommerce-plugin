@@ -1,6 +1,42 @@
-# DOKU WooCommerce Plugin
+=== DOKU Payment ===
+Contributors: dokuplugin
+Donate link: https://doku.com/
+Tags: Payment Gateway, Payment                                                                 
+Requires at least: 2.2
+Tested up to: 6.6
+Stable tag: 1.3.13
+Requires PHP: 5.6
+License: GPLv2 or later
+License URI: https://www.gnu.org/licenses/gpl-2.0.html
+ 
+== Description ==
+ 
+Accept payment through various payment channels with DOKU. Make it easy for your customers to purchase on your store.
+ 
+For backwards compatibility, if this section is missing, the full length of the short description will be used, and
+Markdown parsed.
+ 
+A few notes about the sections above:
+ 
+* "Contributors" is a comma separated list of wordpress.org usernames
+* "Tags" is a comma separated list of tags that apply to the plugin
+* "Requires at least" is the lowest version that the plugin will work on
+* "Tested up to" is the highest version that you've *successfully used to test the plugin*
+* Stable tag must indicate the Subversion "tag" of the latest stable version
+ 
+Note that the `readme.txt` value of stable tag is the one that is the defining one for the plugin.  If the `/trunk/readme.txt` file says that the stable tag is `4.3`, then it is `/tags/4.3/readme.txt` that'll be used for displaying information about the plugin.
+ 
+If you develop in trunk, you can update the trunk `readme.txt` to reflect changes in your in-development version, without having that information incorrectly disclosed about the current stable version that lacks those changes -- as long as the trunk's `readme.txt` points to the correct stable tag.
+ 
+If no stable tag is provided, your users may not get the correct version of your code.
+ 
+== Upgrade Notice ==
+ 
+= 1.3.13 =
+DOKU Payment compatible with WooCommerce Checkout Block.
 
-DOKU makes it easy for you accept payments from various channels. DOKU also highly concerned the payment experience for your customers when they are on your store. With this plugin, you can set it up on your WooCommerce website easily and make great payment experience for your customers.
+== A brief Markdown Example ==
+
 
 ## Requirements
 
@@ -12,7 +48,7 @@ DOKU makes it easy for you accept payments from various channels. DOKU also high
     - For testing purpose, please register to the Sandbox environment and retrieve the Client ID & Secret Key. Learn more about the sandbox environment [here](https://jokul.doku.com/docs/docs/getting-started/explore-sandbox)
     - For real transaction, please register to the Production environment and retrieve the Client ID & Secret Key. Learn more about the production registration process [here](https://jokul.doku.com/docs/docs/getting-started/register-user)
 
-## DOKU WooComerce Already Supported `doku_log`
+## DOKU Already Supported `doku_log`
 ​
 This `doku_log` is useful to help simplify the process of checking if an issue occurs related to the payment process using the DOKU Plugin. If there are problems or problems using the plugin, you can contact our team by sending this doku_log file. `Doku_log` will record all transaction processes from any channel by date.
 
@@ -26,44 +62,10 @@ This `doku_log` is useful to help simplify the process of checking if an issue o
 5. And you can download the file. 
 6. If an issue occurs, you can send this `doku_log` file to the team to make it easier to find the cause of the issue.
 
-## Payment Channels Supported
-
-**Direct API**
-1. Virtual Account:
-    - BCA VA
-    - Bank Mandiri VA
-    - Bank Syariah Mandiri VA
-    - DOKU VA
-
-2. Credit Card
-3. Alfamart O2O
-
 **Checkout**
 Easily embed our well-crafted yet customizable DOKU payment page for your website. With a single integration, you can start accepting payments on your web. With a single integration, Checkout allows you to accept payments from various DOKU payment channels. 
 
-## How to Install
-
-1. Download the plugin from this Repository
-1. Extract the plugin and compress the folder "woo-doku-jokul" into zip file
-1. Login to your WordPress Admin Panel
-1. Go to Plugins > Add New
-1. Click Upload Plugin and select the zip file
-1. Click Install Now
-1. Click Activate the plugin
-1. Done! You are ready to setup the plugin
-
-## Plugin Usage
-
-### General Configuration
-
-1. Login to your WordPress Admin Panel
-1. Click Module > Settings
-1. Click Payments tab
-1. You will find "Jokul - General Configuration"
-1. Toggle the Enabled to ON
-1. Here is the fileds that you required to set:
-
-    ![General Configuration](https://i.ibb.co/rMbyngg/screencapture-sandboxenv-devwoolatest-wp-admin-admin-php-2022-04-06-09-26-39.png)
+ ![General Configuration](https://i.ibb.co/rMbyngg/screencapture-sandboxenv-devwoolatest-wp-admin-admin-php-2022-04-06-09-26-39.png)
 
     - **Environment**: For testing purpose, select Sandbox. For accepting real transactions, select Production
     - **Sandbox Client ID**: Client ID you retrieved from the Sandbox environment DOKU Back Office
@@ -79,47 +81,25 @@ Easily embed our well-crafted yet customizable DOKU payment page for your websit
 1. Go Back to Payments Tab
 1. Now your customer should be able to see the payment channels and you start receiving payments
 
-### VA Configuration
-
-![VA Configuration](https://i.ibb.co/3r73zdj/Screen-Shot-2021-03-24-at-21-25-53.png)
-
-To show the VA options to your customers, simply toggle the channel that you wish to show.
-
-![VA Configuration Details](https://i.ibb.co/3dyW0j5/Screen-Shot-2021-03-24-at-21-25-22.png)
-
-You can also click Manage to edit how the VA channels will be shown to your customers by clicking the Manage button.
-
-### Credit Card Configuration
-
-![Credit Card Configuration](https://i.ibb.co/Y02Tr3T/Screen-Shot-2021-05-06-at-14-35-31.png)
-
-To show the Credit Card options to your customers, simply toggle the channel that you wish to show.
-
-![Credit Card Configuration Details](https://i.ibb.co/hfFkXrr/Screen-Shot-2021-05-06-at-14-41-53.png)
-
-You can also click Manage to edit how the Credit Card channels will be shown to your customers by clicking the Manage button.
-
-### Alfamart O2O Configuration
-
-![Alfamart O2O Configuration](https://i.ibb.co/Y02Tr3T/Screen-Shot-2021-05-06-at-14-35-31.png)
-
-To show the Alfamart O2O options to your customers, simply toggle the channel that you wish to show.
-
-![Alfamart O2O Configuration Details](https://i.ibb.co/kDMrm45/Screen-Shot-2021-05-06-at-14-40-29.png)
-
-You can also click Manage to edit how the Alfamart O2O channels will be shown to your customers by clicking the Manage button.
-
 ### Checkout Configuration
 
-![Jokul Checkout Configuration](https://i.ibb.co/v4LqSfj/Screen-Shot-2022-04-06-at-10-16-05.png)
+![DOKU Checkout Configuration](https://i.ibb.co/v4LqSfj/Screen-Shot-2022-04-06-at-10-16-05.png)
 
 To show the Checkout options to your customers, simply toggle the channel that you wish to show. DOKU Checkout allows you to accept payments from various DOKU payment channels. You can enable or disable the payment channel that you want to show in your store view in DOKU Backoffice Configuration.
 
-![Jokul Checkout Configuration Details](https://i.ibb.co/MPGD1B1/Screen-Shot-2022-04-06-at-10-19-44.png)
+![DOKU Checkout Configuration Details](https://i.ibb.co/MPGD1B1/Screen-Shot-2022-04-06-at-10-19-44.png)
 
 You can also click Manage to edit how the Checkout channels will be shown to your customers by clicking the Manage button. 
 Below you can update the QRIS Credential that youre already get from our Support Team.
-
-
-
-
+  
+Links require brackets and parenthesis:
+ 
+Here's a link to [WordPress](https://wordpress.org/ "Your favorite software") and one to [Markdown's Syntax Documentation][markdown syntax]. Link titles are optional, naturally.
+ 
+Blockquotes are email style:
+ 
+> Asterisks for *emphasis*. Double it up  for **strong**.
+ 
+And Backticks for code:
+ 
+`<?php code(); ?>`
