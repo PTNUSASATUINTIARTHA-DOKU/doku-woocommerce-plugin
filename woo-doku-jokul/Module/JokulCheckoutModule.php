@@ -77,10 +77,16 @@ class JokulCheckoutModule extends WC_Payment_Gateway
             $categories_string = implode(',', $term_names);
             $product_id = null;
             $product_sku = null;
+            $image_url = null;
+            $product_url = null;
+
             // Check if the product exists.
             if (is_object($product)) {
                 $product_id = isset($product->variation_id) ? $product->variation_id : $product->id;
                 $product_sku = $product->get_sku();
+                $image_id  = $product->get_image_id();
+                $image_url = wp_get_attachment_image_url( $image_id, 'full' );
+                $product_url = $product->get_permalink();
             }
             $meta = new WC_Order_Item_Meta($item, $product);
             $item_meta = array();
@@ -89,24 +95,42 @@ class JokulCheckoutModule extends WC_Payment_Gateway
             }
             
             $order_data[] = array(
+                'id' => $product_id,
                 'price' => wc_format_decimal($order->get_item_total($item, false, false), $dp), 
                 'quantity' => wc_stock_amount($item['qty']), 
                 'name' => preg_replace($pattern, "", $item['name']), 
-                'sku' => $product_sku, 
-                'category' => $categories_string, 
-                'url' => 'https://www.doku.com/'
+                'sku' => !empty($product_sku) ? $product_sku : 'empty sku', 
+                'type' => 'produk',
+                'category' => 'marketplace', 
+                'image_url' =>  !empty($image_url) ? $image_url : '',
+                'url' => $product_url
             );
         }
         // Add shipping.
         foreach ($order->get_shipping_methods() as $shipping_item_id => $shipping_item) {
+            $product = $order->get_product_from_item($item);
+            $image_url = null;
+            $product_url = null;
+
+            // Check if the product exists.
+            if (is_object($product)) {
+                $product_id = isset($product->variation_id) ? $product->variation_id : $product->id;
+                $product_sku = $product->get_sku();
+                $image_id  = $product->get_image_id();
+                $image_url = wp_get_attachment_image_url( $image_id, 'full' );
+                $product_url = $product->get_permalink();
+            }
             if (wc_format_decimal($shipping_item['cost'], $dp) > 0) {
                 $order_data[] = array(
+                    'id' => $product_id,
                     'name' => preg_replace($pattern, "", $shipping_item['name']), 
                     'price' => wc_format_decimal($shipping_item['cost'], $dp), 
                     'quantity' => '1',
-                    'sku' => '0', 
-                    'category' => 'uncategorized', 
-                    'url' => 'https://www.doku.com/'
+                    'sku' => !empty($product_sku) ? $product_sku : 'empty sku', 
+                    'type' => 'produk',
+                    'category' => 'marketplace', 
+                    'image_url' =>  !empty($image_url) ? $image_url : '',
+                    'url' => $product_url
                 );
             }
         }
@@ -141,6 +165,8 @@ class JokulCheckoutModule extends WC_Payment_Gateway
         $params = array(
             'customerId' => 0 !== $order->get_customer_id() ? $order->get_customer_id() : null,
             'customerEmail' => $order->get_billing_email(),
+            'first_name' => $order->get_billing_first_name(),
+            'last_name' =>  $order->get_billing_last_name(),
             'customerName' => $order->get_billing_first_name() . " " . $order->get_billing_last_name(),
             'amount' => $amount,
             'invoiceNumber' => $order->get_order_number(),
@@ -311,23 +337,19 @@ class JokulCheckoutModule extends WC_Payment_Gateway
     }
 
     public function thank_you_page_pending($order_id)
-    {
-        $jokulCheckoutURL       = get_post_meta($order_id, 'checkoutUrl', true);
-    ?>
-        <div style="text-align: center;">
-            <button style="text-align:center;background-color: red;color: white;" onclick="openPopup()"> Proceed to Payment</button>
-        </div>
+{
 
-        <script type="text/javascript" src="https://sandbox.doku.com/jokul-checkout-js/v1/jokul-checkout-1.0.0.js"></script>
-        <script type='text/javascript'>
-            openPopup();
+    $jokulCheckoutURL = get_post_meta($order_id, 'checkoutUrl', true);
+?>
+    <script type="text/javascript">
+        (function() {
+            const checkoutURL = "<?php echo esc_js($jokulCheckoutURL); ?>";
 
-            function openPopup() {
-                loadJokulCheckout('<?php _e($jokulCheckoutURL, 'woocommerce'); ?>'); // Replace it with the response.payment.url you retrieved from the response
-            }
-        </script>
+            window.location.href = checkoutURL;
+        })();
+    </script>
 <?php
-    }
+}
 
     function woo_title_order_pending($title)
     {

@@ -38,7 +38,8 @@ class JokulCheckoutService {
             ),
             "customer" => array(
                 "id" => $params['customerId'],
-                "name" => trim($params['customerName']),
+                "name" => $params['first_name'],
+                "last_name" => $params['last_name'],
                 "email" => $params['customerEmail'],
                 "phone" => $formattedPhoneNumber,
                 "country" => $params['country'],
@@ -49,16 +50,26 @@ class JokulCheckoutService {
             ),
             "shipping_address" => array(
                 "first_name" => $params['first_name_shipping'],
+                "last_name" => $params['last_name'],
                 "address" => trim($params['address_shipping']),
                 "city" => $params['city_shipping'],
                 "postal_code" => $params['postal_code_shipping'],
                 "phone" => $formattedPhoneNumber,
-                "country_code" => "ID"
+                "country_code" => "IDN"
             ),
+            "billing_address" => array(
+                "first_name" => $params['first_name'],
+                "last_name" => $params['last_name'],
+                "address" => trim($params['address_shipping']),
+                "city" => $params['city_shipping'],
+                "postal_code" => $params['postal_code_shipping'],
+                "phone" => $formattedPhoneNumber,
+                "country_code" => "IDN"
+            ),                        
             "additional_info" => array (
                 "integration" => array (
                     "name" => "woocommerce-plugin",
-                    "version" => "1.3.12",
+                    "version" => "1.3.14",
                     "cms_version" => $params['woo_version']
                 ),
                 "account" => array(
@@ -85,10 +96,11 @@ class JokulCheckoutService {
             ),
             "payment" => array(
                 "payment_due_date" => $params['expiryTime']
-            ),
+            ),        
             "customer" => array(
                 "id" => $params['customerId'],
-                "name" => trim($params['customerName']),
+                "name" => $params['first_name'],
+                "last_name" => $params['last_name'],
                 "email" => $params['customerEmail'],
                 "phone" => $formattedPhoneNumber,
                 "country" => $params['country'],
@@ -99,12 +111,22 @@ class JokulCheckoutService {
             ),
             "shipping_address" => array(
                 "first_name" => $params['first_name_shipping'],
+                "last_name" => $params['last_name'],
                 "address" => trim($params['address_shipping']),
                 "city" => $params['city_shipping'],
                 "postal_code" => $params['postal_code_shipping'],
                 "phone" => $formattedPhoneNumber,
-                "country_code" => "ID"
+                "country_code" => "IDN"
             ),
+            "billing_address" => array(
+                "first_name" => $params['first_name'],
+                "last_name" => $params['last_name'],
+                "address" => trim($params['address_shipping']),
+                "city" => $params['city_shipping'],
+                "postal_code" => $params['postal_code_shipping'],
+                "phone" => $formattedPhoneNumber,
+                "country_code" => "IDN"
+            ), 
             "additional_info" => array (
                 "integration" => array (
                     "name" => "woocommerce-plugin",
