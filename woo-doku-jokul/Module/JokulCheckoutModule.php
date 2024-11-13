@@ -99,7 +99,7 @@ class JokulCheckoutModule extends WC_Payment_Gateway
                 'price' => wc_format_decimal($order->get_item_total($item, false, false), $dp), 
                 'quantity' => wc_stock_amount($item['qty']), 
                 'name' => preg_replace($pattern, "", $item['name']), 
-                'sku' => !empty($product_sku) ? $product_sku : 'empty sku', 
+                'sku' => !empty($product_sku) ? $product_sku : $product_id, 
                 'type' => 'produk',
                 'category' => 'marketplace', 
                 'image_url' =>  !empty($image_url) ? $image_url : '',
@@ -125,10 +125,10 @@ class JokulCheckoutModule extends WC_Payment_Gateway
                     'id' => $product_id,
                     'name' => preg_replace($pattern, "", $shipping_item['name']), 
                     'price' => wc_format_decimal($shipping_item['cost'], $dp), 
-                    'quantity' => '1',
-                    'sku' => !empty($product_sku) ? $product_sku : 'empty sku', 
+                    'quantity' => 1,
+                    'sku' => 'shipping', 
                     'type' => 'produk',
-                    'category' => 'marketplace', 
+                    'category' => 'fee', 
                     'image_url' =>  !empty($image_url) ? $image_url : '',
                     'url' => $product_url
                 );
@@ -136,14 +136,38 @@ class JokulCheckoutModule extends WC_Payment_Gateway
         }
         // Add taxes.
         foreach ($order->get_tax_totals() as $tax_code => $tax) {
+            $product = $order->get_product_from_item($item);
+            if (is_object($product)) {
+                $product_id = isset($product->variation_id) ? $product->variation_id : $product->id;
+            }
             if (wc_format_decimal($tax->amount, $dp) > 0) {
-                $order_data[] = array('name' => preg_replace($pattern, "", $tax->label), 'price' => wc_format_decimal($tax->amount, $dp), 'quantity' => '1', 'sku' => '0', 'category' => 'uncategorized', 'url' => 'https://www.doku.com/');
+                $order_data[] = array(
+                    'id' => $product_id,
+                    'name' => preg_replace($pattern, "", $tax->label), 
+                    'price' => wc_format_decimal($tax->amount, $dp), 
+                    'quantity' => 1, 
+                    'type' => 'produk',
+                    'sku' => 'tax', 
+                    'category' => 'fee', 
+                );
             }
         }
         // Add fees.
         foreach ($order->get_fees() as $fee_item_id => $fee_item) {
+            $product = $order->get_product_from_item($item);
+            if (is_object($product)) {
+                $product_id = isset($product->variation_id) ? $product->variation_id : $product->id;
+            }
             if (wc_format_decimal($order->get_line_total($fee_item), $dp) > 0) {
-                $order_data[] = array('name' => preg_replace($pattern, "", $fee_item['name']), 'price' => wc_format_decimal($order->get_line_total($fee_item), $dp), 'quantity' => '1', 'sku' => '0', 'category' => 'uncategorized', 'url' => 'https://www.doku.com/');
+                $order_data[] = array(
+                    'id' => $product_id,
+                    'name' => preg_replace($pattern, "", $fee_item['name']), 
+                    'price' => wc_format_decimal($order->get_line_total($fee_item), $dp), 
+                    'quantity' => 1, 
+                    'type' => 'produk',
+                    'sku' => 'fee', 
+                    'category' => 'fee',
+                );
             }
         }
         $order_data = apply_filters('woocommerce_cli_order_data', $order_data);
