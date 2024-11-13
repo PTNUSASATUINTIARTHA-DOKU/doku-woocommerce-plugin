@@ -147,7 +147,7 @@ class JokulCheckoutModule extends WC_Payment_Gateway
                     'price' => wc_format_decimal($tax->amount, $dp), 
                     'quantity' => 1, 
                     'type' => 'produk',
-                    'sku' => 'tax', 
+                    'sku' => 'tax-' . $product_id . '-' . preg_replace($pattern, "", $tax->label), 
                     'category' => 'fee', 
                 );
             }
@@ -165,7 +165,7 @@ class JokulCheckoutModule extends WC_Payment_Gateway
                     'price' => wc_format_decimal($order->get_line_total($fee_item), $dp), 
                     'quantity' => 1, 
                     'type' => 'produk',
-                    'sku' => 'fee', 
+                    'sku' => 'fee-' . $product_id . '-' . preg_replace($pattern, "", $tax->label), 
                     'category' => 'fee',
                 );
             }
