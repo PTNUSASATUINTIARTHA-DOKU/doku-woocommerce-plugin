@@ -23,6 +23,7 @@ class JokulCheckoutService {
                 "line_items" => $params['itemQty'],
                 "amount" => $params['amount'],
                 "callback_url" => $params['callback_url'],
+                "callback_url_cancel" => "https://www.doku.com/en-US",
                 "currency" => "IDR",
                 "auto_redirect" => true,
                 "disable_retry_payment" => true
@@ -31,6 +32,7 @@ class JokulCheckoutService {
                 "line_items" => $params['itemQty'],
                 "amount" => $params['amount'],
                 "callback_url" => $params['callback_url'],
+                "callback_url_cancel" => "https://www.doku.com/en-US",
                 "currency" => "IDR"
             ),
             "payment" => array(
@@ -84,6 +86,7 @@ class JokulCheckoutService {
                 "line_items" => $params['itemQty'],
                 "amount" => $params['amount'],
                 "callback_url" => $params['callback_url'],
+                "callback_url_cancel" => "https://www.doku.com/en-US",
                 "currency" => "IDR",
                 "auto_redirect" => true,
                 "disable_retry_payment" => true
@@ -92,6 +95,7 @@ class JokulCheckoutService {
                 "line_items" => $params['itemQty'],
                 "amount" => $params['amount'],
                 "callback_url" => $params['callback_url'],
+                "callback_url_cancel" => "https://www.doku.com/en-US",
                 "currency" => "IDR"
             ),
             "payment" => array(
