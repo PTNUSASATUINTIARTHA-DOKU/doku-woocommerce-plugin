@@ -147,36 +147,29 @@ class JokulCheckoutService {
         $header['Request-Id'] = $requestId;
         $header['Request-Timestamp'] = $dateTimeFinal;
         $header['Request-Target'] = $targetPath;
+        $header['Content-Type'] = "application/json";
 
         $signature = $this->jokulUtils->generateSignature($header, json_encode($data), $config['shared_key']);
+        $header['Signature'] = $signature;
 
-        $ch = curl_init($url);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
-        curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type:application/json'));
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        $body = json_encode($data);
 
-        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-            'Content-Type: application/json',
-            'Signature:'.$signature,
-            'Request-Id:'.$requestId,
-            'Client-Id:'.$config['client_id'],
-            'Request-Timestamp:'.$dateTimeFinal,
-
-        ));
-
-        $responseJson = curl_exec($ch);
-
-        curl_close($ch);
-
+        $args = array(
+            'body' => $body,
+            'headers' => $header,
+            'method' => 'POST',
+            'timeout' => 45,
+        );
+        $response = wp_remote_post($url, $args);
+        $response_body = wp_remote_retrieve_body($response);
         $this->jokulUtils->doku_log($this, 'Jokul Checkout REQUEST : ' . json_encode($data), $params['invoiceNumber']);
+        $this->jokulUtils->doku_log($this, 'Jokul Checkout REQUEST Header: ' . json_encode($header), $params['invoiceNumber']);
         $this->jokulUtils->doku_log($this, 'Jokul Checkout REQUEST URL : ' . $url, $params['invoiceNumber']);
-        $this->jokulUtils->doku_log($this, 'Jokul Checkout RESPONSE : ' . json_encode($responseJson, JSON_PRETTY_PRINT), $params['invoiceNumber']);
+        $this->jokulUtils->doku_log($this, 'Jokul Checkout RESPONSE : ' . json_encode($response, JSON_PRETTY_PRINT), $params['invoiceNumber']);
+        $this->jokulUtils->doku_log($this, 'Jokul Checkout RESPONSE Body: ' . json_encode($response_body, JSON_PRETTY_PRINT), $params['invoiceNumber']);
+        
 
-        if (is_string($responseJson)) {
-            return json_decode($responseJson, true);
-        } else {
-            print_r($responseJson);
-        }
+        return json_decode($response_body, true);
     }
 }
 

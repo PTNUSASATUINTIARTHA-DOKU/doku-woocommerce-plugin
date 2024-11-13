@@ -111,27 +111,52 @@ class JokulUtils
         ));
     }
 
+    // function getEmailMessage($url)
+    // {
+    //     $ch = curl_init();
+    //     $headers = array(
+    //         'Accept: application/json',
+    //         'Content-Type: application/json',
+
+    //     );
+    //     curl_setopt($ch, CURLOPT_URL, $url);
+    //     curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+    //     curl_setopt($ch, CURLOPT_HEADER, 0);
+
+    //     curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "GET");
+    //     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+    //     // Timeout in seconds
+    //     curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+
+    //     $response = curl_exec($ch);
+    //     $responseJson = json_decode($response, true);
+    //     return $responseJson['payment_instruction'];
+    // }
     function getEmailMessage($url)
     {
-        $ch = curl_init();
         $headers = array(
-            'Accept: application/json',
-            'Content-Type: application/json',
-
+            'Accept' => 'application/json',
+            'Content-Type' => 'application/json',
         );
-        curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-        curl_setopt($ch, CURLOPT_HEADER, 0);
 
-        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "GET");
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        $args = array(
+            'headers' => $headers,
+            'timeout' => 30,
+        );
 
-        // Timeout in seconds
-        curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+        $response = wp_remote_get($url, $args);
 
-        $response = curl_exec($ch);
-        $responseJson = json_decode($response, true);
-        return $responseJson['payment_instruction'];
+        if (is_wp_error($response)) {
+            $error_message = $response->get_error_message();
+            return "Error fetching payment instructions: $error_message";
+        }
+
+        // Ambil isi body dari respons
+        $response_body = wp_remote_retrieve_body($response);
+        $responseJson = json_decode($response_body, true);
+
+        return $responseJson['payment_instruction'] ?? null;
     }
 
     function formatPhoneNumber($phoneNumber) {

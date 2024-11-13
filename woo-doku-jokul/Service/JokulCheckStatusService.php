@@ -11,15 +11,15 @@ class JokulCheckStatusService {
         $this->jokulUtils = new JokulUtils();
 
         $requestId = $this->jokulUtils->guidv4();
-        $targetPath= "/orders/v1/status/".$params['invoiceNumber'];
+        $targetPath = "/orders/v1/status/" . $params['invoiceNumber'];
         $dateTime = gmdate("Y-m-d H:i:s");
         $dateTime = date(DATE_ISO8601, strtotime($dateTime));
-        $dateTimeFinal = substr($dateTime,0,19)."Z";
+        $dateTimeFinal = substr($dateTime, 0, 19) . "Z";
 
         $this->jokulConfig = new JokulConfig();
-        $valueEnv = $config['environment'] === 'true'? true: false;
-        $getUrl = $this->jokulConfig -> getBaseUrl($valueEnv);
-        $url = $getUrl.$targetPath;
+        $valueEnv = $config['environment'] === 'true' ? true : false;
+        $getUrl = $this->jokulConfig->getBaseUrl($valueEnv);
+        $url = $getUrl . $targetPath;
 
         $header['Client-Id'] = $config['client_id'];
         $header['Request-Id'] = $requestId;
@@ -28,31 +28,32 @@ class JokulCheckStatusService {
 
         $signature = $this->jokulUtils->generateSignatureCheckStatus($header, $config['shared_key']);
 
-        $ch = curl_init($url);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type:application/json'));
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        $args = array(
+            'headers' => array(
+                'Content-Type' => 'application/json',
+                'Signature' => $signature,
+                'Request-Id' => $requestId,
+                'Client-Id' => $config['client_id'],
+                'Request-Timestamp' => $dateTimeFinal,
+                'Request-Target' => $targetPath,
+            ),
+            'timeout' => 45
+        );
 
-        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-            'Content-Type: application/json',
-            'Signature:'.$signature,
-            'Request-Id:'.$requestId,
-            'Client-Id:'.$config['client_id'],
-            'Request-Timestamp:'.$dateTimeFinal,
-            'Request-Target:'.$targetPath
-        ));
+        $response = wp_remote_get($url, $args);
 
-        $responseJson = curl_exec($ch);
-
-        curl_close($ch);
-
-        $this->jokulUtils->doku_log($this, 'Jokul Check Status REQUEST URL : ' . $url, $params['invoiceNumber']);
-        $this->jokulUtils->doku_log($this, 'Jokul Check Status RESPONSE : ' . json_encode($responseJson, JSON_PRETTY_PRINT), $params['invoiceNumber']);
-
-        if (is_string($responseJson)) {
-            return json_decode($responseJson, true);
-        } else {
-            print_r($responseJson);
+        if (is_wp_error($response)) {
+            $error_message = $response->get_error_message();
+            $this->jokulUtils->doku_log($this, 'Jokul Check Status ERROR: ' . $error_message, $params['invoiceNumber']);
+            return null;
         }
+
+        $responseBody = wp_remote_retrieve_body($response);
+
+        $this->jokulUtils->doku_log($this, 'Jokul Check Status REQUEST URL: ' . $url, $params['invoiceNumber']);
+        $this->jokulUtils->doku_log($this, 'Jokul Check Status RESPONSE: ' . json_encode($responseBody, JSON_PRETTY_PRINT), $params['invoiceNumber']);
+
+        return json_decode($responseBody, true);
     }
 }
 
