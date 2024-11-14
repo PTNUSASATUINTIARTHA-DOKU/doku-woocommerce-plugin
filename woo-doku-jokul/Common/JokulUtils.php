@@ -47,17 +47,32 @@ class JokulUtils
         return 'HMACSHA256=' . $signature;
     }
 
+    // public function getIpaddress()
+    // {
+    //     if (!empty($_SERVER['HTTP_CLIENT_IP'])) {
+    //         $ip = $_SERVER['HTTP_CLIENT_IP'];
+    //     } elseif (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+    //         $ip = $_SERVER['HTTP_X_FORWARDED_FOR'];
+    //     } else {
+    //         $ip = $_SERVER['REMOTE_ADDR'];
+    //     }
+    //     return $ip;
+    // }
+
     public function getIpaddress()
     {
+        $ip = '';
         if (!empty($_SERVER['HTTP_CLIENT_IP'])) {
             $ip = $_SERVER['HTTP_CLIENT_IP'];
         } elseif (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
-            $ip = $_SERVER['HTTP_X_FORWARDED_FOR'];
+            $ipArray = explode(',', $_SERVER['HTTP_X_FORWARDED_FOR']);
+            $ip = trim($ipArray[0]);
         } else {
             $ip = $_SERVER['REMOTE_ADDR'];
         }
-        return $ip;
+        return filter_var($ip, FILTER_VALIDATE_IP) ? $ip : null;
     }
+
 
     public function guidv4($data = null)
     {

@@ -47,17 +47,15 @@ class JokulCheckoutModule extends WC_Payment_Gateway
 
         add_action('woocommerce_update_options_payment_gateways_' . $this->id, array($this, 'process_admin_options'));
 
-        $haystack = explode("&", $_SERVER['QUERY_STRING']);
-        if( WC()->session != null ){
-                $chosen_payment_method = WC()->session->get('chosen_payment_method');
+        $queryArray = explode("&", sanitize_text_field($_SERVER['QUERY_STRING']));
+        if (WC()->session != null) {
+            $chosen_payment_method = WC()->session->get('chosen_payment_method');
             if ($this->id == 'jokul_checkout') {
-                if (strpos($_SERVER['QUERY_STRING'], "jokul=show") !== false) {
-
-                    add_filter('the_title',  array($this, 'woo_title_order_pending'));
+                if (in_array("jokul=show", $queryArray)) {
+                    add_filter('the_title', array($this, 'woo_title_order_pending'));
                     add_action('woocommerce_thankyou_' . $this->id, array($this, 'thank_you_page_pending'), 1, 10);
                 } else {
-
-                    add_filter('the_title',  array($this, 'woo_title_order_received'));
+                    add_filter('the_title', array($this, 'woo_title_order_received'));
                 }
             }
         }
@@ -322,7 +320,7 @@ class JokulCheckoutModule extends WC_Payment_Gateway
         $trx['invoice_number']          = $response['response']['order']['invoice_number'];
         $trx['result_msg']              = null;
         $trx['process_type']            = 'PAYMENT_PENDING';
-        $trx['raw_post_data']           = file_get_contents('php://input');
+        $trx['raw_post_data']           = json_encode($response);
         $trx['ip_address']              = $getIp;
         $trx['amount']                  = $amount;
         $trx['payment_channel']         = $this->method_code;
