@@ -46,7 +46,7 @@ class JokulNotificationService
         if (json_last_error() !== JSON_ERROR_NONE) {
             $jokulUtils->doku_log($jokulUtils, 'INVALID JSON INPUT: ' . json_last_error_msg(), null);
             http_response_code(400);
-            echo http_response_code();
+            echo esc_html(http_response_code());
             return new WP_REST_Response('Invalid JSON input', 400);
         }
 
@@ -108,12 +108,12 @@ class JokulNotificationService
             } else {
                 $jokulUtils->doku_log($jokulUtils, 'SIGNATURE NOT MATCH!', $raw_notification['order']['invoice_number']);
                 http_response_code(400);
-                echo http_response_code();
+                echo esc_html(http_response_code());
                 return new WP_REST_Response(null, 400);
             }
         } else {
             http_response_code(404);
-            echo http_response_code();
+            echo esc_html(http_response_code());
             return new WP_REST_Response(null, 404);
         }
     }

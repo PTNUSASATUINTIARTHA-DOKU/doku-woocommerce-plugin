@@ -172,8 +172,8 @@ function thank_you_page_credit_card($order_id)
 		<p class="woocommerce-notice woocommerce-notice--success woocommerce-thankyou-order-received">Your payment with Credit Card is success!</p>
 		<ul class="woocommerce-order-overview woocommerce-thankyou-order-details order_details">
 			<li class="woocommerce-order-overview__cc cc">
-				<?php _e('Payment Method', 'woocommerce'); ?>
-				<strong><?php _e("Credit Card", 'woocommerce'); ?></strong>
+				<?php esc_html_e('Payment Method', 'woocommerce'); ?>
+				<strong><?php esc_html_e("Credit Card", 'woocommerce'); ?></strong>
 			</li>
 		</ul>
 <?php
