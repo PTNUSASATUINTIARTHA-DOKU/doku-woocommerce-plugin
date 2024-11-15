@@ -1,4 +1,7 @@
 <?php
+
+if ( ! defined( 'ABSPATH' ) ) exit;
+
 define("HTML_EMAIL_HEADERS", array('Content-Type: text/html; charset=UTF-8'));
 
 class JokulUtils

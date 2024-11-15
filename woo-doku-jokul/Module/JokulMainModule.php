@@ -1,5 +1,7 @@
 <?php
 
+if ( ! defined( 'ABSPATH' ) ) exit;
+
 class JokulMainModule extends WC_Payment_Gateway
 {
     public function __construct()

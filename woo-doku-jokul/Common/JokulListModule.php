@@ -1,5 +1,7 @@
 <?php
 
+if ( ! defined( 'ABSPATH' ) ) exit;
+
 // Check PHP version.
 if (version_compare(PHP_VERSION, '5.2.1', '<')) {
     throw new Exception('PHP version >= 5.2.1 required');
