@@ -1,5 +1,7 @@
 <?php
 
+if ( ! defined( 'ABSPATH' ) ) exit;
+
 return apply_filters(
     'jokul_credit_card_settings',
     array(

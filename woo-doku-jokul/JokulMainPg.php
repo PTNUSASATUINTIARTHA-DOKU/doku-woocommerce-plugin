@@ -1,4 +1,7 @@
 <?php
+
+if ( ! defined( 'ABSPATH' ) ) exit;
+
 /*
  * Plugin Name: DOKU Payment
  * Plugin URI: https://github.com/PTNUSASATUINTIARTHA-DOKU/doku-woocommerce-plugin

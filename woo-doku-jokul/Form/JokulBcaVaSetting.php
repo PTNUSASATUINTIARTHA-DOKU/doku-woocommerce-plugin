@@ -1,5 +1,7 @@
 <?php
 
+if ( ! defined( 'ABSPATH' ) ) exit;
+
 return apply_filters(
     'jokul_bca_va_settings',
     array(

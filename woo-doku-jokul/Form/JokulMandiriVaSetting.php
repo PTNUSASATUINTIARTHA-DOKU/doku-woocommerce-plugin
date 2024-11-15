@@ -1,5 +1,7 @@
 <?php
 
+if ( ! defined( 'ABSPATH' ) ) exit;
+
 return apply_filters(
     'jokul_mandiri_va_settings',
     array(

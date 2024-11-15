@@ -1,5 +1,7 @@
 <?php
 
+if ( ! defined( 'ABSPATH' ) ) exit;
+
 return apply_filters(
     'jokul_checkout_settings',
     array(

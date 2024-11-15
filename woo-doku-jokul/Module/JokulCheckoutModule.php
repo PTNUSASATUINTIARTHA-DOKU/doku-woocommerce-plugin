@@ -1,5 +1,7 @@
 <?php
 
+if ( ! defined( 'ABSPATH' ) ) exit;
+
 require_once(DOKU_JOKUL_PLUGIN_PATH . '/Service/JokulCheckoutService.php');
 require_once(DOKU_JOKUL_PLUGIN_PATH . '/Service/JokulCheckStatusService.php');
 require_once(DOKU_JOKUL_PLUGIN_PATH . '/Common/JokulDb.php');
