@@ -8,7 +8,7 @@ Stable tag: 1.3.14
 Requires PHP: 5.6
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
-DOKU plugin offers a seamless, secure payment solution by integrating DOKU Checkout
+DOKU plugin offers a secure payment with DOKU Checkout, letting customers choose from various payment methods and complete transactions seamlessly.
  
 == Description ==
  
