@@ -8,6 +8,7 @@ Stable tag: 1.3.14
 Requires PHP: 5.6
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
+DOKU plugin offers a seamless, secure payment solution by integrating DOKU Checkout
  
 == Description ==
  
@@ -30,9 +31,6 @@ If you develop in trunk, you can update the trunk `readme.txt` to reflect change
  
 If no stable tag is provided, your users may not get the correct version of your code.
 
-== Short Description ==
-DOKU plugin offers a seamless, secure payment solution by integrating DOKU Checkout, allowing customers to choose from various payment methods and complete transactions directly on your web store. 
- 
 == Upgrade Notice ==
  
 = 1.3.14 =
@@ -157,7 +155,7 @@ Click Save button to save your configuration
 6. Is DOKU WooCommerce plugin secure?
 Yes, DOKU WooCommerce plugin is secured. It uses industry-standard security protocols, including SSL encryption, to ensure that sensitive customer data (like payment details) is protected during transactions. DOKU complies with PCI-DSS security standards to handle payment card information securely.
 
-== Screen Shot ==
+== Screenshots ==
 1. Customizable Checkout page
 2. Various payment channel
 3. Configuration Page
