@@ -7,16 +7,23 @@ class JokulDb {
     function addData($datainsert) 
     {
         global $wpdb;
-        $SQL = "";
-                            
-        foreach ( $datainsert as $field_name=>$field_data )
-        {
-            $SQL .= " $field_name = '$field_data',";
-        }
-        $SQL = substr( $SQL, 0, -1 );
-                    
-        $wpdb->query("INSERT INTO ".$wpdb->prefix."jokuldb SET $SQL");
-    } 
+        $table = $wpdb->prefix . "jokuldb";
+        
+        $columns = array_keys($datainsert);
+        $placeholders = array_map(function ($value) {
+            return is_numeric($value) ? '%d' : '%s';
+        }, $datainsert);
+
+        $columns_str = implode(', ', $columns);
+        $placeholders_str = implode(', ', $placeholders);
+        
+        $query = $wpdb->prepare(
+            "INSERT INTO $table ($columns_str) VALUES ($placeholders_str)",
+            array_values($datainsert)
+        );
+
+        $result = $wpdb->query($query);
+    }
     
     function updateData($invoice, $status) 
     {
@@ -27,10 +34,15 @@ class JokulDb {
     function checkTrx($order_id, $amount, $vaNumber)
     {
         global $wpdb;
-        $db_prefix = $wpdb->prefix;
+        $table = $wpdb->prefix . "jokuldb";
 
-        $query="SELECT * FROM ".$db_prefix."jokuldb where invoice_number='".$order_id."' and amount='".$amount."' ORDER BY trx_id DESC LIMIT 1";
-        $result = $wpdb->get_var($query);
+        $query = $wpdb->prepare(
+            "SELECT * FROM $table WHERE invoice_number = %s AND amount = %d ORDER BY trx_id DESC LIMIT 1",
+            $order_id,
+            $amount
+        );
+
+        $result = $wpdb->get_row($query);
 
         return $result;
     }
@@ -38,8 +50,15 @@ class JokulDb {
     function checkStatusTrx($order_id, $amount, $vaNumber, $processType)
     {
         global $wpdb;
-        $db_prefix = $wpdb->prefix;
-        $query="SELECT payment_code FROM ".$db_prefix."jokuldb where invoice_number='".$order_id."' and amount='".$amount."' and process_type = 'PAYMENT_COMPLETED' ORDER BY trx_id DESC LIMIT 1";
+        $table = $wpdb->prefix . "jokuldb";
+
+        $query = $wpdb->prepare(
+            "SELECT payment_code FROM $table WHERE invoice_number = %s AND amount = %d AND process_type = %s ORDER BY trx_id DESC LIMIT 1",
+            $order_id,
+            $amount,
+            $processType
+        );
+
         $result = $wpdb->get_var($query);
         return $result;
     }
