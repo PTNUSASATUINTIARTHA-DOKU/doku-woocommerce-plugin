@@ -43,11 +43,9 @@ DOKU Payment compatible with WooCommerce Checkout Block.
 DOKU Payment compatible with WooCommerce Checkout Block.
 
 == External services ==
-This plugin connects to DOKU Checkout to facilitate customer payments by enabling them to select a payment method and complete transactions through DOKU Checkout. For testing, it connects to the sandbox environment at https://api-sandbox.doku.com, while live transactions are processed through the production environment at https://api.doku.com. During payment initiation and processing, the plugin transmits transaction details and customer payment preferences to these endpoints. For more information, please refer to DOKU’s Terms of Use and Privacy Policy.
-Link Terms and Condition
-https://dashboard.doku.com/doku-agreement/terms-of-use
-Link Privacy Policy
-https://dashboard.doku.com/doku-agreement/privacy-policy
+This plugin connects to DOKU Checkout to facilitate customer payments by enabling them to select a payment method and complete transactions through DOKU Checkout. For testing, it connects to the sandbox environment at https://api-sandbox.doku.com, while live transactions are processed through the production environment at https://api.doku.com. During payment initiation and processing, the plugin transmits transaction details and customer payment preferences to these endpoints.
+Additionally, the plugin uses JokulNotificationService to update payment statuses via a notification endpoint that incorporates the merchant's name as a data. This endpoint is triggered each time an event initiates a status change, ensuring that transaction updates are accurately reflected.
+For more information, please refer to DOKU’s Checkout Document https://developers.doku.com/accept-payment/doku-checkout
 
 
 ## Requirements
@@ -158,3 +156,8 @@ Checkout Page Configuration page will appear, then click Interface Settings tab 
 Click Save button to save your configuration
 6. Is DOKU WooCommerce plugin secure?
 Yes, DOKU WooCommerce plugin is secured. It uses industry-standard security protocols, including SSL encryption, to ensure that sensitive customer data (like payment details) is protected during transactions. DOKU complies with PCI-DSS security standards to handle payment card information securely.
+
+== Screen Shot ==
+1. Customizable Checkout page
+2. Various payment channel
+3. Configuration Page
