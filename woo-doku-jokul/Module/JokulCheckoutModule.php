@@ -337,19 +337,30 @@ class JokulCheckoutModule extends WC_Payment_Gateway
     }
 
     public function thank_you_page_pending($order_id)
-{
+    {
+        $jokulCheckoutURL = get_post_meta($order_id, 'checkoutUrl', true);
+        if (!$jokulCheckoutURL) {
+            return;
+        }
 
-    $jokulCheckoutURL = get_post_meta($order_id, 'checkoutUrl', true);
-?>
-    <script type="text/javascript">
-        (function() {
-            const checkoutURL = "<?php echo esc_js($jokulCheckoutURL); ?>";
+        wp_register_script(
+            'jokul-thank-you-redirect',
+            '',
+            [], 
+            '1.0.0',
+            true
+        );
 
-            window.location.href = checkoutURL;
-        })();
-    </script>
-<?php
-}
+        $inline_script = "
+            (function() {
+                const checkoutURL = '" . esc_js($jokulCheckoutURL) . "';
+                window.location.href = checkoutURL;
+            })();
+        ";
+
+        wp_add_inline_script('jokul-thank-you-redirect', $inline_script);
+        wp_enqueue_script('jokul-thank-you-redirect');
+    }
 
     function woo_title_order_pending($title)
     {
