@@ -18,7 +18,7 @@ class JokulCheckoutModule extends WC_Payment_Gateway
         $this->method_code          = 'JOKUL_CHECKOUT';
         $this->title                = !empty($this->get_option('channel_name')) ? $this->get_option('channel_name') : $this->method_name;
         $this->method_title         = __('DOKU', 'doku-payment');
-        $this->method_description   = sprintf(__('Accept payment through various payment channels with DOKU. Make it easy for your customers to purchase on your store.', 'woocommerce'));
+        $this->method_description   = sprintf(__('Accept payment through various payment channels with DOKU. Make it easy for your customers to purchase on your store.', 'doku-payment'));
         $this->checkout_msg         = 'This your payment on DOKU Checkout : ';
 
         $this->init_settings();
