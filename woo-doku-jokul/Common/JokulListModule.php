@@ -24,4 +24,3 @@ require_once(DOKU_JOKUL_PLUGIN_PATH . '/Module/JokulCheckoutModule.php');
 require_once(DOKU_JOKUL_PLUGIN_PATH . '/Service/JokulNotificationService.php');
 require_once(DOKU_JOKUL_PLUGIN_PATH . '/Service/JokulQrisNotificationService.php');
 
-?>

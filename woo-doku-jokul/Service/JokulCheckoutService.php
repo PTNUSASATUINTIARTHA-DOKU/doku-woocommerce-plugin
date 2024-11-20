@@ -15,9 +15,8 @@ class JokulCheckoutService {
         $requestId = $this->jokulUtils->guidv4();
         $formattedPhoneNumber = $this->jokulUtils->formatPhoneNumber($params['phone']);
         $targetPath= "/checkout/v1/payment";
-        $dateTime = gmdate("Y-m-d H:i:s");
-        $dateTime = date(DATE_ISO8601, strtotime($dateTime));
-        $dateTimeFinal = substr($dateTime,0,19)."Z";
+        $dateTime = gmdate(DATE_ISO8601);
+        $dateTimeFinal = substr($dateTime, 0, 19) . "Z";
 
         $data = $params['sac_check'] === 'yes' ? array(
             "order" => $params['auto_redirect'] === 'true' ? array(

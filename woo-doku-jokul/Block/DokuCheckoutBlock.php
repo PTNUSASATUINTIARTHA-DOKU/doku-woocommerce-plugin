@@ -46,4 +46,3 @@ final class Doku_Checkout_Blocks extends AbstractPaymentMethodType {
     }
 
 }
-?>

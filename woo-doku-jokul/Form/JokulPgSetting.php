@@ -35,7 +35,7 @@ return apply_filters(
             'title' => __('Sandbox Secret Key:', 'jokul'),
             'type' => 'text',
             'description' => __('Sandbox Secret Key you retrieved from DOKU Back Office', 'jokul'),
-            'default' => __('', 'jokul'),
+            'default' => '',
         ),
 
         'prod_client_id' => array(
@@ -43,7 +43,7 @@ return apply_filters(
             'title' => __('Production Client ID:', 'jokul'),
             'type' => 'text',
             'description' => __('Production Client ID you retrieved from DOKU Back Office', 'jokul'),
-            'default' => __('', 'jokul'),
+            'default' => '',
         ),
 
         'prod_shared_key' => array(
@@ -51,7 +51,7 @@ return apply_filters(
             'title' => __('Production Secret Key:', 'jokul'),
             'type' => 'text',
             'description' => __('Unique Production Secret Key Id you retrieved from DOKU Back Office', 'jokul'),
-            'default' => __('', 'jokul'),
+            'default' => '',
         ),
 
         'expired_time' => array(
@@ -68,6 +68,7 @@ return apply_filters(
             'custom_attributes' => array('readonly' => 'readonly'),
             'description' => __('Set this URL to your DOKU Back Office', 'jokul'),
             'default' => sprintf( __( '%s/wp-json/doku/notification', 'jokul' ), get_bloginfo('url') )
+
         ),
 
         'notif_url_qris' => array(
@@ -100,10 +101,8 @@ return apply_filters(
             'type' => 'text',
             'description' => __('Route to your DOKU Sub Account ID. All transactions will be linked to this account', 'jokul'),
             'placeholder' => _x('e.g. SAC-Xxxxxx', 'placeholder', 'jokul'),
-            'default' => __('', 'jokul'),
+            'default' => '',
             'required'    => true
         ),
     )
 );
-
-?>
