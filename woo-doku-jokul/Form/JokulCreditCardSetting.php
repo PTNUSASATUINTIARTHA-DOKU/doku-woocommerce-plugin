@@ -19,12 +19,12 @@ return apply_filters(
             'placeholder' => 'Bayar pesanan dengan Credit Card',
         ),
         'language_payment_jokul' => array(
-            'title' => __('Language :', 'jokul'),
+            'title' => __('Language :', 'doku-payment'),
             'type' => 'select',
             'default' => 'ID',
             'options' => array(
-                'ID' => __('ID', 'jokul'),
-                'EN' => __('EN', 'jokul'),
+                'ID' => __('ID', 'doku-payment'),
+                'EN' => __('EN', 'doku-payment'),
             ),
         ),
         'payment_background_color' => array(

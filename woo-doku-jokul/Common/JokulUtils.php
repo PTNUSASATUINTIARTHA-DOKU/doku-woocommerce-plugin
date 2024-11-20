@@ -108,7 +108,7 @@ class JokulUtils
         $recipient = $emailParams['customerEmail'];
         $subject = sprintf(
             /* translators: %1$s: Customer name, %2$s: Order number */
-            __("Hi %1$s, here is your payment instructions for order number %2$s!", 'theme_name'),
+            __("Hi %1$s, here is your payment instructions for order number %2$s!", 'doku-payment'),
             $emailParams['customerName'],
             $order->get_order_number()
         );

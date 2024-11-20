@@ -13,7 +13,7 @@ class JokulMainModule extends WC_Payment_Gateway
         $this->method_name          = 'General Configuration';
         $this->title                = !empty($this->get_option('channel_name')) ? $this->get_option('channel_name') : $this->method_name;
         $this->method_title         = __('DOKU', 'doku-payment');
-        $this->method_description   = sprintf(__('Accept payment through various payment channels with DOKU. Make it easy for your customers to purchase on your store.', 'woocommerce'));
+        $this->method_description   = sprintf(__('Accept payment through various payment channels with DOKU. Make it easy for your customers to purchase on your store.', 'doku-payment'));
 
         $this->init_settings();
         $this->enabled = $this->get_option('enabled');
