@@ -67,7 +67,8 @@ return apply_filters(
             'type' => 'text',
             'custom_attributes' => array('readonly' => 'readonly'),
             'description' => __('Set this URL to your DOKU Back Office', 'jokul'),
-            'default' => get_bloginfo('url').'/wp-json/doku/notification',
+            'default' => sprintf( __( '%s/wp-json/doku/notification', 'jokul' ), get_bloginfo('url') )
+
         ),
 
         'notif_url_qris' => array(
@@ -76,7 +77,7 @@ return apply_filters(
             'type' => 'text',
             'custom_attributes' => array('readonly' => 'readonly'),
             'description' => __('Set this URL to your DOKU Back Office', 'jokul'),
-            'default' => get_bloginfo('url').'/wp-json/doku/qrisnotification',
+            'default' => sprintf( __( '%s/wp-json/doku/qrisnotification', 'jokul' ), get_bloginfo('url') ),
         ),
 
         'email_notifications' => array(
