@@ -17,10 +17,10 @@ if (!function_exists('json_decode')) {
 }
 
 // Modules
-require_once(DOKU_JOKUL_PLUGIN_PATH . '/Module/JokulMainModule.php');
-require_once(DOKU_JOKUL_PLUGIN_PATH . '/Module/JokulCheckoutModule.php');
+require_once(DOKU_PAYMENT_PLUGIN_PATH . '/Module/JokulMainModule.php');
+require_once(DOKU_PAYMENT_PLUGIN_PATH . '/Module/JokulCheckoutModule.php');
 
 //API End Point
-require_once(DOKU_JOKUL_PLUGIN_PATH . '/Service/JokulNotificationService.php');
-require_once(DOKU_JOKUL_PLUGIN_PATH . '/Service/JokulQrisNotificationService.php');
+require_once(DOKU_PAYMENT_PLUGIN_PATH . '/Service/JokulNotificationService.php');
+require_once(DOKU_PAYMENT_PLUGIN_PATH . '/Service/JokulQrisNotificationService.php');
 

@@ -2,10 +2,10 @@
 
 if ( ! defined( 'ABSPATH' ) ) exit;
 
-require_once(DOKU_JOKUL_PLUGIN_PATH . '/Service/JokulCheckoutService.php');
-require_once(DOKU_JOKUL_PLUGIN_PATH . '/Service/JokulCheckStatusService.php');
-require_once(DOKU_JOKUL_PLUGIN_PATH . '/Common/JokulDb.php');
-require_once(DOKU_JOKUL_PLUGIN_PATH . '/Common/JokulUtils.php');
+require_once(DOKU_PAYMENT_PLUGIN_PATH . '/Service/JokulCheckoutService.php');
+require_once(DOKU_PAYMENT_PLUGIN_PATH . '/Service/JokulCheckStatusService.php');
+require_once(DOKU_PAYMENT_PLUGIN_PATH . '/Common/JokulDb.php');
+require_once(DOKU_PAYMENT_PLUGIN_PATH . '/Common/JokulUtils.php');
 
 class JokulCheckoutModule extends WC_Payment_Gateway
 {
@@ -232,7 +232,7 @@ class JokulCheckoutModule extends WC_Payment_Gateway
 
     public function init_form_fields()
     {
-        $this->form_fields = require(DOKU_JOKUL_PLUGIN_PATH . '/Form/JokulCheckoutSetting.php');
+        $this->form_fields = require(DOKU_PAYMENT_PLUGIN_PATH . '/Form/JokulCheckoutSetting.php');
     }
 
     public function process_admin_options()

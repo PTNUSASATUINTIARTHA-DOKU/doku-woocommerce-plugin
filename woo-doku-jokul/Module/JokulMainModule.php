@@ -32,7 +32,7 @@ class JokulMainModule extends WC_Payment_Gateway
 
     public function init_form_fields()
     {
-        $this->form_fields = require(DOKU_JOKUL_PLUGIN_PATH . '/Form/JokulPgSetting.php');
+        $this->form_fields = require(DOKU_PAYMENT_PLUGIN_PATH . '/Form/JokulPgSetting.php');
     }
 
     public function process_admin_options()
