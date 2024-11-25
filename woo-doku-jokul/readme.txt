@@ -37,6 +37,9 @@ If no stable tag is provided, your users may not get the correct version of your
 Fixing minor bug and adjust code to wordpress standards.
 
 == Change Log ==
+= 1.3.16 =
+Fixing minor bug and adjust code to wordpress standards.
+
 1.3.15 -
 DOKU Payment Support Tax and Fee for indodana.
 
