@@ -1,5 +1,7 @@
 <?php
 
+if ( ! defined( 'ABSPATH' ) ) exit;
+
 class JokulMainModule extends WC_Payment_Gateway
 {
     public function __construct()
@@ -10,8 +12,8 @@ class JokulMainModule extends WC_Payment_Gateway
         $this->has_fields           = true;
         $this->method_name          = 'General Configuration';
         $this->title                = !empty($this->get_option('channel_name')) ? $this->get_option('channel_name') : $this->method_name;
-        $this->method_title         = __('DOKU', 'woocommerce-gateway-jokul');
-        $this->method_description   = sprintf(__('Accept payment through various payment channels with DOKU. Make it easy for your customers to purchase on your store.', 'woocommerce'));
+        $this->method_title         = __('DOKU', 'doku-payment');
+        $this->method_description   = sprintf(__('Accept payment through various payment channels with DOKU. Make it easy for your customers to purchase on your store.', 'doku-payment'));
 
         $this->init_settings();
         $this->enabled = $this->get_option('enabled');
@@ -30,7 +32,7 @@ class JokulMainModule extends WC_Payment_Gateway
 
     public function init_form_fields()
     {
-        $this->form_fields = require(DOKU_JOKUL_PLUGIN_PATH . '/Form/JokulPgSetting.php');
+        $this->form_fields = require(DOKU_PAYMENT_PLUGIN_PATH . '/Form/JokulPgSetting.php');
     }
 
     public function process_admin_options()

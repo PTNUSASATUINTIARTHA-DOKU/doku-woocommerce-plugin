@@ -1,8 +1,10 @@
 <?php
 
-require_once(DOKU_JOKUL_PLUGIN_PATH . '/Common/JokulConfig.php');
-require_once(DOKU_JOKUL_PLUGIN_PATH . '/Common/JokulUtils.php');
-require_once(DOKU_JOKUL_PLUGIN_PATH . '/Common/JokulDb.php');
+if ( ! defined( 'ABSPATH' ) ) exit;
+
+require_once(DOKU_PAYMENT_PLUGIN_PATH . '/Common/JokulConfig.php');
+require_once(DOKU_PAYMENT_PLUGIN_PATH . '/Common/JokulUtils.php');
+require_once(DOKU_PAYMENT_PLUGIN_PATH . '/Common/JokulDb.php');
 
 class JokulNotificationService
 {
@@ -17,13 +19,40 @@ class JokulNotificationService
         }
         return $headers;
     }
+    private function sanitize_array($array)
+    {
+        foreach ($array as $key => &$value) {
+            if (is_array($value)) {
+                $value = $this->sanitize_array($value);
+            } else {
+                if (is_string($value)) {
+                    $value = sanitize_text_field($value);
+                } elseif (is_int($value)) {
+                    $value = intval($value);
+                } elseif (is_float($value)) {
+                    $value = floatval($value);
+                }
+            }
+        }
+        return $array;
+    }
 
     public function getNotification($path)
     {
         $jokulUtils = new JokulUtils();
-        $raw_notification = json_decode(file_get_contents('php://input'), true);
+        $raw_input = file_get_contents('php://input');
+        $raw_notification = json_decode($raw_input, true);
         $mainSettings = get_option('woocommerce_jokul_gateway_settings');
         $headerData = $this->getallheaders();
+
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            $jokulUtils->doku_log($jokulUtils, 'INVALID JSON INPUT: ' . json_last_error_msg(), null);
+            http_response_code(400);
+            echo esc_html(http_response_code());
+            return new WP_REST_Response('Invalid JSON input', 400);
+        }
+
+        $raw_notification = $this->sanitize_array($raw_notification);
 
         $jokulUtils->doku_log($jokulUtils, 'NOTIFICATION  : ' . json_encode($raw_notification, JSON_PRETTY_PRINT), $raw_notification['order']['invoice_number']);
         $jokulUtils->doku_log($jokulUtils, 'NOTIFICATION HEADER : ' . json_encode($headerData, JSON_PRETTY_PRINT), $raw_notification['order']['invoice_number']);
@@ -51,9 +80,9 @@ class JokulNotificationService
 
         $transaction = $jokulDb->checkTrx($invoiceNumber, $amount, $paymentCode);
 
-        if ($transaction != '') {
+        if (!empty($transaction)){
 
-            $signature = $jokulUtils->generateSignatureNotification($headerData, file_get_contents('php://input'), $sharedKey, $requestTarget);
+            $signature = $jokulUtils->generateSignatureNotification($headerData, $raw_input, $sharedKey, $requestTarget);
 
             if ($signature == $headerData['Signature']) {
                         $jokulUtils->doku_log($jokulUtils, 'TRANSACTION SIGNATURE VALID', $raw_notification['order']['invoice_number']);
@@ -81,12 +110,12 @@ class JokulNotificationService
             } else {
                 $jokulUtils->doku_log($jokulUtils, 'SIGNATURE NOT MATCH!', $raw_notification['order']['invoice_number']);
                 http_response_code(400);
-                echo http_response_code();
+                echo esc_html(http_response_code());
                 return new WP_REST_Response(null, 400);
             }
         } else {
             http_response_code(404);
-            echo http_response_code();
+            echo esc_html(http_response_code());
             return new WP_REST_Response(null, 404);
         }
     }

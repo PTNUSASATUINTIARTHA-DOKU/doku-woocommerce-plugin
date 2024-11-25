@@ -1,5 +1,7 @@
 <?php
 
+if ( ! defined( 'ABSPATH' ) ) exit;
+
 class JokulConfig {
 
   const SANDBOX_BASE_URL    = 'https://api-sandbox.doku.com';
@@ -14,4 +16,3 @@ class JokulConfig {
   }
 }
 
-?>

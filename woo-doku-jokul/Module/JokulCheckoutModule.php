@@ -1,9 +1,11 @@
 <?php
 
-require_once(DOKU_JOKUL_PLUGIN_PATH . '/Service/JokulCheckoutService.php');
-require_once(DOKU_JOKUL_PLUGIN_PATH . '/Service/JokulCheckStatusService.php');
-require_once(DOKU_JOKUL_PLUGIN_PATH . '/Common/JokulDb.php');
-require_once(DOKU_JOKUL_PLUGIN_PATH . '/Common/JokulUtils.php');
+if ( ! defined( 'ABSPATH' ) ) exit;
+
+require_once(DOKU_PAYMENT_PLUGIN_PATH . '/Service/JokulCheckoutService.php');
+require_once(DOKU_PAYMENT_PLUGIN_PATH . '/Service/JokulCheckStatusService.php');
+require_once(DOKU_PAYMENT_PLUGIN_PATH . '/Common/JokulDb.php');
+require_once(DOKU_PAYMENT_PLUGIN_PATH . '/Common/JokulUtils.php');
 
 class JokulCheckoutModule extends WC_Payment_Gateway
 {
@@ -15,8 +17,8 @@ class JokulCheckoutModule extends WC_Payment_Gateway
         $this->method_name          = 'DOKU Checkout';
         $this->method_code          = 'JOKUL_CHECKOUT';
         $this->title                = !empty($this->get_option('channel_name')) ? $this->get_option('channel_name') : $this->method_name;
-        $this->method_title         = __('DOKU', 'woocommerce-gateway-jokul');
-        $this->method_description   = sprintf(__('Accept payment through various payment channels with DOKU. Make it easy for your customers to purchase on your store.', 'woocommerce'));
+        $this->method_title         = __('DOKU', 'doku-payment');
+        $this->method_description   = sprintf(__('Accept payment through various payment channels with DOKU. Make it easy for your customers to purchase on your store.', 'doku-payment'));
         $this->checkout_msg         = 'This your payment on DOKU Checkout : ';
 
         $this->init_settings();
@@ -47,17 +49,15 @@ class JokulCheckoutModule extends WC_Payment_Gateway
 
         add_action('woocommerce_update_options_payment_gateways_' . $this->id, array($this, 'process_admin_options'));
 
-        $haystack = explode("&", $_SERVER['QUERY_STRING']);
-        if( WC()->session != null ){
-                $chosen_payment_method = WC()->session->get('chosen_payment_method');
+        $queryArray = explode("&", sanitize_text_field($_SERVER['QUERY_STRING']));
+        if (WC()->session != null) {
+            $chosen_payment_method = WC()->session->get('chosen_payment_method');
             if ($this->id == 'jokul_checkout') {
-                if (strpos($_SERVER['QUERY_STRING'], "jokul=show") !== false) {
-
-                    add_filter('the_title',  array($this, 'woo_title_order_pending'));
+                if (in_array("jokul=show", $queryArray)) {
+                    add_filter('the_title', array($this, 'woo_title_order_pending'));
                     add_action('woocommerce_thankyou_' . $this->id, array($this, 'thank_you_page_pending'), 1, 10);
                 } else {
-
-                    add_filter('the_title',  array($this, 'woo_title_order_received'));
+                    add_filter('the_title', array($this, 'woo_title_order_received'));
                 }
             }
         }
@@ -256,7 +256,7 @@ class JokulCheckoutModule extends WC_Payment_Gateway
 
     public function init_form_fields()
     {
-        $this->form_fields = require(DOKU_JOKUL_PLUGIN_PATH . '/Form/JokulCheckoutSetting.php');
+        $this->form_fields = require(DOKU_PAYMENT_PLUGIN_PATH . '/Form/JokulCheckoutSetting.php');
     }
 
     public function process_admin_options()
@@ -346,7 +346,7 @@ class JokulCheckoutModule extends WC_Payment_Gateway
         $trx['invoice_number']          = $response['response']['order']['invoice_number'];
         $trx['result_msg']              = null;
         $trx['process_type']            = 'PAYMENT_PENDING';
-        $trx['raw_post_data']           = file_get_contents('php://input');
+        $trx['raw_post_data']           = json_encode($response);
         $trx['ip_address']              = $getIp;
         $trx['amount']                  = $amount;
         $trx['payment_channel']         = $this->method_code;
@@ -361,19 +361,30 @@ class JokulCheckoutModule extends WC_Payment_Gateway
     }
 
     public function thank_you_page_pending($order_id)
-{
+    {
+        $jokulCheckoutURL = get_post_meta($order_id, 'checkoutUrl', true);
+        if (!$jokulCheckoutURL) {
+            return;
+        }
 
-    $jokulCheckoutURL = get_post_meta($order_id, 'checkoutUrl', true);
-?>
-    <script type="text/javascript">
-        (function() {
-            const checkoutURL = "<?php echo esc_js($jokulCheckoutURL); ?>";
+        wp_register_script(
+            'jokul-thank-you-redirect',
+            '',
+            [], 
+            '1.0.0',
+            true
+        );
 
-            window.location.href = checkoutURL;
-        })();
-    </script>
-<?php
-}
+        $inline_script = "
+            (function() {
+                const checkoutURL = '" . esc_js($jokulCheckoutURL) . "';
+                window.location.href = checkoutURL;
+            })();
+        ";
+
+        wp_add_inline_script('jokul-thank-you-redirect', $inline_script);
+        wp_enqueue_script('jokul-thank-you-redirect');
+    }
 
     function woo_title_order_pending($title)
     {
@@ -428,4 +439,4 @@ class JokulCheckoutModule extends WC_Payment_Gateway
         }
     }
 }
-?>
+

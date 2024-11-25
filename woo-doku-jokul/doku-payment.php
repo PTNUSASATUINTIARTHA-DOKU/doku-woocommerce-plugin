@@ -1,9 +1,12 @@
 <?php
+
+if ( ! defined( 'ABSPATH' ) ) exit;
+
 /*
  * Plugin Name: DOKU Payment
  * Plugin URI: https://github.com/PTNUSASATUINTIARTHA-DOKU/doku-woocommerce-plugin
  * Description: Accept payment through various payment channels with DOKU. Make it easy for your customers to purchase on your store.
- * Version: 1.3.14
+ * Version: 1.3.16
  * Author: DOKU
  * Author URI: http://www.doku.com
  * License: GPLv2 or later
@@ -15,8 +18,8 @@
 /*
  * The class itself, please note that it is inside plugins_loaded action hook
  */
-define('DOKU_JOKUL_MAIN_FILE', __FILE__);
-define('DOKU_JOKUL_PLUGIN_PATH', untrailingslashit(plugin_dir_path(__FILE__)));
+define('DOKU_PAYMENT_MAIN_FILE', __FILE__);
+define('DOKU_PAYMENT_PLUGIN_PATH', untrailingslashit(plugin_dir_path(__FILE__)));
 
 add_action('plugins_loaded', 'jokul_init_gateway_class');
 function jokul_init_gateway_class()
@@ -70,8 +73,8 @@ function jokul_init_gateway_class()
 	}
 }
 
-register_activation_hook(__FILE__, 'installDb');
-function installDb()
+register_activation_hook(__FILE__, 'doku_payment_install_db');
+function doku_payment_install_db()
 {
 	global $wpdb;
 	global $db_version;
@@ -121,7 +124,7 @@ add_action('rest_api_init', function () {
     register_rest_route('doku', 'notification', array(
         'methods' => 'POST',
         'callback' => function ($request) {
-            return order_update_status('doku');
+            return doku_payment_order_update_status('doku');
         },
         'permission_callback' => '__return_true'
     ));
@@ -130,37 +133,37 @@ add_action('rest_api_init', function () {
     register_rest_route('jokul', 'notification', array(
         'methods' => 'POST',
         'callback' => function ($request) {
-            return order_update_status('jokul');
+            return doku_payment_order_update_status('jokul');
         },
         'permission_callback' => '__return_true'
     ));
 });
 
-function order_update_status($path)
+function doku_payment_order_update_status($path)
 {
 	$notificationService = new JokulNotificationService();
 	$response = $notificationService->getNotification($path);
 	return $response;
 }
 
-add_action('rest_api_init', 'qris_register_route');
-function qris_register_route()
+add_action('rest_api_init', 'doku_payment_qris_register_route');
+function doku_payment_qris_register_route()
 {
 	register_rest_route('doku', 'qrisnotification', array(
 		'methods' => 'POST',
-		'callback' => 'order_update_status_qris',
+		'callback' => 'doku_payment_order_update_status_qris',
 		'permission_callback' => '__return_true'
 	));
 }
 
-function order_update_status_qris()
+function doku_payment_order_update_status_qris()
 {
 	$qrisNotificationService = new JokulQrisNotificationService();
 	$response = $qrisNotificationService->getQrisNotification();
 }
 
-add_action('woocommerce_thankyou', 'thank_you_page_credit_card', 1, 10);
-function thank_you_page_credit_card($order_id)
+add_action('woocommerce_thankyou', 'doku_payment_thank_you_page_credit_card', 1, 10);
+function doku_payment_thank_you_page_credit_card($order_id)
 {
 	$chosen_payment_method     = WC()->session->get('chosen_payment_method');
 	if ($chosen_payment_method == 'jokul_creditcard') {
@@ -172,8 +175,8 @@ function thank_you_page_credit_card($order_id)
 		<p class="woocommerce-notice woocommerce-notice--success woocommerce-thankyou-order-received">Your payment with Credit Card is success!</p>
 		<ul class="woocommerce-order-overview woocommerce-thankyou-order-details order_details">
 			<li class="woocommerce-order-overview__cc cc">
-				<?php _e('Payment Method', 'woocommerce'); ?>
-				<strong><?php _e("Credit Card", 'woocommerce'); ?></strong>
+				<?php esc_html_e('Payment Method', 'doku-payment'); ?>
+				<strong><?php esc_html_e("Credit Card", 'doku-payment'); ?></strong>
 			</li>
 		</ul>
 <?php
@@ -181,15 +184,15 @@ function thank_you_page_credit_card($order_id)
 }
 
 
-add_action('before_woocommerce_init', 'declare_cart_checkout_blocks_compatibility');
-function declare_cart_checkout_blocks_compatibility() {
+add_action('before_woocommerce_init', 'doku_payment_declare_cart_checkout_blocks_compatibility');
+function doku_payment_declare_cart_checkout_blocks_compatibility() {
     if (class_exists('\Automattic\WooCommerce\Utilities\FeaturesUtil')) {
         \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility('cart_checkout_blocks', __FILE__, true);
     }
 }
 
-add_action('woocommerce_blocks_loaded', 'doku_register_payment_method_type');
-function doku_register_payment_method_type() {
+add_action('woocommerce_blocks_loaded', 'doku_payment_register_payment_method_type');
+function doku_payment_register_payment_method_type() {
     if (!class_exists('Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType')) {
         return;
     }
@@ -202,8 +205,8 @@ function doku_register_payment_method_type() {
     });
 }
 
-add_filter('woocommerce_locate_template', 'woo_adon_plugin_template', 1, 3);
-function woo_adon_plugin_template($template, $template_name, $template_path)
+add_filter('woocommerce_locate_template', 'doku_payment_plugin_template', 1, 3);
+function doku_payment_plugin_template($template, $template_name, $template_path)
 {
 	global $woocommerce;
 	$_template = $template;
@@ -230,5 +233,3 @@ function woo_adon_plugin_template($template, $template_name, $template_path)
 
 	return $template;
 }
-
-?>

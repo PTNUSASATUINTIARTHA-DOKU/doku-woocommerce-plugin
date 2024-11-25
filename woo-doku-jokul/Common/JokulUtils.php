@@ -1,4 +1,7 @@
 <?php
+
+if ( ! defined( 'ABSPATH' ) ) exit;
+
 define("HTML_EMAIL_HEADERS", array('Content-Type: text/html; charset=UTF-8'));
 
 class JokulUtils
@@ -47,17 +50,32 @@ class JokulUtils
         return 'HMACSHA256=' . $signature;
     }
 
+    // public function getIpaddress()
+    // {
+    //     if (!empty($_SERVER['HTTP_CLIENT_IP'])) {
+    //         $ip = $_SERVER['HTTP_CLIENT_IP'];
+    //     } elseif (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+    //         $ip = $_SERVER['HTTP_X_FORWARDED_FOR'];
+    //     } else {
+    //         $ip = $_SERVER['REMOTE_ADDR'];
+    //     }
+    //     return $ip;
+    // }
+
     public function getIpaddress()
     {
+        $ip = '';
         if (!empty($_SERVER['HTTP_CLIENT_IP'])) {
             $ip = $_SERVER['HTTP_CLIENT_IP'];
         } elseif (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
-            $ip = $_SERVER['HTTP_X_FORWARDED_FOR'];
+            $ipArray = explode(',', $_SERVER['HTTP_X_FORWARDED_FOR']);
+            $ip = trim($ipArray[0]);
         } else {
             $ip = $_SERVER['REMOTE_ADDR'];
         }
-        return $ip;
+        return filter_var($ip, FILTER_VALIDATE_IP) ? $ip : null;
     }
+
 
     public function guidv4($data = null)
     {
@@ -71,15 +89,13 @@ class JokulUtils
 
     function doku_log($class, $log_msg, $invoice_number = '')
     {
-
+    
         $log_filename = "doku_log";
-        $log_header = date(DATE_ATOM, time()) . ' '  . '---> ' . $invoice_number . " : ";
+        $log_header = gmdate(DATE_ATOM) . ' '  . '---> ' . $invoice_number . " : ";
         if (!file_exists($log_filename)) {
-            // create directory/folder uploads.
             mkdir($log_filename, 0777, true);
         }
-        $log_file_data = $log_filename . '/log_' . date('d-M-Y') . '.log';
-        // if you don't add `FILE_APPEND`, the file will be erased each time you add a log
+        $log_file_data = $log_filename . '/log_' . gmdate('d-M-Y') . '.log';
         file_put_contents($log_file_data, $log_header . $log_msg . "\n", FILE_APPEND);
     }
 
@@ -90,7 +106,12 @@ class JokulUtils
 
         //format the email
         $recipient = $emailParams['customerEmail'];
-        $subject = __("Hi " . $emailParams['customerName']. ", here is your payment instructions for order number " . $order->get_order_number() . "!", 'theme_name');
+        $subject = sprintf(
+            /* translators: %1$s: Customer name, %2$s: Order number */
+            __("Hi %1$s, here is your payment instructions for order number %2$s!", 'doku-payment'),
+            $emailParams['customerName'],
+            $order->get_order_number()
+        );
         $content = $this->get_custom_email_html($order, $this->getEmailMessage($howToPayUrl), $mailer, $subject);
         $headers = "Content-Type: text/html\r\n";
 
@@ -111,27 +132,52 @@ class JokulUtils
         ));
     }
 
+    // function getEmailMessage($url)
+    // {
+    //     $ch = curl_init();
+    //     $headers = array(
+    //         'Accept: application/json',
+    //         'Content-Type: application/json',
+
+    //     );
+    //     curl_setopt($ch, CURLOPT_URL, $url);
+    //     curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+    //     curl_setopt($ch, CURLOPT_HEADER, 0);
+
+    //     curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "GET");
+    //     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+    //     // Timeout in seconds
+    //     curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+
+    //     $response = curl_exec($ch);
+    //     $responseJson = json_decode($response, true);
+    //     return $responseJson['payment_instruction'];
+    // }
     function getEmailMessage($url)
     {
-        $ch = curl_init();
         $headers = array(
-            'Accept: application/json',
-            'Content-Type: application/json',
-
+            'Accept' => 'application/json',
+            'Content-Type' => 'application/json',
         );
-        curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-        curl_setopt($ch, CURLOPT_HEADER, 0);
 
-        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "GET");
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        $args = array(
+            'headers' => $headers,
+            'timeout' => 30,
+        );
 
-        // Timeout in seconds
-        curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+        $response = wp_remote_get($url, $args);
 
-        $response = curl_exec($ch);
-        $responseJson = json_decode($response, true);
-        return $responseJson['payment_instruction'];
+        if (is_wp_error($response)) {
+            $error_message = $response->get_error_message();
+            return "Error fetching payment instructions: $error_message";
+        }
+
+        // Ambil isi body dari respons
+        $response_body = wp_remote_retrieve_body($response);
+        $responseJson = json_decode($response_body, true);
+
+        return $responseJson['payment_instruction'] ?? null;
     }
 
     function formatPhoneNumber($phoneNumber) {
