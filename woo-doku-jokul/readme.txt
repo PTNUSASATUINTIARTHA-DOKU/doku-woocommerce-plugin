@@ -4,7 +4,7 @@ Donate link: https://doku.com/
 Tags: Payment Gateway, Payment                                                                 
 Requires at least: 2.2
 Tested up to: 6.6
-Stable tag: 1.3.14
+Stable tag: 1.3.16
 Requires PHP: 5.6
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -33,10 +33,13 @@ If no stable tag is provided, your users may not get the correct version of your
 
 == Upgrade Notice ==
  
-= 1.3.14 =
-DOKU Payment compatible with WooCommerce Checkout Block.
+= 1.3.16 =
+Fixing minor bug and adjust code to wordpress standards.
 
 == Change Log ==
+1.3.15 -
+DOKU Payment Support Tax and Fee for indodana.
+
 1.3.14 -
 DOKU Payment compatible with WooCommerce Checkout Block.
 
