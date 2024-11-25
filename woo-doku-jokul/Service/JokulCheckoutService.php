@@ -70,7 +70,7 @@ class JokulCheckoutService {
             "additional_info" => array (
                 "integration" => array (
                     "name" => "woocommerce-plugin",
-                    "version" => "1.3.14",
+                    "version" => "1.3.16",
                     "cms_version" => $params['woo_version']
                 ),
                 "account" => array(
@@ -131,7 +131,7 @@ class JokulCheckoutService {
             "additional_info" => array (
                 "integration" => array (
                     "name" => "woocommerce-plugin",
-                    "version" => "1.3.14",
+                    "version" => "1.3.16",
                     "cms_version" => $params['woo_version']
                 ),
                 "method" => "Jokul Checkout",
