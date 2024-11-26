@@ -333,7 +333,7 @@ class JokulCheckoutModule extends WC_Payment_Gateway
     public function payment_fields()
     {
         if ($this->paymentDescription) {
-            echo wpautop(wp_kses_post($this->paymentDescription));
+            echo wp_kses_post(wpautop(esc_html($this->paymentDescription)));
         }
     }
 
