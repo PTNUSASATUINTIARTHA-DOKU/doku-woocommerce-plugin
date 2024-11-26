@@ -105,14 +105,16 @@ class JokulUtils
 
         // Format the email
         $recipient = $emailParams['customerEmail'];
+        $customer_name = $emailParams['customerName'] ?? '-';
+        $order_number = $order->get_order_number() ?? '-';
         $subject = sprintf(
             /* translators: %1$s: Customer name, %2$s: Order number */
             esc_html__(
                 'Hi %1$s, here is your payment instructions for order number %2$s!', 
                 'doku-payment'
             ),
-            esc_html($emailParams['customerName']),
-            esc_html($order->get_order_number())
+            esc_html($customer_name),
+            esc_html($order_number)
         );
 
         $content = $this->get_custom_email_html($order, $this->getEmailMessage($howToPayUrl), $mailer, $subject);
