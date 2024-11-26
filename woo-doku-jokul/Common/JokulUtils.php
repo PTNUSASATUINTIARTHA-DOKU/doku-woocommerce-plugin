@@ -66,12 +66,12 @@ class JokulUtils
     {
         $ip = '';
         if (!empty($_SERVER['HTTP_CLIENT_IP'])) {
-            $ip = $_SERVER['HTTP_CLIENT_IP'];
+            $ip = sanitize_text_field($_SERVER['HTTP_CLIENT_IP']);
         } elseif (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
-            $ipArray = explode(',', $_SERVER['HTTP_X_FORWARDED_FOR']);
+            $ipArray =  map_deep(explode(',', $_SERVER['HTTP_X_FORWARDED_FOR']),'sanitize_text_field');
             $ip = trim($ipArray[0]);
         } else {
-            $ip = $_SERVER['REMOTE_ADDR'];
+            $ip = sanitize_text_field($_SERVER['REMOTE_ADDR']);
         }
         return filter_var($ip, FILTER_VALIDATE_IP) ? $ip : null;
     }
@@ -84,7 +84,7 @@ class JokulUtils
         $data[6] = chr(ord($data[6]) & 0x0f | 0x40); // set version to 0100
         $data[8] = chr(ord($data[8]) & 0x3f | 0x80); // set bits 6-7 to 10
 
-        return vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex($data), 4));
+        return sprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex($data), 4));
     }
 
     function doku_log($class, $log_msg, $invoice_number = '')
@@ -101,23 +101,26 @@ class JokulUtils
 
     public function send_email($order, $emailParams, $howToPayUrl)
     {
-
         $mailer = WC()->mailer();
 
-        //format the email
+        // Format the email
         $recipient = $emailParams['customerEmail'];
         $customer_name = $emailParams['customerName'] ?? '-';
         $order_number = $order->get_order_number() ?? '-';
         $subject = sprintf(
             /* translators: %1$s: Customer name, %2$s: Order number */
-            __("Hi %1$s, here is your payment instructions for order number %2$s!", 'doku-payment'),
-            $customer_name,
-            $order_number
+            esc_html__(
+                'Hi %1$s, here is your payment instructions for order number %2$s!', 
+                'doku-payment'
+            ),
+            esc_html($customer_name),
+            esc_html($order_number)
         );
+
         $content = $this->get_custom_email_html($order, $this->getEmailMessage($howToPayUrl), $mailer, $subject);
         $headers = "Content-Type: text/html\r\n";
 
-        //send the email through wordpress
+        // Send the email through WordPress
         $mailer->send($recipient, $subject, $content, $headers);
     }
 
