@@ -101,23 +101,26 @@ class JokulUtils
 
     public function send_email($order, $emailParams, $howToPayUrl)
     {
-
         $mailer = WC()->mailer();
 
-        //format the email
+        // Format the email
         $recipient = $emailParams['customerEmail'];
         $customer_name = $emailParams['customerName'] ?? '-';
         $order_number = $order->get_order_number() ?? '-';
         $subject = sprintf(
             /* translators: %1$s: Customer name, %2$s: Order number */
-            __("Hi %1$s, here is your payment instructions for order number %2$s!", 'doku-payment'),
-            $customer_name,
-            $order_number
+            esc_html__(
+                'Hi %1$s, here is your payment instructions for order number %2$s!', 
+                'doku-payment'
+            ),
+            esc_html($customer_name),
+            esc_html($order_number)
         );
+
         $content = $this->get_custom_email_html($order, $this->getEmailMessage($howToPayUrl), $mailer, $subject);
         $headers = "Content-Type: text/html\r\n";
 
-        //send the email through wordpress
+        // Send the email through WordPress
         $mailer->send($recipient, $subject, $content, $headers);
     }
 
