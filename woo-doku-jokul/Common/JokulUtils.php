@@ -66,12 +66,12 @@ class JokulUtils
     {
         $ip = '';
         if (!empty($_SERVER['HTTP_CLIENT_IP'])) {
-            $ip = $_SERVER['HTTP_CLIENT_IP'];
+            $ip = sanitize_text_field($_SERVER['HTTP_CLIENT_IP']);
         } elseif (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
-            $ipArray = explode(',', $_SERVER['HTTP_X_FORWARDED_FOR']);
+            $ipArray =  map_deep(explode(',', $_SERVER['HTTP_X_FORWARDED_FOR']),'sanitize_text_field');
             $ip = trim($ipArray[0]);
         } else {
-            $ip = $_SERVER['REMOTE_ADDR'];
+            $ip = sanitize_text_field($_SERVER['REMOTE_ADDR']);
         }
         return filter_var($ip, FILTER_VALIDATE_IP) ? $ip : null;
     }
