@@ -27,7 +27,7 @@ return apply_filters(
             'title' => __('Sandbox Client ID:', 'doku-payment'),
             'type' => 'text',
             'description' => __('Sandbox Client ID you retrieved from DOKU Back Office', 'doku-payment'),
-            'default' => __('', 'doku-payment'),
+            'default' => '',
         ),
 
         'sandbox_shared_key' => array(
@@ -67,8 +67,11 @@ return apply_filters(
             'type' => 'text',
             'custom_attributes' => array('readonly' => 'readonly'),
             'description' => __('Set this URL to your DOKU Back Office', 'doku-payment'),
-            'default' => sprintf( __( '%s/wp-json/doku/notification', 'doku-payment' ), get_bloginfo('url') )
-
+            'default' => sprintf(
+                /* translators: %s: The site URL. */
+                __( '%s/wp-json/doku/notification', 'doku-payment' ),
+                get_bloginfo('url')
+            ),
         ),
 
         'notif_url_qris' => array(
@@ -77,7 +80,11 @@ return apply_filters(
             'type' => 'text',
             'custom_attributes' => array('readonly' => 'readonly'),
             'description' => __('Set this URL to your DOKU Back Office', 'doku-payment'),
-            'default' => sprintf( __( '%s/wp-json/doku/qrisnotification', 'doku-payment' ), get_bloginfo('url') ),
+            'default' => sprintf(
+                /* translators: %s: The site URL. */
+                __( '%s/wp-json/doku/qrisnotification', 'doku-payment' ),
+                get_bloginfo('url')
+            ),
         ),
 
         'email_notifications' => array(

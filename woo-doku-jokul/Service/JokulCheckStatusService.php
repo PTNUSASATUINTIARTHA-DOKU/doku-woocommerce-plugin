@@ -14,9 +14,7 @@ class JokulCheckStatusService {
 
         $requestId = $this->jokulUtils->guidv4();
         $targetPath = "/orders/v1/status/" . $params['invoiceNumber'];
-        $dateTime = gmdate("Y-m-d H:i:s");
-        $dateTime = date(DATE_ISO8601, strtotime($dateTime));
-        $dateTimeFinal = substr($dateTime, 0, 19) . "Z";
+        $dateTimeFinal = gmdate("Y-m-d\TH:i:s\Z");
 
         $this->jokulConfig = new JokulConfig();
         $valueEnv = $config['environment'] === 'true' ? true : false;
