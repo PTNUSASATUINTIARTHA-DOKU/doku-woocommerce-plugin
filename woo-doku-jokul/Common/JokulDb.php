@@ -8,28 +8,38 @@ class JokulDb {
     {
         global $wpdb;
         $table = $wpdb->prefix . "jokuldb";
-        
+
         $columns = array_keys($datainsert);
+        $validated_columns = array_map('sanitize_key', $columns);
+        $columns_str = implode(', ', $validated_columns);
         $placeholders = array_map(function ($value) {
             return is_numeric($value) ? '%d' : '%s';
         }, $datainsert);
 
-        $columns_str = implode(', ', $columns);
         $placeholders_str = implode(', ', $placeholders);
-        
         $query = $wpdb->prepare(
-            "INSERT INTO $table ($columns_str) VALUES ($placeholders_str)",
+            "INSERT INTO `$table` ($columns_str) VALUES ($placeholders_str)",
             array_values($datainsert)
         );
 
         $result = $wpdb->query($query);
+        return $result;
     }
     
     function updateData($invoice, $status) 
     {
         global $wpdb;
-        $wpdb->query("UPDATE ".$wpdb->prefix."jokuldb SET process_type='".$status."' WHERE invoice_number='".$invoice."'");
-    } 
+        $table = $wpdb->prefix . "jokuldb";
+
+        $query = $wpdb->prepare(
+            "UPDATE `$table` SET process_type = %s WHERE invoice_number = %s",
+            $status,
+            $invoice
+        );
+
+        $result = $wpdb->query($query);
+        return $result;
+    }
 
     function checkTrx($order_id, $amount, $vaNumber)
     {
