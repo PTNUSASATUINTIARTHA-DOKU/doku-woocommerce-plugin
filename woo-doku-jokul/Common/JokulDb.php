@@ -31,46 +31,28 @@ class JokulDb {
         global $wpdb;
         $table = $wpdb->prefix . "jokuldb";
 
-        $query = $wpdb->prepare(
-            "UPDATE `$table` SET process_type = %s WHERE invoice_number = %s",
-            $status,
-            $invoice
-        );
-
-        $result = $wpdb->query($query);
+        $query = "UPDATE {$table} SET process_type = %s WHERE invoice_number = %s";
+        $result = $wpdb->query($wpdb->prepare($query, $status, $invoice));
         return $result;
-    }
+    } 
 
-    function checkTrx($order_id, $amount, $vaNumber)
+    function checkTrx($order_id, $amount)
     {
         global $wpdb;
         $table = $wpdb->prefix . "jokuldb";
 
-        $query = $wpdb->prepare(
-            "SELECT * FROM $table WHERE invoice_number = %s AND amount = %d ORDER BY trx_id DESC LIMIT 1",
-            $order_id,
-            $amount
-        );
-
-        $result = $wpdb->get_row($query);
-
+        $query = "SELECT * FROM {$table} WHERE invoice_number = %s AND amount = %d ORDER BY trx_id DESC LIMIT 1";
+        $result = $wpdb->get_row($wpdb->prepare($query, $order_id, $amount));
         return $result;
     }
 
-    function checkStatusTrx($order_id, $amount, $vaNumber, $processType)
+    function checkStatusTrx($order_id, $amount, $processType)
     {
         global $wpdb;
         $table = $wpdb->prefix . "jokuldb";
 
-        $query = $wpdb->prepare(
-            "SELECT payment_code FROM $table WHERE invoice_number = %s AND amount = %d AND process_type = %s ORDER BY trx_id DESC LIMIT 1",
-            $order_id,
-            $amount,
-            $processType
-        );
-
-        $result = $wpdb->get_var($query);
+        $query = "SELECT payment_code FROM {$table} WHERE invoice_number = %s AND amount = %d AND process_type = %s ORDER BY trx_id DESC LIMIT 1";
+        $result = $wpdb->get_var($wpdb->prepare($query, $order_id, $amount, $processType));
         return $result;
     }
 }
-

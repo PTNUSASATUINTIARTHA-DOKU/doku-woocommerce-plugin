@@ -4,7 +4,7 @@ Donate link: https://doku.com/
 Tags: Payment Gateway, Payment                                                                 
 Requires at least: 2.2
 Tested up to: 6.6
-Stable tag: 1.3.16
+Stable tag: 1.3.17
 Requires PHP: 5.6
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -47,8 +47,8 @@ DOKU Payment Support Tax and Fee for indodana.
 DOKU Payment compatible with WooCommerce Checkout Block.
 
 == External services ==
-This plugin connects to DOKU Checkout to facilitate customer payments by enabling them to select a payment method and complete transactions through DOKU Checkout. For testing, it connects to the sandbox environment at https://api-sandbox.doku.com, while live transactions are processed through the production environment at https://api.doku.com. During payment initiation and processing, the plugin transmits transaction details and customer payment preferences to these endpoints.
-Additionally, the plugin uses JokulNotificationService to update payment statuses via a notification endpoint that incorporates the merchant's name as a data. This endpoint is triggered each time an event initiates a status change, ensuring that transaction updates are accurately reflected.
+This plugin connects to DOKU Checkout to facilitate customer payments by enabling them to select a payment method and complete transactions through DOKU Checkout. For testing purposes, it connects to the sandbox environment at https://api-sandbox.doku.com, while live transactions are processed through the production environment at https://api.doku.com. During payment initiation and processing, the plugin transmits transaction details and customer payment preferences to these endpoints.
+Additionally, the plugin uses Service/JokulNotificationService to update payment statuses via a notification endpoint. The notification endpoint is dynamically constructed using the following logic: $requestTarget = '/wp-json/' . $path . '/notification'; where the $path includes merchant name as data. This ensures that each notification endpoint is unique to the merchant. The notification service is triggered whenever an event, such as a status change, occurs (e.g., transaction authorization, capture, refund, or cancellation). The transmitted data includes the merchant's name as part of the $path, ensuring that transaction updates are accurately reflected in the merchant’s system.
 For more information, please refer to DOKU’s Checkout Document https://developers.doku.com/accept-payment/doku-checkout
 
 
