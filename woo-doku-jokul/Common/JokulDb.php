@@ -10,15 +10,19 @@ class JokulDb {
         $table = $wpdb->prefix . "jokuldb";
 
         $columns = array_keys($datainsert);
+        $validated_columns = array_map('sanitize_key', $columns);
+        $columns_str = implode(', ', $validated_columns);
         $placeholders = array_map(function ($value) {
             return is_numeric($value) ? '%d' : '%s';
         }, $datainsert);
 
-        $columns_str = implode(', ', array_map([$wpdb, 'escape'], $columns)); // Escape column names
         $placeholders_str = implode(', ', $placeholders);
+        $query = $wpdb->prepare(
+            "INSERT INTO `$table` ($columns_str) VALUES ($placeholders_str)",
+            array_values($datainsert)
+        );
 
-        $query = "INSERT INTO {$table} ({$columns_str}) VALUES ({$placeholders_str})";
-        $result = $wpdb->query($wpdb->prepare($query, array_values($datainsert))); // Use prepare properly
+        $result = $wpdb->query($query);
         return $result;
     }
     
