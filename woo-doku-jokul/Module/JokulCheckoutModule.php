@@ -170,6 +170,8 @@ class JokulCheckoutModule extends WC_Payment_Gateway
                 );
             }
         }
+        // woocommerce_cli_order_data is a WooCommerce core hook, used here to filter order data.
+        // This hook name is not created or defined by this plugin and cant be modified.
         $order_data = apply_filters('woocommerce_cli_order_data', $order_data);
         return $order_data;
     }
@@ -282,7 +284,8 @@ class JokulCheckoutModule extends WC_Payment_Gateway
         if (isset($post_data['woocommerce_' . $this->id . '_secret_key']) || isset($post_data['woocommerce_' . $this->id . '_secret_key_dev'])) {
             delete_transient('main_settings_jokul_pg');
         }
-
+        // woocommerce_settings_api_sanitized_fields_ is a WooCommerce core hook, do not modify its name
+        // This hook name is not created or defined by this plugin and cant be modified.
         return update_option($this->get_option_key(), apply_filters('woocommerce_settings_api_sanitized_fields_' . $this->id, $this->settings), 'yes');
     }
 

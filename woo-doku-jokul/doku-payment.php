@@ -77,8 +77,7 @@ register_activation_hook(__FILE__, 'doku_payment_install_db');
 function doku_payment_install_db()
 {
 	global $wpdb;
-	global $db_version;
-	$db_version = "1.0";
+	$doku_payment_db_version = "1.0";
 	$table_name = $wpdb->prefix . "jokuldb";
 	$sql = "
 		CREATE TABLE $table_name (
@@ -116,7 +115,7 @@ function doku_payment_install_db()
 	require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
 	dbDelta($sql);
 
-	add_option('jokuldb_db_version', $db_version);
+	add_option('jokuldb_db_version', $doku_payment_db_version);
 }
 
 add_action('rest_api_init', function () {
