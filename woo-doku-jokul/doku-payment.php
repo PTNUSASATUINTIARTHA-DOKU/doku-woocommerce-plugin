@@ -123,7 +123,7 @@ add_action('rest_api_init', function () {
     register_rest_route('doku', 'notification', array(
         'methods' => 'POST',
         'callback' => function ($request) {
-            return doku_payment_order_update_status('doku');
+            return doku_payment_order_update_status('doku',$request);
         },
         'permission_callback' => '__return_true'
     ));
@@ -132,16 +132,16 @@ add_action('rest_api_init', function () {
     register_rest_route('jokul', 'notification', array(
         'methods' => 'POST',
         'callback' => function ($request) {
-            return doku_payment_order_update_status('jokul');
+            return doku_payment_order_update_status('jokul',$request);
         },
         'permission_callback' => '__return_true'
     ));
 });
 
-function doku_payment_order_update_status($path)
+function doku_payment_order_update_status($path,$request)
 {
 	$notificationService = new JokulNotificationService();
-	$response = $notificationService->getNotification($path);
+	$response = $notificationService->getNotification($path,$request);
 	return $response;
 }
 
@@ -150,15 +150,17 @@ function doku_payment_qris_register_route()
 {
 	register_rest_route('doku', 'qrisnotification', array(
 		'methods' => 'POST',
-		'callback' => 'doku_payment_order_update_status_qris',
+		'callback' => function ($request) {
+            return doku_payment_order_update_status_qris($request);
+        },
 		'permission_callback' => '__return_true'
 	));
 }
 
-function doku_payment_order_update_status_qris()
+function doku_payment_order_update_status_qris($request)
 {
 	$qrisNotificationService = new JokulQrisNotificationService();
-	$response = $qrisNotificationService->getQrisNotification();
+	$response = $qrisNotificationService->getQrisNotification($request);
 }
 
 add_action('woocommerce_thankyou', 'doku_payment_thank_you_page_credit_card', 1, 10);
