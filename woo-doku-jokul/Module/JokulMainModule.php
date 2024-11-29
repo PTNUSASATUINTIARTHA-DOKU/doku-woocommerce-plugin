@@ -78,26 +78,18 @@ class JokulMainModule extends WC_Payment_Gateway
     public function admin_options()
     {
         parent::admin_options();
-        ?>
-        <script type="text/javascript">
-            jQuery(document).ready(function($) {
-                checkbox_sac_select();
-                
-                $('#woocommerce_<?php $this->id; ?>_sac_check').click(function() {
-                    checkbox_sac_select();
-                })
 
-                function checkbox_sac_select() {
-                    if($('#woocommerce_<?php $this->id; ?>_sac_check').is(':checked')) {
-                        $('table tr:last').fadeIn();
-                        $('#woocommerce_<?php $this->id; ?>_sac_textbox').prop('required',true);
-                    } else {
-                        $('table tr:last').fadeOut();
-                        $('#woocommerce_<?php $this->id; ?>_sac_textbox').prop('required',false);
-                    }
-                }; 
-            })
-        </script>
-        <?php
+        wp_enqueue_script(
+            'admin-options-script', 
+            plugin_dir_url(__FILE__) . '../Js/admin-options.js', 
+            ['jquery'],
+            '1.0.0',
+            true
+        );
+        
+        wp_localize_script('admin-options-script', 'woocommerceData', [
+            'id' => $this->id,
+        ]);
     }
+
 }

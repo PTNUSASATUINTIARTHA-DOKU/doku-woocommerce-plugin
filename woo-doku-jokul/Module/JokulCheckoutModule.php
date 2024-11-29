@@ -291,52 +291,33 @@ class JokulCheckoutModule extends WC_Payment_Gateway
 
     public function admin_options()
     {
-?>
-        <script>
-            jQuery(document).ready(function($) {
-                $('.channel-name-format').text('<?php $this->title; ?>');
-                $('#woocommerce_<?php $this->id; ?>_channel_name').change(
-                    function() {
-                        $('.channel-name-format').text($(this).val());
-                    }
-                );
-
-                var isSubmitCheckDone = false;
-
-                $("button[name='save']").on('click', function(e) {
-                    if (isSubmitCheckDone) {
-                        isSubmitCheckDone = false;
-                        return;
-                    }
-
-                    e.preventDefault();
-
-                    var paymentDescription = $('#woocommerce_<?php $this->id; ?>_payment_description').val();
-                    if (paymentDescription.length > 250) {
-                        return swal({
-                            text: 'Text is too long, please reduce the message and ensure that the length of the character is less than 250.',
-                            buttons: {
-                                cancel: 'Cancel'
-                            }
-                        });
-                    } else {
-                        isSubmitCheckDone = true;
-                    }
-
-                    $("button[name='save']").trigger('click');
-                });
-            });
-        </script>
+        parent::admin_options();
+    
+        wp_enqueue_script(
+            'admin-options-module',
+            plugin_dir_url(__FILE__) . '../Js/admin-options-module.js',
+            ['jquery'],
+            '1.0.0',
+            true
+        );
+    
+        wp_localize_script('admin-options-module', 'woocommerceData', [
+            'id' => $this->id,
+            'title' => $this->title
+        ]);
+    
+        ?>
         <table class="form-table">
             <?php $this->generate_settings_html(); ?>
         </table>
-    <?php
+        <?php
     }
+    
 
     public function payment_fields()
     {
         if ($this->paymentDescription) {
-            echo '<p>' . esc_html($this->paymentDescription) . '</p>';
+            echo wpautop(wp_kses_post($this->paymentDescription));
         }
     }
 

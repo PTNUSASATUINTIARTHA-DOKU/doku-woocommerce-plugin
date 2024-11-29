@@ -9,16 +9,6 @@ require_once(DOKU_PAYMENT_PLUGIN_PATH . '/Common/JokulDb.php');
 class JokulNotificationService
 {
 
-    function getallheaders()
-    {
-        $headers = [];
-        foreach ($_SERVER as $name => $value) {
-            if (substr($name, 0, 5) == 'HTTP_') {
-                $headers[str_replace(' ', '-', ucwords(strtolower(str_replace('_', ' ', substr($name, 5)))))] = $value;
-            }
-        }
-        return $headers;
-    }
     private function sanitize_array($array)
     {
         foreach ($array as $key => &$value) {
@@ -37,13 +27,14 @@ class JokulNotificationService
         return $array;
     }
 
-    public function getNotification($path)
+    public function getNotification($path,$request)
     {
         $jokulUtils = new JokulUtils();
-        $raw_input = file_get_contents('php://input');
+        $raw_input = $request->get_json_params();
+        $jokulUtils->doku_log($jokulUtils, 'raw input notif : ' . json_encode($raw_input, JSON_PRETTY_PRINT));
         $raw_notification = json_decode($raw_input, true);
         $mainSettings = get_option('woocommerce_jokul_gateway_settings');
-        $headerData = $this->getallheaders();
+        $headerData = $request->get_headers();
 
         if (json_last_error() !== JSON_ERROR_NONE) {
             $jokulUtils->doku_log($jokulUtils, 'INVALID JSON INPUT: ' . json_last_error_msg(), null);
@@ -91,7 +82,7 @@ class JokulNotificationService
                     $checkTrxStatus = $jokulDb->checkStatusTrx($invoiceNumber, $amount, $paymentCode == "" ? "" : $paymentCode, 'PAYMENT_COMPLETED');
 
                     if ($checkTrxStatus == '') {
-                        $this->addDb($invoiceNumber, $amount, $paymentCode, $paymentDate, $paymentChannel, $transactionStatus);
+                        $this->addDb($invoiceNumber, $amount, $paymentCode, $paymentDate, $paymentChannel, $transactionStatus,$raw_notification);
                     }
 
                     $order = wc_get_order($invoiceNumber);
@@ -101,7 +92,7 @@ class JokulNotificationService
                     $checkTrxStatus = $jokulDb->checkStatusTrx($invoiceNumber, $amount, $paymentCode == "" ? "" : $paymentCode, 'PAYMENT_COMPLETED');
 
                     if ($checkTrxStatus == '') {
-                        $this->addDb($invoiceNumber, $amount, $paymentCode, $paymentDate, $paymentChannel, $transactionStatus);
+                        $this->addDb($invoiceNumber, $amount, $paymentCode, $paymentDate, $paymentChannel, $transactionStatus,$raw_notification);
                     }
 
                     $order = wc_get_order($invoiceNumber);
@@ -120,7 +111,7 @@ class JokulNotificationService
         }
     }
 
-    function addDb($invoiceNumber, $amount, $paymentCode, $paymentDate, $channel, $transactionStatus)
+    function addDb($invoiceNumber, $amount, $paymentCode, $paymentDate, $channel, $transactionStatus,$raw_notification)
     {
         $jokulUtils = new JokulUtils();
         $getIp = $jokulUtils->getIpaddress();
@@ -129,7 +120,7 @@ class JokulNotificationService
         $trx['invoice_number']          = $invoiceNumber;
         $trx['result_msg']              = null;
         $trx['process_type']            = 'PAYMENT_COMPLETED';
-        $trx['raw_post_data']           = file_get_contents('php://input');
+        $trx['raw_post_data']           = json_encode($raw_notification, JSON_PRETTY_PRINT);
         $trx['ip_address']              = $getIp;
         $trx['amount']                  = $amount;
         $trx['payment_channel']         = $channel;
