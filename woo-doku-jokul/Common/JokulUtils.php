@@ -2,7 +2,7 @@
 
 if ( ! defined( 'ABSPATH' ) ) exit;
 
-define("HTML_EMAIL_HEADERS", array('Content-Type: text/html; charset=UTF-8'));
+define("DOKU_PAYMENT_HTML_EMAIL_HEADERS", array('Content-Type: text/html; charset=UTF-8'));
 
 class JokulUtils
 {
@@ -32,22 +32,22 @@ class JokulUtils
 
     public function generateSignatureNotification($headers, $body, $secret, $requestTarget)
     {
+      	$clientId = $headers['client_id'][0];
         $digest = base64_encode(hash('sha256', $body, true));
-        $url = get_site_url();
-        $parsedUrl = parse_url($url);
-        $path = $parsedUrl['path'];
+      	
+      $clientId = $headers['client_id'][0];
+      $requestId = $headers['request_id'][0];
+      $requestTimestamp = $headers['request_timestamp'][0];
+      
+      $rawSignature = "Client-Id:" . $clientId . "\n"
+          . "Request-Id:" . $requestId . "\n"
+          . "Request-Timestamp:" . $requestTimestamp . "\n"
+          . "Request-Target:" . $requestTarget . "\n"
+          . "Digest:" . $digest;
 
-        if ($path != "/") {
-            $path;
-        }
+      $signature = base64_encode(hash_hmac('sha256', $rawSignature, htmlspecialchars_decode($secret), true));
 
-        $rawSignature = "Client-Id:" . $headers['Client-Id'] . "\n"
-            . "Request-Id:" . $headers['Request-Id'] . "\n"
-            . "Request-Timestamp:" . $headers['Request-Timestamp'] . "\n"
-            . "Request-Target:" . $path . $requestTarget . "\n"
-            . "Digest:" . $digest;
-        $signature = base64_encode(hash_hmac('sha256', $rawSignature, htmlspecialchars_decode($secret), true));
-        return 'HMACSHA256=' . $signature;
+      return 'HMACSHA256=' . $signature;
     }
 
     // public function getIpaddress()
@@ -66,12 +66,12 @@ class JokulUtils
     {
         $ip = '';
         if (!empty($_SERVER['HTTP_CLIENT_IP'])) {
-            $ip = $_SERVER['HTTP_CLIENT_IP'];
+            $ip = sanitize_text_field($_SERVER['HTTP_CLIENT_IP']);
         } elseif (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
-            $ipArray = explode(',', $_SERVER['HTTP_X_FORWARDED_FOR']);
+            $ipArray =  map_deep(explode(',', $_SERVER['HTTP_X_FORWARDED_FOR']),'sanitize_text_field');
             $ip = trim($ipArray[0]);
         } else {
-            $ip = $_SERVER['REMOTE_ADDR'];
+            $ip = sanitize_text_field($_SERVER['REMOTE_ADDR']);
         }
         return filter_var($ip, FILTER_VALIDATE_IP) ? $ip : null;
     }
@@ -101,21 +101,26 @@ class JokulUtils
 
     public function send_email($order, $emailParams, $howToPayUrl)
     {
-
         $mailer = WC()->mailer();
 
-        //format the email
+        // Format the email
         $recipient = $emailParams['customerEmail'];
+        $customer_name = $emailParams['customerName'] ?? '-';
+        $order_number = $order->get_order_number() ?? '-';
         $subject = sprintf(
             /* translators: %1$s: Customer name, %2$s: Order number */
-            __("Hi %1$s, here is your payment instructions for order number %2$s!", 'doku-payment'),
-            $emailParams['customerName'],
-            $order->get_order_number()
+            esc_html__(
+                'Hi %1$s, here is your payment instructions for order number %2$s!', 
+                'doku-payment'
+            ),
+            esc_html($customer_name),
+            esc_html($order_number)
         );
+
         $content = $this->get_custom_email_html($order, $this->getEmailMessage($howToPayUrl), $mailer, $subject);
         $headers = "Content-Type: text/html\r\n";
 
-        //send the email through wordpress
+        // Send the email through WordPress
         $mailer->send($recipient, $subject, $content, $headers);
     }
 

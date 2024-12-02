@@ -77,8 +77,7 @@ register_activation_hook(__FILE__, 'doku_payment_install_db');
 function doku_payment_install_db()
 {
 	global $wpdb;
-	global $db_version;
-	$db_version = "1.0";
+	$doku_payment_db_version = "1.0";
 	$table_name = $wpdb->prefix . "jokuldb";
 	$sql = "
 		CREATE TABLE $table_name (
@@ -116,7 +115,7 @@ function doku_payment_install_db()
 	require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
 	dbDelta($sql);
 
-	add_option('jokuldb_db_version', $db_version);
+	add_option('jokuldb_db_version', $doku_payment_db_version);
 }
 
 add_action('rest_api_init', function () {
@@ -124,7 +123,7 @@ add_action('rest_api_init', function () {
     register_rest_route('doku', 'notification', array(
         'methods' => 'POST',
         'callback' => function ($request) {
-            return doku_payment_order_update_status('doku');
+            return doku_payment_order_update_status('doku',$request);
         },
         'permission_callback' => '__return_true'
     ));
@@ -133,16 +132,16 @@ add_action('rest_api_init', function () {
     register_rest_route('jokul', 'notification', array(
         'methods' => 'POST',
         'callback' => function ($request) {
-            return doku_payment_order_update_status('jokul');
+            return doku_payment_order_update_status('jokul',$request);
         },
         'permission_callback' => '__return_true'
     ));
 });
 
-function doku_payment_order_update_status($path)
+function doku_payment_order_update_status($path,$request)
 {
 	$notificationService = new JokulNotificationService();
-	$response = $notificationService->getNotification($path);
+	$response = $notificationService->getNotification($path,$request);
 	return $response;
 }
 
@@ -151,15 +150,17 @@ function doku_payment_qris_register_route()
 {
 	register_rest_route('doku', 'qrisnotification', array(
 		'methods' => 'POST',
-		'callback' => 'doku_payment_order_update_status_qris',
+		'callback' => function ($request) {
+            return doku_payment_order_update_status_qris($request);
+        },
 		'permission_callback' => '__return_true'
 	));
 }
 
-function doku_payment_order_update_status_qris()
+function doku_payment_order_update_status_qris($request)
 {
 	$qrisNotificationService = new JokulQrisNotificationService();
-	$response = $qrisNotificationService->getQrisNotification();
+	$response = $qrisNotificationService->getQrisNotification($request);
 }
 
 add_action('woocommerce_thankyou', 'doku_payment_thank_you_page_credit_card', 1, 10);
