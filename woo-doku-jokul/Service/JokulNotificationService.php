@@ -32,7 +32,7 @@ class JokulNotificationService
         $jokulUtils = new JokulUtils();
         $raw_input = $request->get_json_params();
         $jokulUtils->doku_log($jokulUtils, 'raw input notif : ' . json_encode($raw_input, JSON_PRETTY_PRINT));
-        $raw_notification = json_decode($raw_input, true);
+        $raw_notification = $raw_input;
         $mainSettings = get_option('woocommerce_jokul_gateway_settings');
         $headerData = $request->get_headers();
 
@@ -73,9 +73,10 @@ class JokulNotificationService
 
         if (!empty($transaction)){
 
-            $signature = $jokulUtils->generateSignatureNotification($headerData, $raw_input, $sharedKey, $requestTarget);
-
-            if ($signature == $headerData['Signature']) {
+            $signature = $jokulUtils->generateSignatureNotification($headerData, $request->get_body(), $sharedKey, $requestTarget);
+ 			error_log("Signature From DOKU: " . $headerData['signature'][0]);
+          	error_log("Signature From MERCHANT: " . $signature);
+            if ($signature == $headerData['signature'][0]) {
                         $jokulUtils->doku_log($jokulUtils, 'TRANSACTION SIGNATURE VALID', $raw_notification['order']['invoice_number']);
 
                 if (strtolower($raw_notification['transaction']['status']) == strtolower('SUCCESS')) {
