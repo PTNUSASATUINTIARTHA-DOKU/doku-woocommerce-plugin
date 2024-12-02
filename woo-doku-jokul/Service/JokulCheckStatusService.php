@@ -56,5 +56,3 @@ class JokulCheckStatusService {
         return json_decode($responseBody, true);
     }
 }
-
-?>

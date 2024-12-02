@@ -177,5 +177,3 @@ class JokulCheckoutService {
         return json_decode($response_body, true);
     }
 }
-
-?>
