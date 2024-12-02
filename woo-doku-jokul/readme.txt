@@ -3,7 +3,7 @@ Contributors: dokuplugin
 Donate link: https://doku.com/
 Tags: Payment Gateway, Payment                                                                 
 Requires at least: 2.2
-Tested up to: 6.6
+Tested up to: 6.7
 Stable tag: 1.3.17
 Requires PHP: 5.6
 License: GPLv2 or later
