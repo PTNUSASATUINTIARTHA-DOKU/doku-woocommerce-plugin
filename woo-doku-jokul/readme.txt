@@ -47,9 +47,15 @@ DOKU Payment Support Tax and Fee for indodana.
 DOKU Payment compatible with WooCommerce Checkout Block.
 
 == External services ==
-This plugin connects to DOKU Checkout to facilitate customer payments by enabling them to select a payment method and complete transactions through DOKU Checkout. For testing purposes, it connects to the sandbox environment at https://api-sandbox.doku.com, while live transactions are processed through the production environment at https://api.doku.com. During payment initiation and processing, the plugin transmits transaction details and customer payment preferences to these endpoints.
-Additionally, the plugin uses Service/JokulNotificationService to update payment statuses via a notification endpoint. The notification endpoint is dynamically constructed using the following logic: $requestTarget = '/wp-json/' . $path . '/notification'; where the $path includes merchant name as data. This ensures that each notification endpoint is unique to the merchant. The notification service is triggered whenever an event, such as a status change, occurs (e.g., transaction authorization, capture, refund, or cancellation). The transmitted data includes the merchant's name as part of the $path, ensuring that transaction updates are accurately reflected in the merchant’s system.
-For more information, please refer to DOKU’s Checkout Document https://developers.doku.com/accept-payment/doku-checkout
+This plugin connects to DOKU Checkout to facilitate customer payments by enabling users to select a payment method and complete transactions. For testing purposes, it communicates with the sandbox environment at https://api-sandbox.doku.com, while live transactions are processed through the production environment at https://api.doku.com. During the payment initiation process, the plugin sends various transaction details and customer payment preferences to DOKU Checkout. This includes customer information (customerId, customerEmail, first_name, last_name, customerName, phone), billing and shipping information (address, postcode, city, state, country, first_name_shipping, address_shipping, postal_code_shipping, city_shipping), transaction details (amount, invoiceNumber, itemQty), and payment options (payment_method, auto_redirect, callback_url, sac_check, reusableStatus).
+When the Data is Sent: This data is sent when the customer selects a payment method and submits the transaction for processing.
+Why the Data is Sent: The data is necessary for DOKU Checkout to process the payment, validate the transaction, and securely complete the payment.
+Additionally, the plugin uses Service/JokulNotificationService to update payment statuses via a notification endpoint. This endpoint is dynamically constructed using the following logic: $requestTarget = '/wp-json/' . $path . '/notification';, where $path includes the merchant name as part of the data. This ensures that each merchant has a unique notification endpoint. The notification service is triggered whenever a transaction status changes, such as transaction authorization, capture, refund, or cancellation.
+When the Data is Sent: The notification service is triggered whenever a transaction status changes.
+Why the Data is Sent: The data is necessary to inform the merchant’s system about the transaction’s current status, ensuring that the merchant can update their records accurately.
+For more information, please refer to the DOKU Checkout Documentation.
+And our Terms of use and privacy policies https://dashboard.doku.com/doku-agreement/terms-of-use
+https://dashboard.doku.com/doku-agreement/privacy-policy?utm_source=docs
 
 
 ## Requirements
