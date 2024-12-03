@@ -119,7 +119,7 @@ class JokulNotificationService
 
         $trx = array();
         $trx['invoice_number']          = $invoiceNumber;
-        $trx['result_msg']              = null;
+        $trx['result_msg']              = "SUCCESS";
         $trx['process_type']            = 'PAYMENT_COMPLETED';
         $trx['raw_post_data']           = sanitize_text_field(json_encode($raw_notification, JSON_PRETTY_PRINT));
         $trx['ip_address']              = $getIp;

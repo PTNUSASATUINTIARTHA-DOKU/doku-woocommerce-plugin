@@ -323,18 +323,17 @@ class JokulCheckoutModule extends WC_Payment_Gateway
 
     public function addDb($response, $amount)
     {
-        
         $this->jokulUtils = new JokulUtils();
         $getIp = $this->jokulUtils->getIpaddress();
         $trx = array();
         $trx['invoice_number']          = $response['response']['order']['invoice_number'];
-        $trx['result_msg']              = null;
+        $trx['result_msg']              = $response['message'][0];
         $trx['process_type']            = 'PAYMENT_PENDING';
         $trx['raw_post_data']           = json_encode($response);
         $trx['ip_address']              = $getIp;
         $trx['amount']                  = $amount;
         $trx['payment_channel']         = $this->method_code;
-        $trx['payment_code']            = null;
+        $trx['payment_code']            = "";
         $trx['doku_payment_datetime']   = gmdate("Y-m-d H:i:s");
         $trx['process_datetime']        = gmdate("Y-m-d H:i:s");
         $trx['message']                 = "Payment Pending message come from Jokul. Success : completed";
