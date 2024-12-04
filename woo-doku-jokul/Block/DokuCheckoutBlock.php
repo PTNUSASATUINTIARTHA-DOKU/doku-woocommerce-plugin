@@ -9,7 +9,7 @@ final class Doku_Checkout_Blocks extends AbstractPaymentMethodType {
 
     public function initialize() {
         $this->settings = get_option('woocommerce_jokul_gateway_settings');
-        $this->gateway = new JokulCheckoutModule();
+        $this->gateway = new DokuCheckoutModule();
     }
 
     public function is_active() {
