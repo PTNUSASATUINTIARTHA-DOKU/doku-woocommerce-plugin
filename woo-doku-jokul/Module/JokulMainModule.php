@@ -2,7 +2,7 @@
 
 if ( ! defined( 'ABSPATH' ) ) exit;
 
-class JokulMainModule extends WC_Payment_Gateway
+class DokuMainModule extends WC_Payment_Gateway
 {
     public function __construct()
     {
