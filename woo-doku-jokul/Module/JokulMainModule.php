@@ -8,7 +8,7 @@ class DokuMainModule extends WC_Payment_Gateway
     {
 
         $this->init_form_fields();
-        $this->id                   = 'jokul_gateway';
+        $this->id                   = 'doku_gateway';
         $this->has_fields           = true;
         $this->method_name          = 'General Configuration';
         $this->title                = !empty($this->get_option('channel_name')) ? $this->get_option('channel_name') : $this->method_name;
@@ -69,7 +69,7 @@ class DokuMainModule extends WC_Payment_Gateway
 
     public function check_gateway_status($gateways)
     {
-        if ($this->id == 'jokul_gateway') {
+        if ($this->id == 'doku_gateway') {
             unset($gateways[$this->id]);
             return $gateways;
         }

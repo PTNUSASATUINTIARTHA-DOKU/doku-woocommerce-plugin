@@ -43,7 +43,7 @@ class DokuQrisNotificationService
         }
 
         // Mengambil sharedKey dari setting
-        $mainSettings = get_option('woocommerce_jokul_checkout_settings');
+        $mainSettings = get_option('woocommerce_doku_checkout_settings');
         $sharedKey = isset($mainSettings['payment_shared_key']) ? $mainSettings['payment_shared_key'] : '';
 
         // Membuat kata untuk validasi

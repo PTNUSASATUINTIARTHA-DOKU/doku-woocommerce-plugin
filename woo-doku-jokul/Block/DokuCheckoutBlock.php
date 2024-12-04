@@ -5,10 +5,10 @@ use Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodTyp
 final class Doku_Checkout_Blocks extends AbstractPaymentMethodType {
 
     private $gateway;
-    protected $name = 'jokul_checkout';
+    protected $name = 'doku_checkout';
 
     public function initialize() {
-        $this->settings = get_option('woocommerce_jokul_gateway_settings');
+        $this->settings = get_option('woocommerce_doku_gateway_settings');
         $this->gateway = new DokuCheckoutModule();
     }
 

@@ -33,7 +33,7 @@ class DokuNotificationService
         $raw_input = $request->get_json_params();
         $dokuUtils->doku_log($dokuUtils, 'raw input notif : ' . json_encode($raw_input, JSON_PRETTY_PRINT));
         $raw_notification = $raw_input;
-        $mainSettings = get_option('woocommerce_jokul_gateway_settings');
+        $mainSettings = get_option('woocommerce_doku_gateway_settings');
         $headerData = $request->get_headers();
 
         if (json_last_error() !== JSON_ERROR_NONE) {
