@@ -2,7 +2,7 @@
 
 if ( ! defined( 'ABSPATH' ) ) exit;
 
-class JokulDb {
+class DokuDB {
 
     function addData($datainsert) {
         global $wpdb;

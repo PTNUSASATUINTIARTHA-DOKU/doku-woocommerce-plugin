@@ -21,8 +21,8 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 define('DOKU_PAYMENT_MAIN_FILE', __FILE__);
 define('DOKU_PAYMENT_PLUGIN_PATH', untrailingslashit(plugin_dir_path(__FILE__)));
 
-add_action('plugins_loaded', 'jokul_init_gateway_class');
-function jokul_init_gateway_class()
+add_action('plugins_loaded', 'doku_payment_init_gateway_class');
+function doku_payment_init_gateway_class()
 {
 
 	if (!class_exists('WC_Payment_Gateway')) {
@@ -63,8 +63,8 @@ function jokul_init_gateway_class()
 			function addJokulGateway($methods)
 			{
 				$mainSettings = get_option('woocommerce_jokul_gateway_settings');
-				$methods[] = 'JokulMainModule';
-				$methods[] = 'JokulCheckoutModule';
+				$methods[] = 'DokuMainModule';
+				$methods[] = 'DokuCheckoutModule';
 
 				return $methods;
 			}
@@ -140,7 +140,7 @@ add_action('rest_api_init', function () {
 
 function doku_payment_order_update_status($path,$request)
 {
-	$notificationService = new JokulNotificationService();
+	$notificationService = new DokuNotificationService();
 	$response = $notificationService->getNotification($path,$request);
 	return $response;
 }
@@ -159,7 +159,7 @@ function doku_payment_qris_register_route()
 
 function doku_payment_order_update_status_qris($request)
 {
-	$qrisNotificationService = new JokulQrisNotificationService();
+	$qrisNotificationService = new DokuQrisNotificationService();
 	$response = $qrisNotificationService->getQrisNotification($request);
 }
 
