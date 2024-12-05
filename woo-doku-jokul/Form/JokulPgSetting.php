@@ -3,7 +3,7 @@
 if ( ! defined( 'ABSPATH' ) ) exit;
 
 return apply_filters(
-    'jokul_payment_gateway_settings',
+    'doku_gateway_settings',
     array(
         'enabled' => array(
             'title' => __('Enable :', 'doku-payment'),

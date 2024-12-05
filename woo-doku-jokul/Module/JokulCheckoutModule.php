@@ -12,7 +12,7 @@ class DokuCheckoutModule extends WC_Payment_Gateway
     public function __construct()
     {
         $this->init_form_fields();
-        $this->id                   = 'jokul_checkout';
+        $this->id                   = 'doku_checkout';
         $this->has_fields           = true;
         $this->method_name          = 'DOKU Checkout';
         $this->method_code          = 'JOKUL_CHECKOUT';
@@ -22,7 +22,7 @@ class DokuCheckoutModule extends WC_Payment_Gateway
         $this->checkout_msg         = 'This your payment on DOKU Checkout : ';
 
         $this->init_settings();
-        $mainSettings = get_option('woocommerce_jokul_gateway_settings');
+        $mainSettings = get_option('woocommerce_doku_gateway_settings');
         $this->environmentPaymentJokul = $mainSettings['environment_payment_jokul'];
         $this->sandboxClientId = $mainSettings['sandbox_client_id'];
         $this->sandboxSharedKey = $mainSettings['sandbox_shared_key'];
@@ -52,7 +52,7 @@ class DokuCheckoutModule extends WC_Payment_Gateway
         $queryArray = explode("&", sanitize_text_field($_SERVER['QUERY_STRING']));
         if (WC()->session != null) {
             $chosen_payment_method = WC()->session->get('chosen_payment_method');
-            if ($this->id == 'jokul_checkout') {
+            if ($this->id == 'doku_checkout') {
                 if (in_array("jokul=show", $queryArray)) {
                     add_filter('the_title', array($this, 'woo_title_order_pending'));
                     add_action('woocommerce_thankyou_' . $this->id, array($this, 'thank_you_page_pending'), 1, 10);
