@@ -1,43 +1,37 @@
 === DOKU Payment ===
 Contributors: dokuplugin
 Donate link: https://doku.com/
-Tags: Payment Gateway, Payment                                                                 
+Tags: Payment Gateway, Payment, Credit Card, DOKU, woocommerce                                                                 
 Requires at least: 2.2
 Tested up to: 6.7
 Stable tag: 1.3.17
-Requires PHP: 5.6
+Requires PHP: 5.6v
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 DOKU plugin offers a secure payment with DOKU Checkout, letting customers choose from various payment methods and complete transactions seamlessly.
  
 == Description ==
- 
-Accept payment through various payment channels with DOKU. Make it easy for your customers to purchase on your store.
- 
-For backwards compatibility, if this section is missing, the full length of the short description will be used, and
-Markdown parsed.
- 
-A few notes about the sections above:
- 
-* "Contributors" is a comma separated list of wordpress.org usernames
-* "Tags" is a comma separated list of tags that apply to the plugin
-* "Requires at least" is the lowest version that the plugin will work on
-* "Tested up to" is the highest version that you've *successfully used to test the plugin*
-* Stable tag must indicate the Subversion "tag" of the latest stable version
- 
-Note that the `readme.txt` value of stable tag is the one that is the defining one for the plugin.  If the `/trunk/readme.txt` file says that the stable tag is `4.3`, then it is `/tags/4.3/readme.txt` that'll be used for displaying information about the plugin.
- 
-If you develop in trunk, you can update the trunk `readme.txt` to reflect changes in your in-development version, without having that information incorrectly disclosed about the current stable version that lacks those changes -- as long as the trunk's `readme.txt` points to the correct stable tag.
- 
-If no stable tag is provided, your users may not get the correct version of your code.
+
+DOKU plugin offers a seamless, secure payment solution allowing your customers to choose from various payment methods and complete transactions directly on your WooCommerce store.
+
+- **Multiple Payment Methods**: Accept credit cards, bank transfers, e-wallets, and other methods.
+- **Seamless Checkout**: Deliver a fast and secure payment experience for your customers.
+- **Customizable Checkout**: Tailor the checkout page to match your store’s branding and design.
+- **Sandbox/Production Mode**: Switch between test and live environments for smooth integration.
+
+Refer to our [documentation](https://docs.doku.com/accept-payments/integration-tools/e-commerce-and-plugins/woocommerce-wordpress) for more information and tips.
 
 == Upgrade Notice ==
  
-= 1.3.16 =
-Fixing minor bug and adjust code to wordpress standards.
+= 1.3.17 =
+Improved readme formatting and updated documentation and code standardization.
 
 == Change Log ==
-= 1.3.16 =
+
+= 1.3.17 =
+Improved readme formatting and updated documentation and code standardization.
+
+1.3.16 -
 Fixing minor bug and adjust code to wordpress standards.
 
 1.3.15 -
@@ -46,128 +40,60 @@ DOKU Payment Support Tax and Fee for indodana.
 1.3.14 -
 DOKU Payment compatible with WooCommerce Checkout Block.
 
-== External services ==
-This plugin connects to DOKU Checkout to facilitate customer payments by enabling users to select a payment method and complete transactions. For testing purposes, it communicates with the sandbox environment at https://api-sandbox.doku.com, while live transactions are processed through the production environment at https://api.doku.com. During the payment initiation process, the plugin sends various transaction details and customer payment preferences to DOKU Checkout. This includes customer information (customerId, customerEmail, first_name, last_name, customerName, phone), billing and shipping information (address, postcode, city, state, country, first_name_shipping, address_shipping, postal_code_shipping, city_shipping), transaction details (amount, invoiceNumber, itemQty), and payment options (payment_method, auto_redirect, callback_url, sac_check, reusableStatus).
-When the Data is Sent: This data is sent when the customer selects a payment method and submits the transaction for processing.
-Why the Data is Sent: The data is necessary for DOKU Checkout to process the payment, validate the transaction, and securely complete the payment.
-Additionally, the plugin uses Service/JokulNotificationService to update payment statuses via a notification endpoint. This endpoint is dynamically constructed using the following logic: $requestTarget = '/wp-json/' . $path . '/notification';, where $path includes the merchant name as part of the data. This ensures that each merchant has a unique notification endpoint. The notification service is triggered whenever a transaction status changes, such as transaction authorization, capture, refund, or cancellation.
-When the Data is Sent: The notification service is triggered whenever a transaction status changes.
-Why the Data is Sent: The data is necessary to inform the merchant’s system about the transaction’s current status, ensuring that the merchant can update their records accurately.
-For more information, please refer to the DOKU Checkout Documentation.
-And our Terms of use and privacy policies https://dashboard.doku.com/doku-agreement/terms-of-use
-https://dashboard.doku.com/doku-agreement/privacy-policy?utm_source=docs
-
+## Installation Overview
+1. Install the DOKU Payment plugin.
+2. Activate the plugin from the Plugins page in your WordPress dashboard.
+3. Configure DOKU Payment settings in WooCommerce and DOKU Dashboard.
 
 ## Requirements
+- WordPress 5.6 or higher
+- WooCommerce 4.9.0 or higher
+- PHP 5.6 or higher
+- MySQL 5.6 or higher
 
-- WordPress 5.6 or higher. This plugin is tested with Wordpress 6.2
-- WooCommerce 4.9.0 or higher. This plugin is tested with WooCommerce v7.2.1
-- PHP v5.6 or higher
-- MySQL v5.6 or higher
-- DOKU account:
-    - For testing purpose, please register to the Sandbox environment and retrieve the Client ID & Secret Key. Learn more about the sandbox environment [here](https://jokul.doku.com/docs/docs/getting-started/explore-sandbox)
-    - For real transaction, please register to the Production environment and retrieve the Client ID & Secret Key. Learn more about the production registration process [here](https://jokul.doku.com/docs/docs/getting-started/register-user)
+== Installation ==
 
-## DOKU Already Supported `doku_log`
-​
-This `doku_log` is useful to help simplify the process of checking if an issue occurs related to the payment process using the DOKU Plugin. If there are problems or problems using the plugin, you can contact our team by sending this doku_log file. `Doku_log` will record all transaction processes from any channel by date.
+Before installing **DOKU Payment**, ensure that **WooCommerce** is already installed and activated on your WordPress site.
 
-​
-## How to use and take doku_log file?
-​
-1. Open your `WooCommerce_dir` directory on your store's webserver.
-2. Create folder `doku_log` in your directory store's, so plugin will automatically track log in your store's webserver.
-3. Then check `doku_log` and open file in your store's webserver.
-4. You will see `doku log` file by date.
-5. And you can download the file. 
-6. If an issue occurs, you can send this `doku_log` file to the team to make it easier to find the cause of the issue.
+1. Install DOKU payment from our WordPress plugin store or under Plugins menu - Add New Plugin in your WordPress dashboard
+2. Go to Plugins page, and activate DOKU Payment
 
-**Checkout**
-Easily embed our well-crafted yet customizable DOKU payment page for your website. With a single integration, you can start accepting payments on your web. With a single integration, Checkout allows you to accept payments from various DOKU payment channels. 
+After activation, follow these steps to configure the plugin:
 
- ![General Configuration](https://i.ibb.co/rMbyngg/screencapture-sandboxenv-devwoolatest-wp-admin-admin-php-2022-04-06-09-26-39.png)
+### Step 1: Configure DOKU Payment in WooCommerce
 
-    - **Environment**: For testing purpose, select Sandbox. For accepting real transactions, select Production
-    - **Sandbox Client ID**: Client ID you retrieved from the Sandbox environment DOKU Back Office
-    - **Sandbox Secret Key**: Secret Key you retrieved from the Sandbox environment DOKU Back Office
-    - **Production Client ID**: Client ID you retrieved from the Production environment DOKU Back Office
-    - **Production Secret Key**: Secret Key you retrieved from the Production environment DOKU Back Office
-    - **Expiry Time**: Input the time that for VA expiration in minutes
-    - **Notification URL**: Copy this URL and paste the URL into the DOKU Back Office. Learn more about how to setup Notification URL [here](https://jokul.doku.com/docs/docs/after-payment/setup-notification-url)
-    - **QRIS Notification URL** : Copy this URL and and contact our support team to help paste in QRIS Backoffice. This channel only support if youre enabling Checkout as a payment method.
-    - **Email Notifications** : You can activated the feature send emails for VA and O2O channels. This email contains how to pay for the VA or Paycode.
-    - **Sub Account Feature** : This feature helps you to routing your payment into your Sub Account ID. You can see the details for payment flow if youre using this feature [here](https://jokul.doku.com/docs/docs/jokul-sub-account/jokul-sub-account-overview)
-1. Click Save Changes button
-1. Go Back to Payments Tab
-1. Now your customer should be able to see the payment channels and you start receiving payments
+1. Go to **WooCommerce** (in sidebar) > **Settings** > **Payments** tab.
+2. Find **DOKU General-Configuration** and click **Manage**.
+3. Fill in the fields:
+   - Tick Enable DOKU 
+   - Choose **Sandbox** (for testing) or **Production** (for live payments).
+   - **Client ID** and **Secret Key** (from your DOKU Dashboard).
+   - Set the **Expiry Time** for payment sessions (in minutes).
 
-### Checkout Configuration
+### Step 2: Configure DOKU Dashboard
 
-![DOKU Checkout Configuration](https://i.ibb.co/v4LqSfj/Screen-Shot-2022-04-06-at-10-16-05.png)
+1. Log in to your **DOKU Dashboard** at [https://dashboard.doku.com](https://dashboard.doku.com)
+2. Navigate to **Settings** > **Payments Settings**
+3. Configure the payment methods you wish to accept, and for each channel, click **Configure**
+4. Copy the **Notification URL** from the WooCommerce settings and paste it into the corresponding payment channel settings in your DOKU Dashboard
 
-To show the Checkout options to your customers, simply toggle the channel that you wish to show. DOKU Checkout allows you to accept payments from various DOKU payment channels. You can enable or disable the payment channel that you want to show in your store view in DOKU Backoffice Configuration.
-
-![DOKU Checkout Configuration Details](https://i.ibb.co/MPGD1B1/Screen-Shot-2022-04-06-at-10-19-44.png)
-
-You can also click Manage to edit how the Checkout channels will be shown to your customers by clicking the Manage button. 
-Below you can update the QRIS Credential that youre already get from our Support Team.
-  
-Links require brackets and parenthesis:
- 
-Here's a link to [WordPress](https://wordpress.org/ "Your favorite software") and one to [Markdown's Syntax Documentation][markdown syntax]. Link titles are optional, naturally.
- 
-Blockquotes are email style:
- 
-> Asterisks for *emphasis*. Double it up  for **strong**.
- 
-And Backticks for code:
- 
-`<?php code(); ?>`
+This also applies to QRIS Notification URL. You may do so by going to QR Payment page under Payment Settings section
 
 == Frequently Asked Questions ==
-1. Do I need to have a DOKU Merchant account to use the plugin?
-Yes. You can sign up for a merchant account on DOKU Business Account Registration page (https://dashboard.doku.com/register) and obtain your API credentials (Merchant ID and Secret Key).
-2. How do I get my API credentials?
-To get your API credentials, log in to DOKU Dashboard. Once logged in, follow the steps below
-Log in to DOKU Dashboard, and then access the side navigation bar
-Select Settings from the menu
-Settings page will appear. Under Account section, select API Keys
-Your credentials containing Brand ID/Client ID and Secret Key are found on this page
-Enter these credentials into the WooCommerce DOKU Checkout settings to enable payment processing
-Refer to the following link for the complete guide:
-https://docs.doku.com/accept-payments/integration-tools/e-commerce-and-plugins/woocommerce-wordpress
-3. What payment methods are supported by DOKU?
-	1. Bank Transfer (Virtual Account)
-	2. Cards
-	3. e-Wallet
-	4. QR payment
-	5. PayLater
-	6. Direct Debit
-	7. Digital Banking
-	8. Internet banking
-Refer to https://docs.doku.com/accept-payments/payment-methods for the complete list
-4. Can I add more payment methods?
-Yes, you can add more payment methods in DOKU Dashboard by following the steps below:
-Log in to DOKU Dashboard, and then access the side navigation bar
-Select Settings from the menu
-Settings page will appear. Under Account section, select Service
-On Service page, click ADD SERVICE button
-Select the payment method you would like to activate
-Click ACTIVATE button.
-Notes:
-Some payment methods require our Sales Team's assistance to activate
-If payment methods are disabled, that means your account type is limited from activating those payment methods.
-5. Can you configure how your checkout page appears?
-Yes. DOKU provides configuration settings to customize how your checkout page appears by customizing colors, fonts, store logo, as well as the payment methods you would like to show/hide on the checkout page.
-Log in to DOKU Dashboard, and then access the side navigation bar
-Select Settings from the menu
-Settings page will appear. Under Accept Payments section, select Checkout Appearance
-Checkout Page Configuration page will appear, then click Interface Settings tab where you will find several options for customizing the look and feel of your checkout page, including the ability to add your logo and change the background color that fits your brand
-Click Save button to save your configuration
-6. Is DOKU WooCommerce plugin secure?
-Yes, DOKU WooCommerce plugin is secured. It uses industry-standard security protocols, including SSL encryption, to ensure that sensitive customer data (like payment details) is protected during transactions. DOKU complies with PCI-DSS security standards to handle payment card information securely.
+= Do I need to have a DOKU Merchant account to this plugin ? =
+Yes. Sign up on DOKU Business Account [Registration page](https://dashboard.doku.com).
+
+= How do I get my API credentials (Client ID and Secret Key)? =
+To obtain your API credentials:
+
+1. Log in to your **DOKU Dashboard**.
+2. Navigate to **Settings** > **API Keys**.
+3. Your **Client ID** and **Secret Key** will be displayed here. 
+
+Copy these credentials and paste them into the WooCommerce DOKU Payment settings.
+
+= How can I get support from DOKU? =
+For support, visit our [Help Center](https://help.doku.com/en/support/home) to read FAQs, troubleshoot, or submit a support ticket.
 
 == Screenshots ==
-1. Customizable Checkout page
-2. Various payment channel
-3. Configuration Page
+1. Checkout Page
