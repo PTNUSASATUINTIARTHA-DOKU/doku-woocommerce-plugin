@@ -3,7 +3,7 @@
 if ( ! defined( 'ABSPATH' ) ) exit;
 
 return apply_filters(
-    'jokul_checkout_settings',
+    'doku_checkout_settings',
     array(
         'channel_name' => array(
             'title' => __('Payment Channel Display Name', 'doku-payment'),

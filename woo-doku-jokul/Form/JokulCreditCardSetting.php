@@ -3,7 +3,7 @@
 if ( ! defined( 'ABSPATH' ) ) exit;
 
 return apply_filters(
-    'jokul_credit_card_settings',
+    'doku_credit_card_settings',
     array(
         'channel_name' => array(
             'title' => __('Payment Channel Display Name', 'doku-payment'),

@@ -5,15 +5,15 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 require_once(DOKU_PAYMENT_PLUGIN_PATH . '/Common/JokulConfig.php');
 require_once(DOKU_PAYMENT_PLUGIN_PATH . '/Common/JokulUtils.php');
 
-class JokulCheckoutService {
+class DokuCheckoutService {
 
     public function generated($config, $params)
     {
         $header = array();
-        $this->jokulUtils = new JokulUtils();
+        $this->dokuUtils = new DokuUtils();
 
-        $requestId = $this->jokulUtils->guidv4();
-        $formattedPhoneNumber = $this->jokulUtils->formatPhoneNumber($params['phone']);
+        $requestId = $this->dokuUtils->guidv4();
+        $formattedPhoneNumber = $this->dokuUtils->formatPhoneNumber($params['phone']);
         $targetPath= "/checkout/v1/payment";
         $dateTime = gmdate(DATE_ISO8601);
         $dateTimeFinal = substr($dateTime, 0, 19) . "Z";
@@ -143,9 +143,9 @@ class JokulCheckoutService {
             )
         );
 
-        $this->jokulConfig = new JokulConfig();
+        $this->dokuConfig = new DokuConfig();
         $valueEnv = $config['environment'] === 'true'? true: false;
-        $getUrl = $this->jokulConfig -> getBaseUrl($valueEnv);
+        $getUrl = $this->dokuConfig -> getBaseUrl($valueEnv);
         $url = $getUrl.$targetPath;
 
         $header['Client-Id'] = $config['client_id'];
@@ -154,7 +154,7 @@ class JokulCheckoutService {
         $header['Request-Target'] = $targetPath;
         $header['Content-Type'] = "application/json";
 
-        $signature = $this->jokulUtils->generateSignature($header, json_encode($data), $config['shared_key']);
+        $signature = $this->dokuUtils->generateSignature($header, json_encode($data), $config['shared_key']);
         $header['Signature'] = $signature;
 
         $body = json_encode($data);
@@ -167,11 +167,11 @@ class JokulCheckoutService {
         );
         $response = wp_remote_post($url, $args);
         $response_body = wp_remote_retrieve_body($response);
-        $this->jokulUtils->doku_log($this, 'Jokul Checkout REQUEST : ' . json_encode($data), $params['invoiceNumber']);
-        $this->jokulUtils->doku_log($this, 'Jokul Checkout REQUEST Header: ' . json_encode($header), $params['invoiceNumber']);
-        $this->jokulUtils->doku_log($this, 'Jokul Checkout REQUEST URL : ' . $url, $params['invoiceNumber']);
-        $this->jokulUtils->doku_log($this, 'Jokul Checkout RESPONSE : ' . json_encode($response, JSON_PRETTY_PRINT), $params['invoiceNumber']);
-        $this->jokulUtils->doku_log($this, 'Jokul Checkout RESPONSE Body: ' . json_encode($response_body, JSON_PRETTY_PRINT), $params['invoiceNumber']);
+        $this->dokuUtils->doku_log($this, 'Jokul Checkout REQUEST : ' . json_encode($data), $params['invoiceNumber']);
+        $this->dokuUtils->doku_log($this, 'Jokul Checkout REQUEST Header: ' . json_encode($header), $params['invoiceNumber']);
+        $this->dokuUtils->doku_log($this, 'Jokul Checkout REQUEST URL : ' . $url, $params['invoiceNumber']);
+        $this->dokuUtils->doku_log($this, 'Jokul Checkout RESPONSE : ' . json_encode($response, JSON_PRETTY_PRINT), $params['invoiceNumber']);
+        $this->dokuUtils->doku_log($this, 'Jokul Checkout RESPONSE Body: ' . json_encode($response_body, JSON_PRETTY_PRINT), $params['invoiceNumber']);
         
 
         return json_decode($response_body, true);
