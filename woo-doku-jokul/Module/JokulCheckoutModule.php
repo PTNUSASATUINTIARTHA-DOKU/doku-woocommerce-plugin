@@ -7,12 +7,12 @@ require_once(DOKU_PAYMENT_PLUGIN_PATH . '/Service/JokulCheckStatusService.php');
 require_once(DOKU_PAYMENT_PLUGIN_PATH . '/Common/JokulDb.php');
 require_once(DOKU_PAYMENT_PLUGIN_PATH . '/Common/JokulUtils.php');
 
-class JokulCheckoutModule extends WC_Payment_Gateway
+class DokuCheckoutModule extends WC_Payment_Gateway
 {
     public function __construct()
     {
         $this->init_form_fields();
-        $this->id                   = 'jokul_checkout';
+        $this->id                   = 'doku_checkout';
         $this->has_fields           = true;
         $this->method_name          = 'DOKU Checkout';
         $this->method_code          = 'JOKUL_CHECKOUT';
@@ -22,7 +22,7 @@ class JokulCheckoutModule extends WC_Payment_Gateway
         $this->checkout_msg         = 'This your payment on DOKU Checkout : ';
 
         $this->init_settings();
-        $mainSettings = get_option('woocommerce_jokul_gateway_settings');
+        $mainSettings = get_option('woocommerce_doku_gateway_settings');
         $this->environmentPaymentJokul = $mainSettings['environment_payment_jokul'];
         $this->sandboxClientId = $mainSettings['sandbox_client_id'];
         $this->sandboxSharedKey = $mainSettings['sandbox_shared_key'];
@@ -52,7 +52,7 @@ class JokulCheckoutModule extends WC_Payment_Gateway
         $queryArray = explode("&", sanitize_text_field($_SERVER['QUERY_STRING']));
         if (WC()->session != null) {
             $chosen_payment_method = WC()->session->get('chosen_payment_method');
-            if ($this->id == 'jokul_checkout') {
+            if ($this->id == 'doku_checkout') {
                 if (in_array("jokul=show", $queryArray)) {
                     add_filter('the_title', array($this, 'woo_title_order_pending'));
                     add_action('woocommerce_thankyou_' . $this->id, array($this, 'thank_you_page_pending'), 1, 10);
@@ -185,8 +185,8 @@ class JokulCheckoutModule extends WC_Payment_Gateway
         $amount = $order->order_total;
         $order_data = $order->get_data();
         
-        $this->jokulUtils = new JokulUtils();
-        $formattedPhoneNumber = $this->jokulUtils->formatPhoneNumber($order->billing_phone);
+        $this->dokuUtils = new DokuUtils();
+        $formattedPhoneNumber = $this->dokuUtils->formatPhoneNumber($order->billing_phone);
 
         $params = array(
             'customerId' => 0 !== $order->get_customer_id() ? $order->get_customer_id() : null,
@@ -237,12 +237,12 @@ class JokulCheckoutModule extends WC_Payment_Gateway
         update_post_meta($order_id, 'checkoutParams', $params);
         update_post_meta($order_id, 'checkoutConfig', $config); 
 
-        $this->jokulCheckoutService = new JokulCheckoutService();
-        $response = $this->jokulCheckoutService->generated($config, $params);
+        $this->dokuCheckoutService = new DokuCheckoutService();
+        $response = $this->dokuCheckoutService->generated($config, $params);
         if (!is_wp_error($response)) {
             if ($response['message'][0] == "SUCCESS" && isset($response['response']['payment']['url'])) {
                 update_post_meta($order_id, 'checkoutUrl', $response['response']['payment']['url']);
-                JokulCheckoutModule::addDb($response, $amount);
+                DokuCheckoutModule::addDb($response, $amount);
                 $this->orderId = $order_id;
                 return array(
                     'result' => 'success',
@@ -291,8 +291,6 @@ class JokulCheckoutModule extends WC_Payment_Gateway
 
     public function admin_options()
     {
-        parent::admin_options();
-    
         wp_enqueue_script(
             'admin-options-module',
             plugin_dir_url(__FILE__) . '../Js/admin-options-module.js',
@@ -323,25 +321,24 @@ class JokulCheckoutModule extends WC_Payment_Gateway
 
     public function addDb($response, $amount)
     {
-        
-        $this->jokulUtils = new JokulUtils();
-        $getIp = $this->jokulUtils->getIpaddress();
+        $this->dokuUtils = new DokuUtils();
+        $getIp = $this->dokuUtils->getIpaddress();
         $trx = array();
         $trx['invoice_number']          = $response['response']['order']['invoice_number'];
-        $trx['result_msg']              = null;
+        $trx['result_msg']              = $response['message'][0];
         $trx['process_type']            = 'PAYMENT_PENDING';
         $trx['raw_post_data']           = json_encode($response);
         $trx['ip_address']              = $getIp;
         $trx['amount']                  = $amount;
         $trx['payment_channel']         = $this->method_code;
-        $trx['payment_code']            = null;
+        $trx['payment_code']            = "";
         $trx['doku_payment_datetime']   = gmdate("Y-m-d H:i:s");
         $trx['process_datetime']        = gmdate("Y-m-d H:i:s");
         $trx['message']                 = "Payment Pending message come from Jokul. Success : completed";
         
 
-        $this->jokulDb = new JokulDb();
-        $this->jokulDb->addData($trx);
+        $this->dokuDB = new DokuDB();
+        $this->dokuDB->addData($trx);
     }
 
     public function thank_you_page_pending($order_id)
@@ -352,7 +349,7 @@ class JokulCheckoutModule extends WC_Payment_Gateway
         }
 
         wp_register_script(
-            'jokul-thank-you-redirect',
+            'doku-payment-thank-you-redirect',
             '',
             [], 
             '1.0.0',
@@ -366,8 +363,8 @@ class JokulCheckoutModule extends WC_Payment_Gateway
             })();
         ";
 
-        wp_add_inline_script('jokul-thank-you-redirect', $inline_script);
-        wp_enqueue_script('jokul-thank-you-redirect');
+        wp_add_inline_script('doku-payment-thank-you-redirect', $inline_script);
+        wp_enqueue_script('doku-payment-thank-you-redirect');
     }
 
     function woo_title_order_pending($title)
@@ -394,25 +391,25 @@ class JokulCheckoutModule extends WC_Payment_Gateway
             $paramsValue       = get_post_meta($order->get_id(), 'checkoutParams', true);
             $configValue       = get_post_meta($order->get_id(), 'checkoutConfig', true);
 
-            $this->jokulCheckStatusService = new JokulCheckStatusService();
-            $response = $this->jokulCheckStatusService->generated($configValue, $paramsValue);
+            $this->dokuCheckStatusService = new DokuCheckStatusService();
+            $response = $this->dokuCheckStatusService->generated($configValue, $paramsValue);
 
             if (!is_wp_error($response)) {
                 if (strtolower($response['acquirer']['id']) == strtolower('OVO')) {
-                    $jokulUtils = new JokulUtils();
-                    $jokulDb = new JokulDb();
-                    $jokulUtils->doku_log($jokulUtils, 'Jokul Acquirer : ' . $response['acquirer']['id'], $paramsValue['invoiceNumber']);
+                    $dokuUtils = new DokuUtils();
+                    $dokuDB = new DokuDB();
+                    $dokuUtils->doku_log($dokuUtils, 'Jokul Acquirer : ' . $response['acquirer']['id'], $paramsValue['invoiceNumber']);
                     if (strtolower($response['transaction']['status']) == strtolower('SUCCESS')) {
-                        $jokulDb->updateData($paramsValue['invoiceNumber'], $response['transaction']['status']);
+                        $dokuDB->updateData($paramsValue['invoiceNumber'], $response['transaction']['status']);
                         $order = wc_get_order($paramsValue['invoiceNumber']);
                         $order->update_status('processing');
                         $order->payment_complete();
-                        $jokulUtils->doku_log($jokulUtils, 'DOKU Check Status Update Status : ' . 'processing', $paramsValue['invoiceNumber']);
+                        $dokuUtils->doku_log($dokuUtils, 'DOKU Check Status Update Status : ' . 'processing', $paramsValue['invoiceNumber']);
                     } else {
-                        $jokulDb->updateData($paramsValue['invoiceNumber'], $response['transaction']['status']);
+                        $dokuDB->updateData($paramsValue['invoiceNumber'], $response['transaction']['status']);
                         $order = wc_get_order($paramsValue['invoiceNumber']);
                         $order->update_status('failed');
-                        $jokulUtils->doku_log($jokulUtils, 'DOKU Check Status Update Status : ' . 'failed', $paramsValue['invoiceNumber']);
+                        $dokuUtils->doku_log($dokuUtils, 'DOKU Check Status Update Status : ' . 'failed', $paramsValue['invoiceNumber']);
                     }
                 }
             }

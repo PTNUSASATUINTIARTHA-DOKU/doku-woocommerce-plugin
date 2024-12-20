@@ -21,16 +21,16 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 define('DOKU_PAYMENT_MAIN_FILE', __FILE__);
 define('DOKU_PAYMENT_PLUGIN_PATH', untrailingslashit(plugin_dir_path(__FILE__)));
 
-add_action('plugins_loaded', 'jokul_init_gateway_class');
-function jokul_init_gateway_class()
+add_action('plugins_loaded', 'doku_payment_init_gateway_class');
+function doku_payment_init_gateway_class()
 {
 
 	if (!class_exists('WC_Payment_Gateway')) {
 		return;
 	}
 
-	if (!class_exists('JokulMainPg')) {
-		class JokulMainPg
+	if (!class_exists('DokuMainPg')) {
+		class DokuMainPg
 		{
 			private static $instance;
 
@@ -62,14 +62,14 @@ function jokul_init_gateway_class()
 			 */
 			function addJokulGateway($methods)
 			{
-				$mainSettings = get_option('woocommerce_jokul_gateway_settings');
-				$methods[] = 'JokulMainModule';
-				$methods[] = 'JokulCheckoutModule';
+				$mainSettings = get_option('woocommerce_doku_gateway_settings');
+				$methods[] = 'DokuMainModule';
+				$methods[] = 'DokuCheckoutModule';
 
 				return $methods;
 			}
 		}
-		$GLOBALS['jokul_main_pg'] = JokulMainPg::get_instance();
+		$GLOBALS['doku_main_pg'] = DokuMainPg::get_instance();
 	}
 }
 
@@ -115,7 +115,7 @@ function doku_payment_install_db()
 	require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
 	dbDelta($sql);
 
-	add_option('jokuldb_db_version', $doku_payment_db_version);
+	add_option('doku_db_version', $doku_payment_db_version);
 }
 
 add_action('rest_api_init', function () {
@@ -127,20 +127,11 @@ add_action('rest_api_init', function () {
         },
         'permission_callback' => '__return_true'
     ));
-
-    // Register route for Jokul
-    register_rest_route('jokul', 'notification', array(
-        'methods' => 'POST',
-        'callback' => function ($request) {
-            return doku_payment_order_update_status('jokul',$request);
-        },
-        'permission_callback' => '__return_true'
-    ));
 });
 
 function doku_payment_order_update_status($path,$request)
 {
-	$notificationService = new JokulNotificationService();
+	$notificationService = new DokuNotificationService();
 	$response = $notificationService->getNotification($path,$request);
 	return $response;
 }
@@ -159,7 +150,7 @@ function doku_payment_qris_register_route()
 
 function doku_payment_order_update_status_qris($request)
 {
-	$qrisNotificationService = new JokulQrisNotificationService();
+	$qrisNotificationService = new DokuQrisNotificationService();
 	$response = $qrisNotificationService->getQrisNotification($request);
 }
 
