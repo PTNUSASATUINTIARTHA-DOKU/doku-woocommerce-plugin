@@ -63,7 +63,7 @@ After activation, follow these steps to configure the plugin:
 ### Step 1: Configure DOKU Payment in WooCommerce
 
 1. Go to **WooCommerce** (in sidebar) > **Settings** > **Payments** tab.
-2. Find **DOKU General-Configuration** and click **Manage**.
+2. Make sure **DOKU-Checkout** and **DOKU General-Configuration** are enable and click **Manage** on **DOKU General-Configuration**.
 3. Fill in the fields:
    - Tick Enable DOKU 
    - Choose **Sandbox** (for testing) or **Production** (for live payments).
@@ -72,7 +72,7 @@ After activation, follow these steps to configure the plugin:
 
 ### Step 2: Configure DOKU Dashboard
 
-1. Log in to your **DOKU Dashboard** at [https://dashboard.doku.com](https://dashboard.doku.com)
+1. Log in to your **DOKU Dashboard** for testing [https://sandbox.doku.com/bo/login](https://sandbox.doku.com/bo/login) for live payments [https://dashboard.doku.com](https://dashboard.doku.com)
 2. Navigate to **Settings** > **Payments Settings**
 3. Configure the payment methods you wish to accept, and for each channel, click **Configure**
 4. Copy the **Notification URL** from the WooCommerce settings and paste it into the corresponding payment channel settings in your DOKU Dashboard
@@ -91,6 +91,9 @@ To obtain your API credentials:
 3. Your **Client ID** and **Secret Key** will be displayed here. 
 
 Copy these credentials and paste them into the WooCommerce DOKU Payment settings.
+
+= Why do I have to configure notification URL ? =
+This step is important because it is where DOKU will notify WooCommerce to update the payment status. If you don't configure it in your dashboard, DOKU won't be able to send the payment status change to WooCommerce.
 
 = How can I get support from DOKU? =
 For support, visit our [Help Center](https://help.doku.com/en/support/home) to read FAQs, troubleshoot, or submit a support ticket.
