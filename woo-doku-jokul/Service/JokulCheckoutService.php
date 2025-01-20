@@ -27,17 +27,19 @@ class DokuCheckoutService {
                 "callback_url_cancel" => "https://www.doku.com/en-US",
                 "currency" => "IDR",
                 "auto_redirect" => true,
-                "disable_retry_payment" => true
+                "disable_retry_payment" => true,
+                "recover_abandoned_cart" => $params['recoverAbandonedCart'],
+              	"expired_recovered_cart" => $params['expiredRecoveredCart'],
             ): array(
                 "invoice_number" => $params['invoiceNumber'],
                 "line_items" => $params['itemQty'],
                 "amount" => $params['amount'],
                 "callback_url" => $params['callback_url'],
                 "callback_url_cancel" => "https://www.doku.com/en-US",
-                "currency" => "IDR"
+                "currency" => "IDR",
+              	"recover_abandoned_cart" => $params['recoverAbandonedCart'],
+              	"expired_recovered_cart" => $params['expiredRecoveredCart'],
             ),
-            "recover_abandoned_cart" => $params['recoverAbandonedCart'],
-            "expired_recovered_cart" => $params['expiredRecoveredCart'],
             "payment" => array(
                 "payment_due_date" => $params['expiryTime']
             ),
@@ -92,17 +94,19 @@ class DokuCheckoutService {
                 "callback_url_cancel" => "https://www.doku.com/en-US",
                 "currency" => "IDR",
                 "auto_redirect" => true,
-                "disable_retry_payment" => true
+                "disable_retry_payment" => true,
+              	"recover_abandoned_cart" => $params['recoverAbandonedCart'],
+              	"expired_recovered_cart" => $params['expiredRecoveredCart'],
             ): array(
                 "invoice_number" => $params['invoiceNumber'],
                 "line_items" => $params['itemQty'],
                 "amount" => $params['amount'],
                 "callback_url" => $params['callback_url'],
                 "callback_url_cancel" => "https://www.doku.com/en-US",
-                "currency" => "IDR"
+                "currency" => "IDR",
+              	"recover_abandoned_cart" => $params['recoverAbandonedCart'],
+              	"expired_recovered_cart" => $params['expiredRecoveredCart'],
             ),
-            "recover_abandoned_cart" => $params['recoverAbandonedCart'],
-            "expired_recovered_cart" => $params['expiredRecoveredCart'],
             "payment" => array(
                 "payment_due_date" => $params['expiryTime']
             ),        
