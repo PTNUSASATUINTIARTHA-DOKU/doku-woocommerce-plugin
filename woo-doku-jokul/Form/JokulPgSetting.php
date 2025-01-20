@@ -89,7 +89,7 @@ return apply_filters(
         'custom_time_range_abandoned_cart' => array(
             'style' => '',
             'title' => __('Custom Expiry', 'doku-payment'),
-            'type' => 'text',
+            'type' => 'number',
             'description' => __('Custom expiry for abandoned checkout', 'doku-payment'),
             'placeholder' => _x('set with numeric in range 1-31. It means day(s)', 'placeholder', 'doku-payment'),
             'default' => '',
