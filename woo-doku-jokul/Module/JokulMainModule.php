@@ -25,6 +25,9 @@ class DokuMainModule extends WC_Payment_Gateway
         $this->expiredTime = $this->get_option('expired_time');
         $this->notifUrl = $this->get_option('notif_url');
         $this->emailNotifications = $this->get_option('email_notifications');
+        $this->abandonedCart = $this->get_option('abandoned_cart');
+        $this->timeRangeAbandonedCart = $this->get_option('time_range_abandoned_cart');
+        $this->customExpireDate = $this->get_option('custom_time_range_abandoned_cart');
 
         add_action('woocommerce_update_options_payment_gateways_' . $this->id, array($this, 'process_admin_options'));
         add_filter('woocommerce_available_payment_gateways', array(&$this, 'check_gateway_status'));

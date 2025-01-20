@@ -30,6 +30,9 @@ class DokuCheckoutModule extends WC_Payment_Gateway
         $this->prodSharedKey = $mainSettings['prod_shared_key'];
         $this->expiredTime = $mainSettings['expired_time'];
         $this->emailNotifications = $mainSettings['email_notifications'];
+        $this->abandonedCart =  $mainSettings['abandoned_cart'];
+        $this->timeRangeAbandonedCart =  $mainSettings['time_range_abandoned_cart'];
+        $this->customExpireDate =  $mainSettings['custom_time_range_abandoned_cart'];
 
         $this->enabled = $this->get_option('enabled');
         $this->channelName = $this->get_option('channel_name');
@@ -62,6 +65,37 @@ class DokuCheckoutModule extends WC_Payment_Gateway
             }
         }
 
+    }
+
+    function calculateMinutes($abandonedCart, $timeRangeAbandonedCart, $customExpireDate) {  
+        $minutes = 0; 
+      
+        if ($abandonedCart === 'yes') {  
+            if ($timeRangeAbandonedCart !== 'Custom') {  
+                switch ($timeRangeAbandonedCart) {  
+                    case 'Tomorrow':  
+                        $minutes = 1440; 
+                        break;  
+                    case '7 day':  
+                        $minutes = 10080;
+                        break;  
+                    case '14 day':  
+                        $minutes = 20160; 
+                        break;  
+                    case '30 day':  
+                        $minutes = 43200; 
+                        break;  
+                    default:  
+                        $minutes = 0;  
+                        break;  
+                }  
+            } else {  
+                $customDays = intval($customExpireDate); 
+                $minutes = $customDays * 1440;   
+            }  
+        }  
+      
+        return $minutes;
     }
 
     public function get_order_data($order)
@@ -217,7 +251,9 @@ class DokuCheckoutModule extends WC_Payment_Gateway
             'first_name_shipping' => $order->shipping_first_name,
             'address_shipping' => preg_replace($pattern, "",$order->shipping_address_1),
             'city_shipping' => $order->shipping_city,
-            'postal_code_shipping' => $order->shipping_postcode
+            'postal_code_shipping' => $order->shipping_postcode,
+            'recoverAbandonedCart' => ($this->abandonedCart === 'yes'),
+            'expiredRecoveredCart' => $this->calculateMinutes($this->abandonedCart, $this->timeRangeAbandonedCart, $this->customExpireDate)
         );
 
         if ($this->environmentPaymentJokul == 'false') {

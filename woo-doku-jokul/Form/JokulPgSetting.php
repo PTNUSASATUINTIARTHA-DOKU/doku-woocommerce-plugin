@@ -61,6 +61,40 @@ return apply_filters(
             'default' => __('60', 'doku-payment'),
         ),
 
+        'abandoned_cart' => array(  
+            'title' => __('Abandoned Checkout:', 'doku-payment'),  
+            'type' => 'select',  
+            'default' => 'no',  
+            'options' => array(  
+                'yes' => __('Yes', 'doku-payment'),  
+                'no' => __('No', 'doku-payment'),  
+            ),  
+            'description' => __('Enable this option to allow the payment link to be accessible again for a specified period.', 'doku-payment'),  
+        ),  
+
+        'time_range_abandoned_cart' => array(  
+            'title' => __('Duration Abandoned Checkout:', 'doku-payment'),  
+            'type' => 'select',  
+            'default' => '3 day',  
+            'options' => array(  
+                'Tomorrow' => __('Tomorrow', 'doku-payment'),  
+                '7' => __('7 Days', 'doku-payment'),  
+                '14' => __('14 Days', 'doku-payment'),  
+                '30' => __('31 Days', 'doku-payment'),  
+                'Custom' => __('Custom', 'doku-payment'),  
+            ),  
+            'description' => __('Select the time range for abandoned checkout', 'doku-payment'),  
+        ), 
+        
+        'custom_time_range_abandoned_cart' => array(
+            'style' => '',
+            'title' => __('Custom Expiry', 'doku-payment'),
+            'type' => 'text',
+            'description' => __('Custom expiry for abandoned checkout', 'doku-payment'),
+            'placeholder' => _x('set with numeric in range 1-31. It means day(s)', 'placeholder', 'doku-payment'),
+            'default' => '',
+        ),
+
         'notif_url' => array(
             'style' => '',
             'title' => __('Notification URL:', 'doku-payment'),

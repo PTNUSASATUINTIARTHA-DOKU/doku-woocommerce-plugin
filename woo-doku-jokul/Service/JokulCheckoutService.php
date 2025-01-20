@@ -36,6 +36,8 @@ class DokuCheckoutService {
                 "callback_url_cancel" => "https://www.doku.com/en-US",
                 "currency" => "IDR"
             ),
+            "recover_abandoned_cart" => $params['recoverAbandonedCart'],
+            "expired_recovered_cart" => $params['expiredRecoveredCart'],
             "payment" => array(
                 "payment_due_date" => $params['expiryTime']
             ),
@@ -72,7 +74,7 @@ class DokuCheckoutService {
             "additional_info" => array (
                 "integration" => array (
                     "name" => "woocommerce-plugin",
-                    "version" => "1.3.16",
+                    "version" => "1.3.17",
                     "cms_version" => $params['woo_version']
                 ),
                 "account" => array(
@@ -99,6 +101,8 @@ class DokuCheckoutService {
                 "callback_url_cancel" => "https://www.doku.com/en-US",
                 "currency" => "IDR"
             ),
+            "recover_abandoned_cart" => $params['recoverAbandonedCart'],
+            "expired_recovered_cart" => $params['expiredRecoveredCart'],
             "payment" => array(
                 "payment_due_date" => $params['expiryTime']
             ),        
@@ -135,7 +139,7 @@ class DokuCheckoutService {
             "additional_info" => array (
                 "integration" => array (
                     "name" => "woocommerce-plugin",
-                    "version" => "1.3.16",
+                    "version" => "1.3.17",
                     "cms_version" => $params['woo_version']
                 ),
                 "method" => "Jokul Checkout",
