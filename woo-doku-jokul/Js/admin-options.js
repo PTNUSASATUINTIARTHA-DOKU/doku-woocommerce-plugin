@@ -19,7 +19,7 @@ jQuery(document).ready(function($) {
     function toggleTimeRangeDropdown() {      
         var abandonedCardValue = $('#woocommerce_doku_gateway_abandoned_cart').val();      
   
-        if (abandonedCardValue === 'yes') {      
+        if (abandonedCardValue === 'yes') {  
             $('#woocommerce_doku_gateway_time_range_abandoned_cart').closest('tr').show();      
   
             showCustomExpiry();
@@ -29,15 +29,42 @@ jQuery(document).ready(function($) {
         }      
     }    
 
-    function showCustomExpiry(){
-        var timeRangeValue = $('#woocommerce_doku_gateway_time_range_abandoned_cart').val();   
-        if (timeRangeValue === 'Custom') {  
-            $('#woocommerce_doku_gateway_custom_time_range_abandoned_cart').closest('tr').show();
-        } else {  
-            $('#woocommerce_doku_gateway_custom_time_range_abandoned_cart').closest('tr').hide(); 
-        }  
-    }
-  
+    function showCustomExpiry() {    
+        const customExpiryField = $('#woocommerce_doku_gateway_custom_time_range_abandoned_cart');    
+        customExpiryField.on('input', function() {    
+            var value = parseFloat(customExpiryField.val());    
+            customExpiryField.next('.error-message').remove();    
+              
+            if (value < 1 || value > 31) {    
+                customExpiryField.addClass('error');    
+                const errorMessage = $('<span class="error-message">Please set with numeric in range 1-31</span>');  
+                errorMessage.css({  
+                    'color': '#E1251B',  
+                    'font-size': '11px',  
+                    'font-weight': 'normal',
+                    'margin-top': '8px',  
+                    'display': 'block'
+                });  
+                customExpiryField.after(errorMessage);    
+            } else {    
+                customExpiryField.removeClass('error');    
+            }    
+              
+            if (value < 1) {    
+                customExpiryField.val(1);    
+            } else if (value > 31) {    
+                customExpiryField.val(31);    
+            }    
+        });    
+      
+        var timeRangeValue = $('#woocommerce_doku_gateway_time_range_abandoned_cart').val();      
+        if (timeRangeValue === 'Custom') {      
+            $('#woocommerce_doku_gateway_custom_time_range_abandoned_cart').closest('tr').show();    
+        } else {      
+            $('#woocommerce_doku_gateway_custom_time_range_abandoned_cart').closest('tr').hide();     
+        }      
+    }  
+
     function checkbox_sac_select() {    
         if ($(`#woocommerce_${id}_sac_check`).is(':checked')) {    
             $('table tr:last').fadeIn();    
