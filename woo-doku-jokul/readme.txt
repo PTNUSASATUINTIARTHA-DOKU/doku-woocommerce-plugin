@@ -4,7 +4,7 @@ Donate link: https://doku.com/
 Tags: Payment Gateway, Payment, Credit Card, DOKU, woocommerce                                                                 
 Requires at least: 2.2
 Tested up to: 6.7
-Stable tag: 1.3.17
+Stable tag: 1.3.19
 Requires PHP: 5.6v
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -22,11 +22,18 @@ DOKU plugin offers a seamless, secure payment solution allowing your customers t
 Refer to our [documentation](https://docs.doku.com/accept-payments/integration-tools/e-commerce-and-plugins/woocommerce-wordpress) for more information and tips.
 
 == Upgrade Notice ==
- 
-= 1.3.17 =
-Improved readme formatting and updated documentation and code standardization.
 
+= 1.3.19 =
+Enhancement QRIS notification status
+ 
 == Change Log ==
+
+= 1.3.19 =
+Enhancement QRIS notification status
+
+= 1.3.18 =
+Added new featured recover abandoned cart system.
+Customers can now recover their carts even after the expiry time has passed.
 
 = 1.3.17 =
 Improved readme formatting and updated documentation and code standardization.
