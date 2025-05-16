@@ -23,10 +23,13 @@ Refer to our [documentation](https://docs.doku.com/accept-payments/integration-t
 
 == Upgrade Notice ==
 
-= 1.3.19 =
-Enhancement QRIS notification status
+= 1.3.20 =
+Enhancement to allow optional phone number input
  
 == Change Log ==
+
+= 1.3.20 =
+Enhancement to allow optional phone number input
 
 = 1.3.19 =
 Enhancement QRIS notification status
