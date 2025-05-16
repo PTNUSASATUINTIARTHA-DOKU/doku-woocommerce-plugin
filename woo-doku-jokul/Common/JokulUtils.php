@@ -186,12 +186,28 @@ class DokuUtils
     }
 
     function formatPhoneNumber($phoneNumber) {
+        if (empty($phoneNumber)) {
+            return null; 
+        }
+
         // Check if the phone number starts with '08'
         if (substr($phoneNumber, 0, 2) == '08') {
             // Replace '0' with '62'
             return '62' . substr($phoneNumber, 1);
         }
         return $phoneNumber;
+    }
+
+    public function removeNullValues($array) {
+        foreach ($array as $key => &$value) {
+            if (is_array($value)) {
+                $value = $this->removeNullValues($value);
+            }
+            if (is_null($value)) {
+                unset($array[$key]);
+            }
+        }
+        return $array;
     }
     
 }
