@@ -171,8 +171,14 @@ class DokuCheckoutModule extends WC_Payment_Gateway
         // Add taxes.
         foreach ($order->get_tax_totals() as $tax_code => $tax) {
             $product = $order->get_product_from_item($item);
+            $image_url = null;
+            $product_url = null;
+
             if (is_object($product)) {
                 $product_id = isset($product->variation_id) ? $product->variation_id : $product->id;
+                $image_id  = $product->get_image_id();
+                $image_url = wp_get_attachment_image_url( $image_id, 'full' );
+                $product_url = $product->get_permalink();
             }
             if (wc_format_decimal($tax->amount, $dp) > 0) {
                 $order_data[] = array(
@@ -182,15 +188,23 @@ class DokuCheckoutModule extends WC_Payment_Gateway
                     'quantity' => 1, 
                     'type' => 'produk',
                     'sku' => 'tax-' . $product_id . '-' . preg_replace($pattern, "", $tax->label), 
-                    'category' => 'fee', 
+                    'category' => 'fee',
+                    'image_url' =>  !empty($image_url) ? $image_url : '',
+                    'url' => $product_url 
                 );
             }
         }
         // Add fees.
         foreach ($order->get_fees() as $fee_item_id => $fee_item) {
             $product = $order->get_product_from_item($item);
+            $image_url = null;
+            $product_url = null;
+
             if (is_object($product)) {
                 $product_id = isset($product->variation_id) ? $product->variation_id : $product->id;
+                $image_id  = $product->get_image_id();
+                $image_url = wp_get_attachment_image_url( $image_id, 'full' );
+                $product_url = $product->get_permalink();
             }
             if (wc_format_decimal($order->get_line_total($fee_item), $dp) > 0) {
                 $order_data[] = array(
@@ -201,6 +215,8 @@ class DokuCheckoutModule extends WC_Payment_Gateway
                     'type' => 'produk',
                     'sku' => 'fee-' . $product_id . '-' . preg_replace($pattern, "", $tax->label), 
                     'category' => 'fee',
+                    'image_url' =>  !empty($image_url) ? $image_url : '',
+                    'url' => $product_url 
                 );
             }
         }
