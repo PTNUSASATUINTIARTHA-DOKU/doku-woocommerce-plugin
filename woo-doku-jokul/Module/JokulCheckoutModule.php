@@ -156,7 +156,7 @@ class DokuCheckoutModule extends WC_Payment_Gateway
             }
             if (wc_format_decimal($shipping_item['cost'], $dp) > 0) {
                 $order_data[] = array(
-                    'id' => $product_id,
+                    'id' => 'shipping',
                     'name' => preg_replace($pattern, "", $shipping_item['name']), 
                     'price' => wc_format_decimal($shipping_item['cost'], $dp), 
                     'quantity' => 1,
@@ -182,7 +182,7 @@ class DokuCheckoutModule extends WC_Payment_Gateway
             }
             if (wc_format_decimal($tax->amount, $dp) > 0) {
                 $order_data[] = array(
-                    'id' => $product_id,
+                    'id' => 'tax-' . $product_id . '-' . preg_replace($pattern, "", $tax->label), 
                     'name' => preg_replace($pattern, "", $tax->label), 
                     'price' => wc_format_decimal($tax->amount, $dp), 
                     'quantity' => 1, 
@@ -208,7 +208,7 @@ class DokuCheckoutModule extends WC_Payment_Gateway
             }
             if (wc_format_decimal($order->get_line_total($fee_item), $dp) > 0) {
                 $order_data[] = array(
-                    'id' => $product_id,
+                    'id' => 'fee-' . $product_id . '-' . preg_replace($pattern, "", $tax->label),
                     'name' => preg_replace($pattern, "", $fee_item['name']), 
                     'price' => wc_format_decimal($order->get_line_total($fee_item), $dp), 
                     'quantity' => 1, 
