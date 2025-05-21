@@ -76,7 +76,7 @@ class DokuCheckoutService {
             "additional_info" => array (
                 "integration" => array (
                     "name" => "woocommerce-plugin",
-                    "version" => "1.3.19",
+                    "version" => "1.3.20",
                     "cms_version" => $params['woo_version']
                 ),
                 "account" => array(
@@ -143,13 +143,15 @@ class DokuCheckoutService {
             "additional_info" => array (
                 "integration" => array (
                     "name" => "woocommerce-plugin",
-                    "version" => "1.3.19",
+                    "version" => "1.3.20",
                     "cms_version" => $params['woo_version']
                 ),
                 "method" => "Jokul Checkout",
                 "doku_wallet_notify_url" => get_site_url() .'/wp-json/doku/notification'
             )
         );
+
+        $data = $this->dokuUtils->removeNullValues($data);
 
         $this->dokuConfig = new DokuConfig();
         $valueEnv = $config['environment'] === 'true'? true: false;
