@@ -199,6 +199,20 @@ class DokuCheckoutModule extends WC_Payment_Gateway
             $product = $order->get_product_from_item($item);
             $image_url = null;
             $product_url = null;
+            $fee_total = $fee_item->get_total();
+
+            if ($fee_total == 0) {
+                continue;
+            }
+
+            $order_data[] = array(
+                'id' => 'fee-' . $fee_item_id,
+                'name' => preg_replace($pattern, "", $fee_item->get_name()),
+                'price' => (int) round($fee_total),
+                'quantity' => 1,
+                'type' => 'fee',
+                'category' => 'fee',
+            );
 
             if (is_object($product)) {
                 $product_id = isset($product->variation_id) ? $product->variation_id : $product->id;
