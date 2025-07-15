@@ -206,8 +206,7 @@ class DokuCheckoutModule extends WC_Payment_Gateway
                 $image_url = wp_get_attachment_image_url( $image_id, 'full' );
                 $product_url = $product->get_permalink();
             }
-            if (wc_format_decimal($order->get_line_total($fee_item), $dp) > 0) {
-                $order_data[] = array(
+            $order_data[] = array(
                     'id' => 'fee-' . $product_id . '-' . preg_replace($pattern, "", $tax->label),
                     'name' => preg_replace($pattern, "", $fee_item['name']), 
                     'price' => wc_format_decimal($order->get_line_total($fee_item), $dp), 
@@ -218,7 +217,6 @@ class DokuCheckoutModule extends WC_Payment_Gateway
                     'image_url' =>  !empty($image_url) ? $image_url : '',
                     'url' => $product_url 
                 );
-            }
         }
         // woocommerce_cli_order_data is a WooCommerce core hook, used here to filter order data.
         // This hook name is not created or defined by this plugin and cant be modified.
