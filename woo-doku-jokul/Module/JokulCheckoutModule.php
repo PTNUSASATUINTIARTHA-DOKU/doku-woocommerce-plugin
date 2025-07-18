@@ -398,23 +398,8 @@ class DokuCheckoutModule extends WC_Payment_Gateway
             return;
         }
 
-        wp_register_script(
-            'doku-payment-thank-you-redirect',
-            '',
-            [], 
-            '1.0.0',
-            true
-        );
-
-        $inline_script = "
-            (function() {
-                const checkoutURL = '" . esc_js($jokulCheckoutURL) . "';
-                window.location.href = checkoutURL;
-            })();
-        ";
-
-        wp_add_inline_script('doku-payment-thank-you-redirect', $inline_script);
-        wp_enqueue_script('doku-payment-thank-you-redirect');
+        header('Location: ' . $jokulCheckoutURL);
+        die(); 
     }
 
     function woo_title_order_pending($title)
