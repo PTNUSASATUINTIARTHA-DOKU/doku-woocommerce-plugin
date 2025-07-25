@@ -54,13 +54,23 @@ class DokuNotificationService
             $sharedKey = $mainSettings['prod_shared_key'];
         }
 
+        $parsed_url = parse_url( get_site_url() );
+        $endpoint_path = '';
+		if ( isset( $parsed_url['path'] ) ) {
+    		$endpoint_path = $parsed_url['path'];
+		}
+
+		if ( isset( $parsed_url['query'] ) ) {
+    		$endpoint_path .= '?' . $parsed_url['query'];
+		}
+
         $dokuDB = new DokuDB();
         $serviceType = $raw_notification['service']['id'];
         $invoiceNumber = $raw_notification['order']['invoice_number'];
         $amount = $raw_notification['order']['amount'];
         $paymentChannel = $raw_notification['channel']['id'];
         $transactionStatus = $raw_notification['transaction']['status'];
-        $requestTarget =  '/wp-json/' . $path . '/notification';
+        $requestTarget =  $endpoint_path . '/wp-json/' . $path . '/notification';
         if ($serviceType == "ONLINE_TO_OFFLINE") {
             $paymentCode = $raw_notification['online_to_offline_info']['payment_code'];
             $paymentDate = $raw_notification['transaction']['date'];
