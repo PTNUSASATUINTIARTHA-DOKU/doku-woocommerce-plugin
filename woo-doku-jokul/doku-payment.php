@@ -141,16 +141,16 @@ function doku_payment_qris_register_route()
 	register_rest_route('doku', 'qrisnotification', array(
 		'methods' => 'POST',
 		'callback' => function ($request) {
-            return doku_payment_order_update_status_qris($request);
+            return doku_payment_order_update_status_qris('doku',$request);
         },
 		'permission_callback' => '__return_true'
 	));
 }
 
-function doku_payment_order_update_status_qris($request)
+function doku_payment_order_update_status_qris($path, $request)
 {
 	$qrisNotificationService = new DokuQrisNotificationService();
-	$response = $qrisNotificationService->getQrisNotification($request);
+	$response = $qrisNotificationService->getQrisNotification($path,$request);
 }
 
 add_action('woocommerce_thankyou', 'doku_payment_thank_you_page_credit_card', 1, 10);
