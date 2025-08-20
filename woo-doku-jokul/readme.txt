@@ -23,10 +23,13 @@ Refer to our [documentation](https://docs.doku.com/accept-payments/integration-t
 
 == Upgrade Notice ==
 
-= 1.3.22 =
-Smooth Redirection to DOKU Checkout Page
+= 1.3.23 =
+Enhance QRIS status notification
  
 == Change Log ==
+
+= 1.3.23 =
+Enhance QRIS status notification
 
 = 1.3.22 =
 Smooth Redirection to DOKU Checkout Page
