@@ -71,7 +71,7 @@ class DokuQrisNotificationService
         $amount = $raw_notification['order']['amount'];
         $paymentChannel = $raw_notification['channel']['id'];
         $transactionStatus = $raw_notification['transaction']['status'];
-        $requestTarget =  $endpoint_path . '/wp-json/' . $path . '/notification';
+        $requestTarget =  $endpoint_path . '/wp-json/' . $path . '/qrisnotification';
         if ($serviceType == "ONLINE_TO_OFFLINE") {
             $paymentCode = $raw_notification['online_to_offline_info']['payment_code'];
             $paymentDate = $raw_notification['transaction']['date'];
