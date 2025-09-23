@@ -292,7 +292,12 @@ class DokuCheckoutModule extends WC_Payment_Gateway
         if (!is_wp_error($response)) {
             if ($response['message'][0] == "SUCCESS" && isset($response['response']['payment']['url'])) {
                 update_post_meta($order_id, 'checkoutUrl', $response['response']['payment']['url']);
-                DokuCheckoutModule::addDb($response, $amount);
+                $resultDb = DokuCheckoutModule::addDb($response, $amount);
+                if($resultDb === false || $resultDb === 0){
+                    http_response_code(500);
+                    echo esc_html(http_response_code());
+                    wc_add_notice('Cant be proceed into checkout page. Please try again.', 'error');
+                }
                 $this->orderId = $order_id;
                 return array(
                     'result' => 'success',
@@ -388,7 +393,7 @@ class DokuCheckoutModule extends WC_Payment_Gateway
         
 
         $this->dokuDB = new DokuDB();
-        $this->dokuDB->addData($trx);
+        return $this->dokuDB->addData($trx);
     }
 
     public function thank_you_page_pending($order_id)

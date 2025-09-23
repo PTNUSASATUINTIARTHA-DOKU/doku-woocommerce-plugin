@@ -65,8 +65,8 @@ class DokuNotificationService
             $paymentCode = $raw_notification['online_to_offline_info']['payment_code'];
             $paymentDate = $raw_notification['transaction']['date'];
         } else {
-            $paymentCode = $raw_notification['virtual_account_info']['virtual_account_number'];
-            $paymentDate = $raw_notification['virtual_account_payment']['date'];
+            $paymentCode = $raw_notification['virtual_account_info']['virtual_account_number'] ?? '';
+            $paymentDate = $raw_notification['virtual_account_payment']['date'] ?? '';
         }
 
         $transaction = $dokuDB->checkTrx($invoiceNumber, $amount, $paymentCode);
@@ -83,7 +83,13 @@ class DokuNotificationService
                     $checkTrxStatus = $dokuDB->checkStatusTrx($invoiceNumber, $amount, $paymentCode == "" ? "" : $paymentCode, 'PAYMENT_COMPLETED');
 
                     if ($checkTrxStatus == '') {
-                        $this->addDb($invoiceNumber, $amount, $paymentCode, $paymentDate, $paymentChannel, $transactionStatus,$raw_notification);
+                        $resultDb = $this->addDb($invoiceNumber, $amount, $paymentCode, $paymentDate, $paymentChannel, $transactionStatus,$raw_notification);
+                        if($resultDb === false || $resultDb === 0){
+                            $dokuUtils->doku_log($dokuUtils, 'FAILED INSERT PAYMENT COMPLETED TO DB', $raw_notification['order']['invoice_number']);
+                            http_response_code(500);
+                            echo esc_html(http_response_code());
+                            return new WP_REST_Response(data: 'Failed to insert payment_completed to DB', status: 500);
+                        }
                     }
 
                     $order = wc_get_order($invoiceNumber);
@@ -131,6 +137,6 @@ class DokuNotificationService
         $trx['message']                 = "Payment process message come from Jokul. " . $transactionStatus . " : completed";
 
         $dokuDB = new DokuDB();
-        $dokuDB->addData($trx);
+        return $dokuDB->addData($trx);
     }
 }

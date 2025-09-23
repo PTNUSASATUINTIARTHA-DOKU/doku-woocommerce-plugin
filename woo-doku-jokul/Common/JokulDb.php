@@ -25,11 +25,14 @@ class DokuDB {
                 return '%s';  // String
             }
         }, $datainsert);
-    
-        // Menggunakan $wpdb->insert() untuk keamanan dan efisiensi
-        $result = $wpdb->insert($table, $datainsert, $format);
-    
-        return $result;
+        
+        try {
+            $result = $wpdb->insert($table, $datainsert, $format);
+            return $result;
+        } catch (Exception $e) {
+            error_log('Database Insertion Error: ' . $e->getMessage());
+            return false;
+        }
     }
     
     
@@ -63,9 +66,13 @@ class DokuDB {
         ];
     
         // Melakukan update dengan $wpdb->update()
-        $result = $wpdb->update($table, $data, $where, $format, $where_format);
-    
-        return $result;
+        try {
+            $result = $wpdb->update($table, $data, $where, $format, $where_format);
+            return $result;
+        } catch (Exception $e) {
+            error_log('Database Update Error: ' . $e->getMessage());
+            return false;
+        }
     }
 
     function checkTrx($order_id, $amount) {
@@ -76,14 +83,18 @@ class DokuDB {
         if (empty($order_id) || empty($amount)) {
             return false;
         }
-    
-        // Gunakan get_row() untuk mengambil satu baris data
-        return $wpdb->get_row(
-            $wpdb->prepare(
-                "SELECT * FROM $table WHERE invoice_number = %s AND amount = %d ORDER BY trx_id DESC LIMIT 1",
-                $order_id, $amount
-            )
-        );
+        
+        try {
+            return $wpdb->get_row(
+                $wpdb->prepare(
+                    "SELECT * FROM $table WHERE invoice_number = %s AND amount = %d ORDER BY trx_id DESC LIMIT 1",
+                    $order_id, $amount
+                )
+            );
+        } catch (Exception $e) {
+            error_log('Database Query Error: ' . $e->getMessage());
+            return false;
+        }
     }
     
 
@@ -95,14 +106,18 @@ class DokuDB {
         if (empty($order_id) || empty($amount) || empty($processType)) {
             return false;
         }
-    
-        // Gunakan get_var() untuk mengambil satu nilai dari query
-        return $wpdb->get_var(
-            $wpdb->prepare(
-                "SELECT payment_code FROM $table WHERE invoice_number = %s AND amount = %d AND process_type = %s ORDER BY trx_id DESC LIMIT 1",
-                $order_id, $amount, $processType
-            )
-        );
+        try {
+            // Gunakan get_var() untuk mengambil satu nilai dari query
+            return $wpdb->get_var(
+                $wpdb->prepare(
+                    "SELECT payment_code FROM $table WHERE invoice_number = %s AND amount = %d AND process_type = %s ORDER BY trx_id DESC LIMIT 1",
+                    $order_id, $amount, $processType
+                )
+            );
+        } catch (Exception $e) {
+            error_log('Database Query Error: ' . $e->getMessage());
+            return false;
+        }
     }
     
 }
