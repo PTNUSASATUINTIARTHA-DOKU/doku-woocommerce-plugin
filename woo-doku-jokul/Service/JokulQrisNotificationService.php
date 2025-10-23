@@ -76,8 +76,8 @@ class DokuQrisNotificationService
             $paymentCode = $raw_notification['online_to_offline_info']['payment_code'];
             $paymentDate = $raw_notification['transaction']['date'];
         } else {
-            $paymentCode = $raw_notification['virtual_account_info']['virtual_account_number'];
-            $paymentDate = $raw_notification['virtual_account_payment']['date'];
+            $paymentCode = $raw_notification['virtual_account_info']['virtual_account_number'] ?? '';
+            $paymentDate = $raw_notification['virtual_account_payment']['date'] ?? '';
         }
 
 

@@ -80,10 +80,12 @@ class DokuNotificationService
                         $dokuUtils->doku_log($dokuUtils, 'TRANSACTION SIGNATURE VALID', $raw_notification['order']['invoice_number']);
 
                 if (strtolower($raw_notification['transaction']['status']) == strtolower('SUCCESS')) {
-                    $checkTrxStatus = $dokuDB->checkStatusTrx($invoiceNumber, $amount, $paymentCode == "" ? "" : $paymentCode, 'PAYMENT_COMPLETED');
-
+                    $checkTrxStatus = $dokuDB->checkStatusTrx($invoiceNumber, $amount, 'PAYMENT_COMPLETED');
                     if ($checkTrxStatus == '') {
-                        $resultDb = $this->addDb($invoiceNumber, $amount, $paymentCode, $paymentDate, $paymentChannel, $transactionStatus,$raw_notification);
+                        $order = wc_get_order($invoiceNumber);
+                        $order->update_status('processing');
+                        $order->payment_complete();
+                        $resultDb = $this->updateDb($invoiceNumber, 'PAYMENT_COMPLETED');
                         if($resultDb === false || $resultDb === 0){
                             $dokuUtils->doku_log($dokuUtils, 'FAILED INSERT PAYMENT COMPLETED TO DB', $raw_notification['order']['invoice_number']);
                             http_response_code(500);
@@ -91,10 +93,6 @@ class DokuNotificationService
                             return new WP_REST_Response(data: 'Failed to insert payment_completed to DB', status: 500);
                         }
                     }
-
-                    $order = wc_get_order($invoiceNumber);
-                    $order->update_status('processing');
-                    $order->payment_complete();
                 } else if (strtolower($raw_notification['transaction']['status']) == strtolower('FAILED')) {
                     $checkTrxStatus = $dokuDB->checkStatusTrx($invoiceNumber, $amount, $paymentCode == "" ? "" : $paymentCode, 'PAYMENT_COMPLETED');
 
@@ -138,5 +136,10 @@ class DokuNotificationService
 
         $dokuDB = new DokuDB();
         return $dokuDB->addData($trx);
+    }
+
+    function updateDb($invoiceNumber, $status) {
+        $dokuDB = new DokuDB();
+        return $dokuDB->updateData($invoiceNumber, $status);
     }
 }
