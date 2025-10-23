@@ -5,7 +5,7 @@ Tags: Payment Gateway, Payment, Credit Card, DOKU, woocommerce
 Requires at least: 2.2
 Tested up to: 6.7
 Stable tag: 1.3.25
-Requires PHP: 5.6v
+Requires PHP: 8.2v
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 DOKU plugin offers a secure payment with DOKU Checkout, letting customers choose from various payment methods and complete transactions seamlessly.
@@ -72,7 +72,7 @@ DOKU Payment compatible with WooCommerce Checkout Block.
 ## Requirements
 - WordPress 5.6 or higher
 - WooCommerce 4.9.0 or higher
-- PHP 5.6 or higher
+- PHP 8.2 or higher
 - MySQL 5.6 or higher
 
 == Installation ==
@@ -87,8 +87,14 @@ After activation, follow these steps to configure the plugin:
 ### Step 1: Configure DOKU Payment in WooCommerce
 
 1. Go to **WooCommerce** (in sidebar) > **Settings** > **Payments** tab.
-2. Make sure **DOKU-Checkout** and **DOKU General-Configuration** are enable and click **Manage** on **DOKU General-Configuration**.
-3. Fill in the fields:
+2. Add debug log step for merchant to enable wp-config.php (file)
+   ```
+   define('WP_DEBUG', true);
+   define('WP_DEBUG_LOG', true);
+   define('WP_DEBUG_DISPLAY', false);
+   ```
+3. Make sure **DOKU-Checkout** and **DOKU General-Configuration** are enable and click **Manage** on **DOKU General-Configuration**.
+4. Fill in the fields:
    - Tick Enable DOKU 
    - Choose **Sandbox** (for testing) or **Production** (for live payments).
    - **Client ID** and **Secret Key** (from your DOKU Dashboard).
