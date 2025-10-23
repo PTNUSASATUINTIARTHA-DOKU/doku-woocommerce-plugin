@@ -4,7 +4,7 @@ Donate link: https://doku.com/
 Tags: Payment Gateway, Payment, Credit Card, DOKU, woocommerce                                                                 
 Requires at least: 2.2
 Tested up to: 6.7
-Stable tag: 1.3.24
+Stable tag: 1.3.25
 Requires PHP: 5.6v
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -23,10 +23,12 @@ Refer to our [documentation](https://docs.doku.com/accept-payments/integration-t
 
 == Upgrade Notice ==
 
-= 1.3.24 =
-Enhance Notification Process
+= 1.3.25 =
+Enhancement Notification Flow
  
 == Change Log ==
+= 1.3.25 =
+Enhancement Notification Flow
 
 = 1.3.24 =
 Enhance Notification Process
