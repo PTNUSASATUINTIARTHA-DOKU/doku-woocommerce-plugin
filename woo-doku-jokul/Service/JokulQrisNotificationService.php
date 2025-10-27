@@ -106,10 +106,6 @@ class DokuQrisNotificationService
                             return new WP_REST_Response(data: 'Failed to insert payment_completed to DB', status: 500);
                         }
                     }
-
-                    $order = wc_get_order($invoiceNumber);
-                    $order->update_status('processing');
-                    $order->payment_complete();
                 } else if (strtolower($raw_notification['transaction']['status']) == strtolower('FAILED')) {
                     $checkTrxStatus = $dokuDB->checkStatusTrx($invoiceNumber, $amount, $paymentCode == "" ? "" : $paymentCode, 'PAYMENT_COMPLETED');
 
