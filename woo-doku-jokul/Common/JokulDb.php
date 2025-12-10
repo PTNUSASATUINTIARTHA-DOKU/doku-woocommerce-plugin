@@ -27,6 +27,7 @@ class DokuDB {
         }, $datainsert);
         
         try {
+            error_log('Database Insertion Request: ' . print_r($datainsert, true));
             $result = $wpdb->insert($table, $datainsert, $format);
             error_log('Database Insertion Error: ' . $wpdb->last_error);
             return $result;
@@ -68,6 +69,8 @@ class DokuDB {
     
         // Melakukan update dengan $wpdb->update()
         try {
+            error_log('Database Update for Invoice: ' . print_r($invoice, true));
+            error_log('Database Update Status: ' . print_r($status, true));
             $result = $wpdb->update($table, $data, $where, $format, $where_format);
             error_log('Database Update Error: ' . $wpdb->last_error);
             return $result;
