@@ -6,7 +6,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
  * Plugin Name: DOKU Payment
  * Plugin URI: https://github.com/PTNUSASATUINTIARTHA-DOKU/doku-woocommerce-plugin
  * Description: Accept payment through various payment channels with DOKU. Make it easy for your customers to purchase on your store.
- * Version: 1.3.25
+ * Version: 1.3.26
  * Author: DOKU
  * Author URI: http://www.doku.com
  * License: GPLv2 or later
