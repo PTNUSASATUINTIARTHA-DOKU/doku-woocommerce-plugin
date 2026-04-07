@@ -81,7 +81,7 @@ function doku_payment_install_db()
 	$sql = "
 		CREATE TABLE $table_name (
 		  trx_id int( 11 ) NOT NULL AUTO_INCREMENT,
-		  ip_address VARCHAR( 16 ) COLLATE utf8_unicode_ci NOT NULL DEFAULT '',
+		  ip_address VARCHAR( 64 ) COLLATE utf8_unicode_ci NOT NULL DEFAULT '',
 		  process_type VARCHAR( 20 ) COLLATE utf8_unicode_ci NOT NULL DEFAULT '',
 		  process_datetime DATETIME NULL, 
 		  doku_payment_datetime DATETIME NULL,   
