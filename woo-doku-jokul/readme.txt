@@ -4,7 +4,7 @@ Donate link: https://doku.com/
 Tags: Payment Gateway, Payment, Credit Card, DOKU, woocommerce                                                                 
 Requires at least: 2.2
 Tested up to: 6.7
-Stable tag: 1.3.26
+Stable tag: 1.3.27
 Requires PHP: 8.2v
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -23,10 +23,14 @@ Refer to our [documentation](https://docs.doku.com/accept-payments/integration-t
 
 == Upgrade Notice ==
 
-= 1.3.26 =
-Change Integration Terms
+= 1.3.27 =
+Increased maximum length of IP column to 64 characters to support IPv6
  
 == Change Log ==
+
+= 1.3.27 =
+Increased maximum length of IP column to 64 characters to support IPv6
+
 = 1.3.26 =
 Change Integration Terms
 
