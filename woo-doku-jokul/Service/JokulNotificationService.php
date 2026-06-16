@@ -82,26 +82,42 @@ class DokuNotificationService
                 if (strtolower($raw_notification['transaction']['status']) == strtolower('SUCCESS')) {
                     $checkTrxStatus = $dokuDB->checkStatusTrx($invoiceNumber, $amount, 'PAYMENT_COMPLETED');
                     if ($checkTrxStatus == '') {
-                        $order = wc_get_order($invoiceNumber);
-                        $order->update_status('processing');
-                        $order->payment_complete();
-                        $resultDb = $this->updateDb($invoiceNumber, 'PAYMENT_COMPLETED');
-                        if($resultDb === false || $resultDb === 0){
-                            $dokuUtils->doku_log($dokuUtils, 'FAILED INSERT PAYMENT COMPLETED TO DB', $raw_notification['order']['invoice_number']);
+                        // WooCommerce is the source of truth for the response code: if we cannot
+                        // resolve the order, return 500 so DOKU retries until it can be updated.
+                        $order = $dokuUtils->resolveOrder($invoiceNumber);
+                        if (!$order) {
+                            $dokuUtils->doku_log($dokuUtils, 'ORDER NOT FOUND FOR INVOICE: ' . $invoiceNumber, $invoiceNumber);
                             http_response_code(500);
                             echo esc_html(http_response_code());
-                            return new WP_REST_Response(data: 'Failed to insert payment_completed to DB', status: 500);
+                            return new WP_REST_Response('Order not found', 500);
+                        }
+
+                        if (!$order->is_paid()) {
+                            $order->update_status('processing');
+                            $order->payment_complete();
+                        }
+
+                        // Ledger bookkeeping is best-effort: a 0-row update must not fail an
+                        // otherwise-successful webhook, otherwise DOKU retries a paid order forever.
+                        $resultDb = $this->updateDb($invoiceNumber, 'PAYMENT_COMPLETED');
+                        if ($resultDb === false || $resultDb === 0) {
+                            $dokuUtils->doku_log($dokuUtils, 'PAYMENT_COMPLETED ledger update affected 0 rows; inserting record', $invoiceNumber);
+                            $this->addDb($invoiceNumber, $amount, $paymentCode, $paymentDate, $paymentChannel, $transactionStatus, $raw_notification);
                         }
                     }
                 } else if (strtolower($raw_notification['transaction']['status']) == strtolower('FAILED')) {
-                    $checkTrxStatus = $dokuDB->checkStatusTrx($invoiceNumber, $amount, $paymentCode == "" ? "" : $paymentCode, 'PAYMENT_COMPLETED');
+                    $checkTrxStatus = $dokuDB->checkStatusTrx($invoiceNumber, $amount, 'PAYMENT_COMPLETED');
 
                     if ($checkTrxStatus == '') {
                         $this->addDb($invoiceNumber, $amount, $paymentCode, $paymentDate, $paymentChannel, $transactionStatus,$raw_notification);
                     }
 
-                    $order = wc_get_order($invoiceNumber);
-                    $order->update_status('failed');
+                    $order = $dokuUtils->resolveOrder($invoiceNumber);
+                    if ($order) {
+                        $order->update_status('failed');
+                    } else {
+                        $dokuUtils->doku_log($dokuUtils, 'ORDER NOT FOUND FOR INVOICE (FAILED): ' . $invoiceNumber, $invoiceNumber);
+                    }
                 }
             } else {
                 $dokuUtils->doku_log($dokuUtils, 'SIGNATURE NOT MATCH!', $raw_notification['order']['invoice_number']);

@@ -77,6 +77,37 @@ class DokuUtils
     }
 
 
+    /**
+     * Resolve a WooCommerce order from the value DOKU sends back as invoice_number.
+     *
+     * invoice_number is the order's display number (get_order_number()), which equals the
+     * numeric order ID on default WooCommerce but NOT when a sequential/custom order-number
+     * plugin is active. wc_get_order() expects the numeric ID, so we fall back to looking the
+     * order up by its stored order-number meta.
+     *
+     * @param string $invoiceNumber
+     * @return WC_Order|false
+     */
+    public function resolveOrder($invoiceNumber)
+    {
+        $order = wc_get_order($invoiceNumber);
+        if ($order) {
+            return $order;
+        }
+
+        // Fallback: custom/sequential order-number plugins store the display number in meta.
+        $orders = wc_get_orders(array(
+            'limit'      => 1,
+            'meta_key'   => '_order_number',
+            'meta_value' => $invoiceNumber,
+        ));
+        if (!empty($orders)) {
+            return $orders[0];
+        }
+
+        return false;
+    }
+
     public function guidv4($data = null)
     {
         $data = $data ?? random_bytes(16);

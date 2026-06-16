@@ -441,14 +441,17 @@ class DokuCheckoutModule extends WC_Payment_Gateway
                     $dokuUtils->doku_log($dokuUtils, 'Jokul Acquirer : ' . $response['acquirer']['id'], $paramsValue['invoiceNumber']);
                     if (strtolower($response['transaction']['status']) == strtolower('SUCCESS')) {
                         $dokuDB->updateData($paramsValue['invoiceNumber'], $response['transaction']['status']);
-                        $order = wc_get_order($paramsValue['invoiceNumber']);
-                        $order->update_status('processing');
-                        $order->payment_complete();
+                        // Reuse $order resolved by numeric ID above; it is the reliable reference.
+                        if ($order && !$order->is_paid()) {
+                            $order->update_status('processing');
+                            $order->payment_complete();
+                        }
                         $dokuUtils->doku_log($dokuUtils, 'DOKU Check Status Update Status : ' . 'processing', $paramsValue['invoiceNumber']);
                     } else {
                         $dokuDB->updateData($paramsValue['invoiceNumber'], $response['transaction']['status']);
-                        $order = wc_get_order($paramsValue['invoiceNumber']);
-                        $order->update_status('failed');
+                        if ($order) {
+                            $order->update_status('failed');
+                        }
                         $dokuUtils->doku_log($dokuUtils, 'DOKU Check Status Update Status : ' . 'failed', $paramsValue['invoiceNumber']);
                     }
                 }
