@@ -34,6 +34,9 @@ Remove back to merchant button and fix error when using other payment method
 = 1.3.28 =
 Support decimal transaction amounts in database queries
 
+= 1.3.27 =
+Increased maximum length of IP column to 64 characters to support IPv6
+
 = 1.3.26 =
 Change Integration Terms
 
