@@ -258,7 +258,6 @@ class DokuCheckoutModule extends WC_Payment_Gateway
             'info3' => '',
             'woo_version' => $woocommerce->version,
             'reusableStatus' => false,
-            'callback_url' => $this->get_return_url($order) . '&' . $order_id,
             'sac_check' => $this->sac_check,
             'auto_redirect' => $this->auto_redirect_jokul,
             'sac_textbox' => $this->sac_textbox,
@@ -425,31 +424,37 @@ class DokuCheckoutModule extends WC_Payment_Gateway
             $order_id = absint($wp->query_vars['order-received']);
             $order  = wc_get_order($order_id);
             
+            if (!$order || $order->get_payment_method() !== 'doku_checkout') {
+                return $title;
+            }
+
             $woocommerce->cart->empty_cart();
             wc_reduce_stock_levels($order->get_id());
 
             $paramsValue       = get_post_meta($order->get_id(), 'checkoutParams', true);
             $configValue       = get_post_meta($order->get_id(), 'checkoutConfig', true);
 
-            $this->dokuCheckStatusService = new DokuCheckStatusService();
-            $response = $this->dokuCheckStatusService->generated($configValue, $paramsValue);
+            if (is_array($paramsValue) && is_array($configValue)) {
+                $this->dokuCheckStatusService = new DokuCheckStatusService();
+                $response = $this->dokuCheckStatusService->generated($configValue, $paramsValue);
 
-            if (!is_wp_error($response)) {
-                if (strtolower($response['acquirer']['id']) == strtolower('OVO')) {
-                    $dokuUtils = new DokuUtils();
-                    $dokuDB = new DokuDB();
-                    $dokuUtils->doku_log($dokuUtils, 'Jokul Acquirer : ' . $response['acquirer']['id'], $paramsValue['invoiceNumber']);
-                    if (strtolower($response['transaction']['status']) == strtolower('SUCCESS')) {
-                        $dokuDB->updateData($paramsValue['invoiceNumber'], $response['transaction']['status']);
-                        $order = wc_get_order($paramsValue['invoiceNumber']);
-                        $order->update_status('processing');
-                        $order->payment_complete();
-                        $dokuUtils->doku_log($dokuUtils, 'DOKU Check Status Update Status : ' . 'processing', $paramsValue['invoiceNumber']);
-                    } else {
-                        $dokuDB->updateData($paramsValue['invoiceNumber'], $response['transaction']['status']);
-                        $order = wc_get_order($paramsValue['invoiceNumber']);
-                        $order->update_status('failed');
-                        $dokuUtils->doku_log($dokuUtils, 'DOKU Check Status Update Status : ' . 'failed', $paramsValue['invoiceNumber']);
+                if (!is_wp_error($response) && is_array($response)) {
+                    if (isset($response['acquirer']['id']) && strtolower($response['acquirer']['id']) == strtolower('OVO')) {
+                        $dokuUtils = new DokuUtils();
+                        $dokuDB = new DokuDB();
+                        $dokuUtils->doku_log($dokuUtils, 'Jokul Acquirer : ' . $response['acquirer']['id'], $paramsValue['invoiceNumber']);
+                        if (isset($response['transaction']['status']) && strtolower($response['transaction']['status']) == strtolower('SUCCESS')) {
+                            $dokuDB->updateData($paramsValue['invoiceNumber'], $response['transaction']['status']);
+                            $order = wc_get_order($paramsValue['invoiceNumber']);
+                            $order->update_status('processing');
+                            $order->payment_complete();
+                            $dokuUtils->doku_log($dokuUtils, 'DOKU Check Status Update Status : ' . 'processing', $paramsValue['invoiceNumber']);
+                        } else {
+                            $dokuDB->updateData($paramsValue['invoiceNumber'], $response['transaction']['status'] ?? 'FAILED');
+                            $order = wc_get_order($paramsValue['invoiceNumber']);
+                            $order->update_status('failed');
+                            $dokuUtils->doku_log($dokuUtils, 'DOKU Check Status Update Status : ' . 'failed', $paramsValue['invoiceNumber']);
+                        }
                     }
                 }
             }

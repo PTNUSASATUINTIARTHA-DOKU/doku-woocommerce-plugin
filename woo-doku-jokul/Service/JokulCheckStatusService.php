@@ -12,12 +12,19 @@ class DokuCheckStatusService {
         $header = array();
         $this->dokuUtils = new DokuUtils();
 
+        // Guard clause: pastikan $params dan $config valid
+        if (!is_array($params) || empty($params['invoiceNumber']) || !is_array($config) || empty($config['client_id'])) {
+            $invoiceLog = (is_array($params) && !empty($params['invoiceNumber'])) ? $params['invoiceNumber'] : 'unknown';
+            $this->dokuUtils->doku_log($this, 'Jokul Check Status ERROR: Invalid params or config passed to generated()', $invoiceLog);
+            return null;
+        }
+
         $requestId = $this->dokuUtils->guidv4();
         $targetPath = "/orders/v1/status/" . $params['invoiceNumber'];
         $dateTimeFinal = gmdate("Y-m-d\TH:i:s\Z");
 
         $this->dokuConfig = new DokuConfig();
-        $valueEnv = $config['environment'] === 'true' ? true : false;
+        $valueEnv = isset($config['environment']) && $config['environment'] === 'true' ? true : false;
         $getUrl = $this->dokuConfig->getBaseUrl($valueEnv);
         $url = $getUrl . $targetPath;
 
