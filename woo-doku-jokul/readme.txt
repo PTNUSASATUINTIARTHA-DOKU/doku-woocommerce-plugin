@@ -4,7 +4,7 @@ Donate link: https://doku.com/
 Tags: Payment Gateway, Payment, Credit Card, DOKU, woocommerce                                                                 
 Requires at least: 2.2
 Tested up to: 6.7
-Stable tag: 1.3.28
+Stable tag: 1.3.29
 Requires PHP: 8.2v
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
