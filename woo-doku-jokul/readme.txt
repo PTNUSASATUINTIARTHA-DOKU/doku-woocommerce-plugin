@@ -23,10 +23,15 @@ Refer to our [documentation](https://docs.doku.com/accept-payments/integration-t
 
 == Upgrade Notice ==
 
-= 1.3.28 =
-Remove back to merchant button and fix error when using other payment method
+= 1.3.29 =
+Support notification URL that have subdirectory path
+Enable Go To Merchant button after customer success payment
  
 == Change Log ==
+
+= 1.3.29 =
+Support notification URL that have subdirectory path
+Enable Go To Merchant button after customer success payment
 
 = 1.3.28 =
 Remove back to merchant button and fix error when using other payment method
