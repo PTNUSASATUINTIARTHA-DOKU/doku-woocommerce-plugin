@@ -23,6 +23,7 @@ class DokuCheckoutService {
                 "invoice_number" => $params['invoiceNumber'],
                 "line_items" => $params['itemQty'],
                 "amount" => $params['amount'],
+                "callback_url_result" => $params['callback_url_result'],
                 "callback_url_cancel" => "https://www.doku.com/en-US",
                 "currency" => "IDR",
                 "auto_redirect" => true,
@@ -33,6 +34,7 @@ class DokuCheckoutService {
                 "invoice_number" => $params['invoiceNumber'],
                 "line_items" => $params['itemQty'],
                 "amount" => $params['amount'],
+                "callback_url_result" => $params['callback_url_result'],
                 "callback_url_cancel" => "https://www.doku.com/en-US",
                 "currency" => "IDR",
               	"recover_abandoned_cart" => $params['recoverAbandonedCart'],
@@ -74,7 +76,7 @@ class DokuCheckoutService {
             "additional_info" => array (
                 "integration" => array (
                     "name" => "woocommerce-plugin",
-                    "version" => "1.3.28",
+                    "version" => "1.3.29",
                     "cms_version" => $params['woo_version']
                 ),
                 "account" => array(
@@ -88,6 +90,7 @@ class DokuCheckoutService {
                 "invoice_number" => $params['invoiceNumber'],
                 "line_items" => $params['itemQty'],
                 "amount" => $params['amount'],
+                "callback_url_result" => $params['callback_url_result'],
                 "callback_url_cancel" => "https://www.doku.com/en-US",
                 "currency" => "IDR",
                 "auto_redirect" => true,
@@ -98,6 +101,7 @@ class DokuCheckoutService {
                 "invoice_number" => $params['invoiceNumber'],
                 "line_items" => $params['itemQty'],
                 "amount" => $params['amount'],
+                "callback_url_result" => $params['callback_url_result'],
                 "callback_url_cancel" => "https://www.doku.com/en-US",
                 "currency" => "IDR",
               	"recover_abandoned_cart" => $params['recoverAbandonedCart'],
@@ -139,7 +143,7 @@ class DokuCheckoutService {
             "additional_info" => array (
                 "integration" => array (
                     "name" => "woocommerce-plugin",
-                    "version" => "1.3.28",
+                    "version" => "1.3.29",
                     "cms_version" => $params['woo_version']
                 ),
                 "method" => "Jokul Checkout",
