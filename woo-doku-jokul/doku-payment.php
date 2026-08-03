@@ -73,6 +73,13 @@ function doku_payment_init_gateway_class()
 }
 
 register_activation_hook(__FILE__, 'doku_payment_install_db');
+add_action('plugins_loaded', 'doku_payment_check_install_db');
+function doku_payment_check_install_db()
+{
+	if (get_option('doku_db_version') !== '1.0') {
+		doku_payment_install_db();
+	}
+}
 function doku_payment_install_db()
 {
 	global $wpdb;
