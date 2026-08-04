@@ -6,7 +6,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
  * Plugin Name: DOKU Payment
  * Plugin URI: https://github.com/PTNUSASATUINTIARTHA-DOKU/doku-woocommerce-plugin
  * Description: Accept payment through various payment channels with DOKU. Make it easy for your customers to purchase on your store.
- * Version: 1.3.28
+ * Version: 1.3.29
  * Author: DOKU
  * Author URI: http://www.doku.com
  * License: GPLv2 or later
@@ -73,6 +73,13 @@ function doku_payment_init_gateway_class()
 }
 
 register_activation_hook(__FILE__, 'doku_payment_install_db');
+add_action('plugins_loaded', 'doku_payment_check_install_db');
+function doku_payment_check_install_db()
+{
+	if (get_option('doku_db_version') !== '1.0') {
+		doku_payment_install_db();
+	}
+}
 function doku_payment_install_db()
 {
 	global $wpdb;

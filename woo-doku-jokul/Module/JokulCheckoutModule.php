@@ -258,6 +258,7 @@ class DokuCheckoutModule extends WC_Payment_Gateway
             'info3' => '',
             'woo_version' => $woocommerce->version,
             'reusableStatus' => false,
+            'callback_url_result' => $this->get_return_url($order) . '&' . $order_id,
             'sac_check' => $this->sac_check,
             'auto_redirect' => $this->auto_redirect_jokul,
             'sac_textbox' => $this->sac_textbox,
