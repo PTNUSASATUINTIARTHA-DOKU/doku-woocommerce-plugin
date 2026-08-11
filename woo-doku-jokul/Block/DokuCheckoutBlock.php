@@ -42,6 +42,7 @@ final class Doku_Checkout_Blocks extends AbstractPaymentMethodType {
         return [
             'title' => $this->gateway->title,
             'description' => $this->gateway->paymentDescription,
+            'supports' => $this->gateway->supports,
         ];
     }
 

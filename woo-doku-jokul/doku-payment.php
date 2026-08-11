@@ -6,7 +6,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
  * Plugin Name: DOKU Payment
  * Plugin URI: https://github.com/PTNUSASATUINTIARTHA-DOKU/doku-woocommerce-plugin
  * Description: Accept payment through various payment channels with DOKU. Make it easy for your customers to purchase on your store.
- * Version: 1.3.29
+ * Version: 1.3.30
  * Author: DOKU
  * Author URI: http://www.doku.com
  * License: GPLv2 or later
@@ -61,9 +61,26 @@ function doku_payment_init_gateway_class()
 			 */
 			function addJokulGateway($methods)
 			{
-				$mainSettings = get_option('woocommerce_doku_gateway_settings');
-				$methods[] = 'DokuMainModule';
 				$methods[] = 'DokuCheckoutModule';
+
+				$is_wc_admin = false;
+				if ( is_admin() ) {
+					$is_post_edit = ( isset( $GLOBALS['pagenow'] ) && ( $GLOBALS['pagenow'] === 'post.php' || $GLOBALS['pagenow'] === 'post-new.php' ) );
+					if ( ! $is_post_edit ) {
+						$is_wc_admin = true;
+					}
+				} elseif ( defined( 'REST_REQUEST' ) && REST_REQUEST ) {
+					$uri = isset( $_SERVER['REQUEST_URI'] ) ? $_SERVER['REQUEST_URI'] : '';
+					$is_wc_rest = ( strpos( $uri, 'wp-json/wc/' ) !== false || strpos( $uri, 'wp-json/wc-admin/' ) !== false );
+					$is_store_api = ( strpos( $uri, '/store/' ) !== false );
+					if ( $is_wc_rest && ! $is_store_api ) {
+						$is_wc_admin = true;
+					}
+				}
+
+				if ( $is_wc_admin || wp_doing_ajax() ) {
+					$methods[] = 'DokuMainModule';
+				}
 
 				return $methods;
 			}

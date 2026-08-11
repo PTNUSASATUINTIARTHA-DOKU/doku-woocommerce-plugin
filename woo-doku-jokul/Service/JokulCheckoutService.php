@@ -76,7 +76,7 @@ class DokuCheckoutService {
             "additional_info" => array (
                 "integration" => array (
                     "name" => "woocommerce-plugin",
-                    "version" => "1.3.29",
+                    "version" => "1.3.30",
                     "cms_version" => $params['woo_version']
                 ),
                 "account" => array(
@@ -143,7 +143,7 @@ class DokuCheckoutService {
             "additional_info" => array (
                 "integration" => array (
                     "name" => "woocommerce-plugin",
-                    "version" => "1.3.29",
+                    "version" => "1.3.30",
                     "cms_version" => $params['woo_version']
                 ),
                 "method" => "Jokul Checkout",
