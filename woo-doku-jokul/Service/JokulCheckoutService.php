@@ -6,6 +6,8 @@ require_once(DOKU_PAYMENT_PLUGIN_PATH . '/Common/JokulConfig.php');
 require_once(DOKU_PAYMENT_PLUGIN_PATH . '/Common/JokulUtils.php');
 
 class DokuCheckoutService {
+    public $dokuUtils;
+    public $dokuConfig;
 
     public function generated($config, $params)
     {

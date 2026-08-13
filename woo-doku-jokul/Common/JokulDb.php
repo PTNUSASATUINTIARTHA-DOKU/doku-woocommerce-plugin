@@ -2,7 +2,14 @@
 
 if ( ! defined( 'ABSPATH' ) ) exit;
 
+require_once(DOKU_PAYMENT_PLUGIN_PATH . '/Common/JokulUtils.php');
+
 class DokuDB {
+    private $dokuUtils;
+
+    public function __construct() {
+        $this->dokuUtils = new DokuUtils();
+    }
 
     function addData($datainsert) {
         global $wpdb;
@@ -27,12 +34,15 @@ class DokuDB {
         }, $datainsert);
         
         try {
-            error_log('Database Insertion Request: ' . print_r($datainsert, true));
             $result = $wpdb->insert($table, $datainsert, $format);
-            error_log('Database Insertion Error: ' . $wpdb->last_error);
+            if ($result === false) {
+                error_log('Database Insertion Error for Invoice: ' . ($datainsert['invoice_number'] ?? 'unknown') . ' - SQL Error: ' . $wpdb->last_error);
+                $this->dokuUtils->doku_log($this, 'Database Insertion Error: SQL Error: ' . $wpdb->last_error, $datainsert['invoice_number'] ?? 'unknown');
+            }
             return $result;
         } catch (Exception $e) {
-            error_log('Database Insertion Error: ' . $e->getMessage());
+            error_log('Database Insertion Exception for Invoice: ' . ($datainsert['invoice_number'] ?? 'unknown') . ' - Message: ' . $e->getMessage());
+            $this->dokuUtils->doku_log($this, 'Database Insertion Exception: Message: ' . $e->getMessage(), $datainsert['invoice_number'] ?? 'unknown');
             return false;
         }
     }
@@ -67,15 +77,22 @@ class DokuDB {
             '%s',  // Format untuk invoice_number (string)
         ];
     
+        // Log input updates for tracing
+        error_log('Database Update for Invoice: ' . print_r($invoice, true));
+        error_log('Database Update Status: ' . print_r($status, true));
+        $this->dokuUtils->doku_log($this, 'Database Update for Invoice: ' . print_r($invoice, true) . ' - Status: ' . print_r($status, true), $invoice);
+
         // Melakukan update dengan $wpdb->update()
         try {
-            error_log('Database Update for Invoice: ' . print_r($invoice, true));
-            error_log('Database Update Status: ' . print_r($status, true));
             $result = $wpdb->update($table, $data, $where, $format, $where_format);
-            error_log('Database Update Error: ' . $wpdb->last_error);
+            if ($result === false) {
+                error_log('Database Update Error for Invoice: ' . $invoice . ' - SQL Error: ' . $wpdb->last_error);
+                $this->dokuUtils->doku_log($this, 'Database Update Error: SQL Error: ' . $wpdb->last_error, $invoice);
+            }
             return $result;
         } catch (Exception $e) {
-            error_log('Database Update Error: ' . $e->getMessage());
+            error_log('Database Update Exception for Invoice: ' . $invoice . ' - Message: ' . $e->getMessage());
+            $this->dokuUtils->doku_log($this, 'Database Update Exception: Message: ' . $e->getMessage(), $invoice);
             return false;
         }
     }
@@ -98,6 +115,7 @@ class DokuDB {
             );
         } catch (Exception $e) {
             error_log('Database Query Error: ' . $e->getMessage());
+            $this->dokuUtils->doku_log($this, 'Database Query Error (checkTrx): ' . $e->getMessage(), $order_id);
             return false;
         }
     }
@@ -121,6 +139,7 @@ class DokuDB {
             );
         } catch (Exception $e) {
             error_log('Database Query Error: ' . $e->getMessage());
+            $this->dokuUtils->doku_log($this, 'Database Query Error (checkStatusTrx): ' . $e->getMessage(), $order_id);
             return false;
         }
     }

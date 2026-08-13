@@ -4,6 +4,19 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 
 class DokuMainModule extends WC_Payment_Gateway
 {
+    public $method_name;
+    public $environmentPaymentJokul;
+    public $sandboxClientId;
+    public $sandboxSharedKey;
+    public $prodClientId;
+    public $prodSharedKey;
+    public $expiredTime;
+    public $notifUrl;
+    public $emailNotifications;
+    public $abandonedCart;
+    public $timeRangeAbandonedCart;
+    public $customExpireDate;
+
     public function __construct()
     {
 

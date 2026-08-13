@@ -23,11 +23,16 @@ Refer to our [documentation](https://docs.doku.com/accept-payments/integration-t
 
 == Upgrade Notice ==
 
-= 1.3.29 =
-Support notification URL that have subdirectory path
-Enable Go To Merchant button after customer success payment
+= 1.3.30 =
+Fix PHP 8.2+ dynamic property deprecation warnings, improve WooCommerce blocks checkout compatibility, and enhance tracing logs.
  
 == Change Log ==
+
+= 1.3.30 =
+* Fix PHP 8.2+ dynamic property deprecation warnings
+* Improve WooCommerce blocks checkout compatibility and error parsing
+* Consolidate database and signature logs to doku_log
+* Enhance tracing logs for notification and QRIS notification flows
 
 = 1.3.29 =
 Support notification URL that have subdirectory path
