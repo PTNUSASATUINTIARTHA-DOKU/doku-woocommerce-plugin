@@ -89,6 +89,17 @@ class DokuCheckoutModule extends WC_Payment_Gateway
                 }
             }
         }
+        if ( is_admin() ) {
+            if ( ! has_action( 'woocommerce_admin_order_data_after_order_details', array( 'DokuCheckoutModule', 'doku_add_check_status_button' ) ) ) {
+                add_action( 'woocommerce_admin_order_data_after_order_details', array( 'DokuCheckoutModule', 'doku_add_check_status_button' ) );
+            }
+            if ( ! has_action( 'wp_ajax_doku_check_status', array( 'DokuCheckoutModule', 'doku_handle_ajax_check_status' ) ) ) {
+                add_action( 'wp_ajax_doku_check_status', array( 'DokuCheckoutModule', 'doku_handle_ajax_check_status' ) );
+            }
+            if ( ! has_action( 'woocommerce_admin_order_data_after_billing_address', array( 'DokuCheckoutModule', 'doku_display_payment_status_in_billing' ) ) ) {
+                add_action( 'woocommerce_admin_order_data_after_billing_address', array( 'DokuCheckoutModule', 'doku_display_payment_status_in_billing' ) );
+            }
+        }
 
     }
 
@@ -495,5 +506,186 @@ class DokuCheckoutModule extends WC_Payment_Gateway
             return $title;
         }
     }
-}
 
+    public static function doku_add_check_status_button( $order ) {
+        if ( $order->get_payment_method() === 'doku_checkout' && $order->has_status( array( 'pending', 'on-hold', 'cancelled' ) ) ) {
+            wp_enqueue_script(
+                'doku-admin-check-status', 
+                plugin_dir_url(__FILE__) . '../Js/doku-admin-check-status.js', 
+                array('jquery'),
+                '1.0.0',
+                true
+            );
+            
+            wp_localize_script('doku-admin-check-status', 'dokuAdminCheckStatusData', array(
+                'ajaxurl'  => admin_url('admin-ajax.php'),
+                'nonce'    => wp_create_nonce( "doku_check_status_nonce" ),
+                'order_id' => $order->get_id()
+            ));
+            ?>
+            <div class="form-field form-field-wide" style="border-top: 1px solid #eee; padding-top: 15px; margin-top: 15px; clear: both;">
+                <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                    <button type="button" id="doku-check-status-btn" class="button button-primary button-large">
+                        <?php _e( 'Check Payment Status', 'doku-payment' ); ?>
+                    </button>
+                    <span id="doku-status-spinner" class="spinner" style="float: none; margin: 0; vertical-align: middle;"></span>
+                </div>
+                <div style="margin-top: 10px; min-height: 20px;">
+                    <div id="doku-status-feedback" style="font-weight: bold; font-size: 13px; display: inline-block;"></div>
+                </div>
+            </div>
+            <?php
+        }
+    }
+
+    public static function doku_handle_ajax_check_status() {
+        check_ajax_referer( 'doku_check_status_nonce', 'security' );
+
+        if ( ! current_user_can( 'manage_woocommerce' ) && ! current_user_can( 'edit_shop_orders' ) ) {
+            wp_send_json_error( array( 'message' => 'Unauthorized' ), 403 );
+        }
+        
+        $order_id = isset( $_POST['order_id'] ) ? absint( $_POST['order_id'] ) : 0;
+        if ( ! $order_id ) {
+            wp_send_json_error( array( 'message' => 'Invalid Order ID.' ) );
+        }
+        
+        $order = wc_get_order( $order_id );
+        if ( ! $order ) {
+            wp_send_json_error( array( 'message' => 'Order not found.' ) );
+        }
+        
+        $paramsValue = get_post_meta( $order_id, 'checkoutParams', true );
+        $configValue = get_post_meta( $order_id, 'checkoutConfig', true );
+        
+        if ( ! is_array( $paramsValue ) || ! is_array( $configValue ) ) {
+            wp_send_json_error( array( 'message' => 'DOKU parameters/config not found for this order.' ) );
+        }
+        
+        require_once( DOKU_PAYMENT_PLUGIN_PATH . '/Service/JokulCheckStatusService.php' );
+        $checkStatusService = new DokuCheckStatusService();
+        $response = $checkStatusService->generated( $configValue, $paramsValue );
+        
+        $dokuUtils = new DokuUtils();
+        $dokuDB = new DokuDB();
+        
+        // Log to debug.log and doku_log (Dual Logging)
+        error_log('Manual Check Status Request for Invoice: ' . $paramsValue['invoiceNumber']);
+        $dokuUtils->doku_log('DokuCheckoutModule', '===== MANUAL CHECK STATUS START =====', $paramsValue['invoiceNumber']);
+        $dokuUtils->doku_log('DokuCheckoutModule', 'Manual Check Status Request config: ' . json_encode( $configValue ), $paramsValue['invoiceNumber']);
+        
+        if ( is_wp_error( $response ) || ! is_array( $response ) ) {
+            error_log('Manual Check Status Error for Invoice: ' . $paramsValue['invoiceNumber'] . ' - Connection failed');
+            $dokuUtils->doku_log('DokuCheckoutModule', 'Manual Check Status Error: Connection failed or invalid response format', $paramsValue['invoiceNumber']);
+            $dokuUtils->doku_log('DokuCheckoutModule', '===== MANUAL CHECK STATUS END - HTTP 500 =====', $paramsValue['invoiceNumber']);
+            wp_send_json_error( array( 'message' => 'Failed to connect to DOKU API.' ) );
+        }
+        
+        error_log('Manual Check Status Response for Invoice: ' . $paramsValue['invoiceNumber'] . ' - Status: ' . ($response['transaction']['status'] ?? 'UNKNOWN'));
+        $dokuUtils->doku_log('DokuCheckoutModule', 'Manual Check Status Response: ' . json_encode( $response, JSON_PRETTY_PRINT ), $paramsValue['invoiceNumber']);
+        
+        if ( ! isset( $response['transaction'] ) ) {
+            $error_detail = 'Invalid API Response';
+            if ( isset( $response['error']['message'] ) ) {
+                $error_detail = $response['error']['message'];
+            } elseif ( isset( $response['message'] ) ) {
+                $error_detail = $response['message'];
+            }
+            
+            $dokuUtils->doku_log('DokuCheckoutModule', 'Manual Check Status API/Credential Error. Status remains unchanged. Response: ' . json_encode( $response ), $paramsValue['invoiceNumber']);
+            $dokuUtils->doku_log('DokuCheckoutModule', '===== MANUAL CHECK STATUS END =====', $paramsValue['invoiceNumber']);
+            
+            wp_send_json_error( array( 
+                'message' => 'API Error: ' . $error_detail,
+                'should_reload' => false
+            ) );
+        }
+        
+        if ( isset( $response['transaction']['status'] ) && strtolower( $response['transaction']['status'] ) == strtolower( 'SUCCESS' ) ) {
+            // Update database jokuldb
+            $dokuDB->updateData( $paramsValue['invoiceNumber'], 'PAYMENT_COMPLETED' );
+            
+            // Complete order in WooCommerce
+            $order->update_status( 'processing' );
+            $order->payment_complete();
+            $order->add_order_note( __( 'DOKU: Manual Check Status succeeded. Payment marked as completed.', 'doku-payment' ) );
+            
+            $dokuUtils->doku_log('DokuCheckoutModule', 'Manual Check Status SUCCESS. Order updated to processing.', $paramsValue['invoiceNumber']);
+            $dokuUtils->doku_log('DokuCheckoutModule', '===== MANUAL CHECK STATUS END - HTTP 200 =====', $paramsValue['invoiceNumber']);
+            wp_send_json_success( array( 'message' => 'Payment SUCCESS! Order status updated to Processing.' ) );
+        } else {
+            $status = isset( $response['transaction']['status'] ) ? $response['transaction']['status'] : 'UNKNOWN';
+            
+            if ( strtolower( $status ) == 'failed' ) {
+                // Update database jokuldb to failed
+                $dokuDB->updateData( $paramsValue['invoiceNumber'], 'PAYMENT_FAILED' );
+                
+                // Fail order in WooCommerce
+                $order->update_status( 'failed', __( 'DOKU: Manual Check Status detected failed payment. Status updated to Failed.', 'doku-payment' ) );
+                
+                $dokuUtils->doku_log('DokuCheckoutModule', 'Manual Check Status FAILED. Order updated to failed. Response: ' . json_encode( $response ), $paramsValue['invoiceNumber']);
+                $dokuUtils->doku_log('DokuCheckoutModule', '===== MANUAL CHECK STATUS END - HTTP 200 =====', $paramsValue['invoiceNumber']);
+                wp_send_json_error( array( 
+                    'message' => 'Payment FAILED! Order status updated to Failed.',
+                    'should_reload' => true
+                ) );
+            } elseif ( strtolower( $status ) == 'expired' ) {
+                // Update database jokuldb to expired
+                $dokuDB->updateData( $paramsValue['invoiceNumber'], 'PAYMENT_EXPIRED' );
+                
+                // Cancel order in WooCommerce
+                if ( ! $order->has_status( 'cancelled' ) ) {
+                    $order->update_status( 'cancelled', __( 'DOKU: Manual Check Status detected expired payment. Status updated to Cancelled.', 'doku-payment' ) );
+                }
+                
+                $dokuUtils->doku_log('DokuCheckoutModule', 'Manual Check Status EXPIRED. Order updated to cancelled. Response: ' . json_encode( $response ), $paramsValue['invoiceNumber']);
+                $dokuUtils->doku_log('DokuCheckoutModule', '===== MANUAL CHECK STATUS END - HTTP 200 =====', $paramsValue['invoiceNumber']);
+                wp_send_json_error( array( 
+                    'message' => 'Payment EXPIRED! Order status updated to Cancelled.',
+                    'should_reload' => true
+                ) );
+            } else {
+                $order->add_order_note( sprintf( __( 'DOKU: Manual Check Status returned status: %s.', 'doku-payment' ), $status ) );
+                
+                $dokuUtils->doku_log('DokuCheckoutModule', 'Manual Check Status result: ' . $status . ' - Response: ' . json_encode( $response ), $paramsValue['invoiceNumber']);
+                $dokuUtils->doku_log('DokuCheckoutModule', '===== MANUAL CHECK STATUS END =====', $paramsValue['invoiceNumber']);
+                wp_send_json_error( array( 
+                    'message' => 'Payment status is currently: ' . $status,
+                    'should_reload' => false
+                ) );
+            }
+        }
+    }
+
+    public static function doku_display_payment_status_in_billing( $order ) {
+        if ( $order->get_payment_method() === 'doku_checkout' ) {
+            global $wpdb;
+            $table = $wpdb->prefix . 'jokuldb';
+            $trx_status = $wpdb->get_var( $wpdb->prepare( "SELECT process_type FROM $table WHERE invoice_number = %s ORDER BY trx_id DESC LIMIT 1", $order->get_id() ) );
+            
+            // Format status label and color
+            $status_label = 'PENDING';
+            $status_color = '#ecc715'; // Yellow/Orange for pending
+            
+            if ( $trx_status ) {
+                if ( strpos( strtoupper( $trx_status ), 'COMPLETED' ) !== false || strtoupper( $trx_status ) === 'SUCCESS' ) {
+                    $status_label = 'SUCCESS';
+                    $status_color = '#46b450'; // Green for success
+                } elseif ( strpos( strtoupper( $trx_status ), 'FAILED' ) !== false ) {
+                    $status_label = 'FAILED';
+                    $status_color = '#dc3232'; // Red for failed
+                } elseif ( strpos( strtoupper( $trx_status ), 'EXPIRED' ) !== false ) {
+                    $status_label = 'EXPIRED';
+                    $status_color = '#767676'; // Dark Gray for expired
+                } else {
+                    $status_label = strtoupper( $trx_status );
+                }
+            }
+            
+            echo '<div style="margin-top: 15px; border-top: 1px dashed #ccc; padding-top: 10px;">';
+            echo '<p><strong>DOKU Payment Status:</strong><br />';
+            echo '<span style="display: inline-block; margin-top: 5px; font-weight: bold; color: #fff; background-color: ' . esc_attr( $status_color ) . '; padding: 4px 10px; border-radius: 4px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;">' . esc_html( $status_label ) . '</span></p>';
+            echo '</div>';
+        }
+    }
+}

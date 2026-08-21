@@ -90,7 +90,7 @@ class DokuUtils
     function doku_log($class, $log_msg, $invoice_number = '')
     {
     
-        $log_filename = "doku_log";
+        $log_filename = ABSPATH . "doku_log";
         $log_header = gmdate(DATE_ATOM) . ' '  . '---> ' . $invoice_number . " : ";
         if (!file_exists($log_filename)) {
             mkdir($log_filename, 0777, true);
