@@ -57,6 +57,17 @@ class DokuMainModule extends WC_Payment_Gateway
 
         $post_data = $this->get_post_data();
 
+        $abandoned_cart = isset($post_data['woocommerce_' . $this->id . '_abandoned_cart']) ? $post_data['woocommerce_' . $this->id . '_abandoned_cart'] : 'no';
+        $time_range = isset($post_data['woocommerce_' . $this->id . '_time_range_abandoned_cart']) ? $post_data['woocommerce_' . $this->id . '_time_range_abandoned_cart'] : '';
+        $custom_range = isset($post_data['woocommerce_' . $this->id . '_custom_time_range_abandoned_cart']) ? trim($post_data['woocommerce_' . $this->id . '_custom_time_range_abandoned_cart']) : '';
+
+        if ($abandoned_cart === 'yes' && $time_range === 'Custom') {
+            if ($custom_range === '' || !is_numeric($custom_range) || intval($custom_range) < 1 || intval($custom_range) > 30) {
+                \WC_Admin_Settings::add_error(__('Custom Expiry for Abandoned Checkout must be a numeric value between 1 and 30 days.', 'doku-payment'));
+                return false;
+            }
+        }
+
         foreach ($this->get_form_fields() as $key => $field) {
             if ('title' !== $this->get_field_type($field)) {
                 try {

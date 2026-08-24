@@ -112,12 +112,15 @@ class DokuCheckoutModule extends WC_Payment_Gateway
                     case 'Tomorrow':  
                         $minutes = 1440; 
                         break;  
+                    case '7':
                     case '7 day':  
                         $minutes = 10080;
                         break;  
+                    case '14':
                     case '14 day':  
                         $minutes = 20160; 
                         break;  
+                    case '30':
                     case '30 day':  
                         $minutes = 43200; 
                         break;  
@@ -126,7 +129,7 @@ class DokuCheckoutModule extends WC_Payment_Gateway
                         break;  
                 }  
             } else {  
-                $customDays = intval($customExpireDate); 
+                $customDays = max(1, min(30, intval($customExpireDate))); 
                 $minutes = $customDays * 1440;   
             }  
         }  
@@ -336,7 +339,18 @@ class DokuCheckoutModule extends WC_Payment_Gateway
                     'redirect' => $response['response']['payment']['url']
                 );
             } else {
-                $error_msg = (isset($response['message']) && is_array($response['message']) && isset($response['message'][0])) ? $response['message'][0] : 'Unknown error';
+                $error_msg = 'Unknown error';
+                if (isset($response['error']['message']) && is_string($response['error']['message'])) {
+                    $error_msg = $response['error']['message'];
+                } elseif (isset($response['message'])) {
+                    if (is_array($response['message']) && !empty($response['message'][0])) {
+                        $error_msg = is_string($response['message'][0]) ? $response['message'][0] : json_encode($response['message'][0]);
+                    } elseif (is_string($response['message'])) {
+                        $error_msg = $response['message'];
+                    }
+                } elseif (isset($response['error']) && is_string($response['error'])) {
+                    $error_msg = $response['error'];
+                }
                 wc_add_notice('There is something wrong. Please try again. ' . $error_msg, 'error');
                 return array(
                     'result' => 'failure',

@@ -31,30 +31,23 @@ jQuery(document).ready(function($) {
 
     function showCustomExpiry() {    
         const customExpiryField = $('#woocommerce_doku_gateway_custom_time_range_abandoned_cart');    
-        customExpiryField.on('input', function() {    
-            var value = parseFloat(customExpiryField.val());    
-            customExpiryField.next('.error-message').remove();    
-              
-            if (value < 1 || value > 31) {    
-                customExpiryField.addClass('error');    
-                const errorMessage = $('<span class="error-message">Please set with numeric in range 1-31</span>');  
-                errorMessage.css({  
-                    'color': '#E1251B',  
-                    'font-size': '11px',  
-                    'font-weight': 'normal',
-                    'margin-top': '8px',  
-                    'display': 'block'
-                });  
-                customExpiryField.after(errorMessage);    
-            } else {    
-                customExpiryField.removeClass('error');    
-            }    
-              
-            if (value < 1) {    
-                customExpiryField.val(1);    
-            } else if (value > 31) {    
-                customExpiryField.val(31);    
-            }    
+        customExpiryField.off('input change blur').on('input change blur', function() {    
+            var val = customExpiryField.val() ? customExpiryField.val().trim() : '';
+            customExpiryField.next('.error-message').remove();
+            customExpiryField.removeClass('error');
+
+            if (val === '') {
+                return;
+            }
+
+            var value = parseFloat(val);
+            if (isNaN(value)) {
+                customExpiryField.val(1);
+            } else if (value > 30) {
+                customExpiryField.val(30);
+            } else if (value < 1) {
+                customExpiryField.val(1);
+            }
         });    
       
         var timeRangeValue = $('#woocommerce_doku_gateway_time_range_abandoned_cart').val();      
@@ -74,4 +67,4 @@ jQuery(document).ready(function($) {
             $(`#woocommerce_${id}_sac_textbox`).prop('required', false);    
         }    
     }    
-});    
+});

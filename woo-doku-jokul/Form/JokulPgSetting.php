@@ -75,12 +75,12 @@ return apply_filters(
         'time_range_abandoned_cart' => array(  
             'title' => __('Duration Abandoned Checkout:', 'doku-payment'),  
             'type' => 'select',  
-            'default' => '3 day',  
+            'default' => 'Tomorrow',  
             'options' => array(  
                 'Tomorrow' => __('Tomorrow', 'doku-payment'),  
                 '7' => __('7 Days', 'doku-payment'),  
                 '14' => __('14 Days', 'doku-payment'),  
-                '30' => __('31 Days', 'doku-payment'),  
+                '30' => __('30 Days', 'doku-payment'),  
                 'Custom' => __('Custom', 'doku-payment'),  
             ),  
             'description' => __('Select the time range for abandoned checkout', 'doku-payment'),  
@@ -91,8 +91,8 @@ return apply_filters(
             'title' => __('Custom Expiry', 'doku-payment'),
             'type' => 'number',
             'description' => __('Custom expiry for abandoned checkout', 'doku-payment'),
-            'placeholder' => _x('set with numeric in range 1-31. It means day(s)', 'placeholder', 'doku-payment'),
-            'default' => '',
+            'placeholder' => _x('set with numeric in range 1-30. It means day(s)', 'placeholder', 'doku-payment'),
+            'default' => '1',
         ),
 
         'notif_url' => array(
