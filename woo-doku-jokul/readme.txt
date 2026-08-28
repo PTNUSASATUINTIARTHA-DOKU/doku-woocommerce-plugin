@@ -24,15 +24,18 @@ Refer to our [documentation](https://docs.doku.com/accept-payments/integration-t
 == Upgrade Notice ==
 
 = 1.3.30 =
-Fix PHP 8.2+ dynamic property deprecation warnings, improve WooCommerce blocks checkout compatibility, and enhance tracing logs.
+Improved plugin performance and loading speed.
+Optimized internal checks to reduce unnecessary processing.
+Added a Check Payment Status button to the WooCommerce order details page.
+Merchants can now manually check and refresh the payment status of an order without waiting for an automatic status update.
  
 == Change Log ==
 
 = 1.3.30 =
-* Fix PHP 8.2+ dynamic property deprecation warnings
-* Improve WooCommerce blocks checkout compatibility and error parsing
-* Consolidate database and signature logs to doku_log
-* Enhance tracing logs for notification and QRIS notification flows
+Improved plugin performance and loading speed.
+Optimized internal checks to reduce unnecessary processing.
+Added a Check Payment Status button to the WooCommerce order details page.
+Merchants can now manually check and refresh the payment status of an order without waiting for an automatic status update.
 
 = 1.3.29 =
 Support notification URL that have subdirectory path
