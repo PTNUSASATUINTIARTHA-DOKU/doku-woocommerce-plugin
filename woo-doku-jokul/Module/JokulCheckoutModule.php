@@ -9,6 +9,31 @@ require_once(DOKU_PAYMENT_PLUGIN_PATH . '/Common/JokulUtils.php');
 
 class DokuCheckoutModule extends WC_Payment_Gateway
 {
+    public $method_name;
+    public $method_code;
+    public $checkout_msg;
+    public $environmentPaymentJokul;
+    public $sandboxClientId;
+    public $sandboxSharedKey;
+    public $prodClientId;
+    public $prodSharedKey;
+    public $expiredTime;
+    public $emailNotifications;
+    public $abandonedCart;
+    public $timeRangeAbandonedCart;
+    public $customExpireDate;
+    public $channelName;
+    public $payment_method;
+    public $auto_redirect_jokul;
+    public $sac_check;
+    public $sac_textbox;
+    public $paymentDescription;
+    public $dokuUtils;
+    public $dokuDB;
+    public $dokuCheckStatusService;
+    public $dokuCheckoutService;
+    public $orderId;
+
     public function __construct()
     {
         $this->init_form_fields();
@@ -64,6 +89,17 @@ class DokuCheckoutModule extends WC_Payment_Gateway
                 }
             }
         }
+        if ( is_admin() ) {
+            if ( ! has_action( 'woocommerce_admin_order_data_after_order_details', array( 'DokuCheckoutModule', 'doku_add_check_status_button' ) ) ) {
+                add_action( 'woocommerce_admin_order_data_after_order_details', array( 'DokuCheckoutModule', 'doku_add_check_status_button' ) );
+            }
+            if ( ! has_action( 'wp_ajax_doku_check_status', array( 'DokuCheckoutModule', 'doku_handle_ajax_check_status' ) ) ) {
+                add_action( 'wp_ajax_doku_check_status', array( 'DokuCheckoutModule', 'doku_handle_ajax_check_status' ) );
+            }
+            if ( ! has_action( 'woocommerce_admin_order_data_after_billing_address', array( 'DokuCheckoutModule', 'doku_display_payment_status_in_billing' ) ) ) {
+                add_action( 'woocommerce_admin_order_data_after_billing_address', array( 'DokuCheckoutModule', 'doku_display_payment_status_in_billing' ) );
+            }
+        }
 
     }
 
@@ -76,12 +112,15 @@ class DokuCheckoutModule extends WC_Payment_Gateway
                     case 'Tomorrow':  
                         $minutes = 1440; 
                         break;  
+                    case '7':
                     case '7 day':  
                         $minutes = 10080;
                         break;  
+                    case '14':
                     case '14 day':  
                         $minutes = 20160; 
                         break;  
+                    case '30':
                     case '30 day':  
                         $minutes = 43200; 
                         break;  
@@ -90,7 +129,7 @@ class DokuCheckoutModule extends WC_Payment_Gateway
                         break;  
                 }  
             } else {  
-                $customDays = intval($customExpireDate); 
+                $customDays = max(1, min(30, intval($customExpireDate))); 
                 $minutes = $customDays * 1440;   
             }  
         }  
@@ -101,12 +140,12 @@ class DokuCheckoutModule extends WC_Payment_Gateway
     public function get_order_data($order)
     {
         $pattern = "/[^A-Za-z0-9? .,_-]/";
-        $order_post = get_post($order->id);
+        $order_id = $order->get_id();
         $dp = wc_get_price_decimals();
         $order_data = array();
         // add line items
         foreach ($order->get_items() as $item_id => $item) {
-            $product = $order->get_product_from_item($item);
+            $product = $item->get_product();
             $term_names = wp_get_post_terms( $item->get_product_id(), 'product_cat', array('fields' => 'names') );
             $categories_string = implode(',', $term_names);
             $product_id = null;
@@ -116,16 +155,11 @@ class DokuCheckoutModule extends WC_Payment_Gateway
 
             // Check if the product exists.
             if (is_object($product)) {
-                $product_id = isset($product->variation_id) ? $product->variation_id : $product->id;
+                $product_id = $product->get_id();
                 $product_sku = $product->get_sku();
                 $image_id  = $product->get_image_id();
                 $image_url = wp_get_attachment_image_url( $image_id, 'full' );
                 $product_url = $product->get_permalink();
-            }
-            $meta = new WC_Order_Item_Meta($item, $product);
-            $item_meta = array();
-            foreach ($meta->get_formatted(null) as $meta_key => $formatted_meta) {
-                $item_meta[] = array('key' => $meta_key, 'label' => $formatted_meta['label'], 'value' => $formatted_meta['value']);
             }
             
             $order_data[] = array(
@@ -142,13 +176,13 @@ class DokuCheckoutModule extends WC_Payment_Gateway
         }
         // Add shipping.
         foreach ($order->get_shipping_methods() as $shipping_item_id => $shipping_item) {
-            $product = $order->get_product_from_item($item);
+            $product = isset($item) && is_object($item) ? $item->get_product() : null;
             $image_url = null;
             $product_url = null;
 
             // Check if the product exists.
             if (is_object($product)) {
-                $product_id = isset($product->variation_id) ? $product->variation_id : $product->id;
+                $product_id = $product->get_id();
                 $product_sku = $product->get_sku();
                 $image_id  = $product->get_image_id();
                 $image_url = wp_get_attachment_image_url( $image_id, 'full' );
@@ -170,12 +204,12 @@ class DokuCheckoutModule extends WC_Payment_Gateway
         }
         // Add taxes.
         foreach ($order->get_tax_totals() as $tax_code => $tax) {
-            $product = $order->get_product_from_item($item);
+            $product = isset($item) && is_object($item) ? $item->get_product() : null;
             $image_url = null;
             $product_url = null;
 
             if (is_object($product)) {
-                $product_id = isset($product->variation_id) ? $product->variation_id : $product->id;
+                $product_id = $product->get_id();
                 $image_id  = $product->get_image_id();
                 $image_url = wp_get_attachment_image_url( $image_id, 'full' );
                 $product_url = $product->get_permalink();
@@ -196,23 +230,24 @@ class DokuCheckoutModule extends WC_Payment_Gateway
         }
         // Add fees.
         foreach ($order->get_fees() as $fee_item_id => $fee_item) {
-            $product = $order->get_product_from_item($item);
+            $product = isset($item) && is_object($item) ? $item->get_product() : null;
             $image_url = null;
             $product_url = null;
 
             if (is_object($product)) {
-                $product_id = isset($product->variation_id) ? $product->variation_id : $product->id;
+                $product_id = $product->get_id();
                 $image_id  = $product->get_image_id();
                 $image_url = wp_get_attachment_image_url( $image_id, 'full' );
                 $product_url = $product->get_permalink();
             }
+            $fee_name = isset($fee_item['name']) ? $fee_item['name'] : '';
             $order_data[] = array(
-                    'id' => 'fee-' . $product_id . '-' . preg_replace($pattern, "", $tax->label),
-                    'name' => preg_replace($pattern, "", $fee_item['name']), 
+                    'id' => 'fee-' . $product_id . '-' . preg_replace($pattern, "", $fee_name),
+                    'name' => preg_replace($pattern, "", $fee_name), 
                     'price' => wc_format_decimal($order->get_line_total($fee_item), $dp), 
                     'quantity' => 1, 
                     'type' => 'produk',
-                    'sku' => 'fee-' . $product_id . '-' . preg_replace($pattern, "", $tax->label), 
+                    'sku' => 'fee-' . $product_id . '-' . preg_replace($pattern, "", $fee_name), 
                     'category' => 'fee',
                     'image_url' =>  !empty($image_url) ? $image_url : '',
                     'url' => $product_url 
@@ -230,11 +265,11 @@ class DokuCheckoutModule extends WC_Payment_Gateway
         $pattern = "/[^A-Za-z0-9? .-\/+,=_:@]/";
         
         $order  = wc_get_order($order_id);
-        $amount = $order->order_total;
+        $amount = $order->get_total();
         $order_data = $order->get_data();
         
         $this->dokuUtils = new DokuUtils();
-        $formattedPhoneNumber = $this->dokuUtils->formatPhoneNumber($order->billing_phone);
+        $formattedPhoneNumber = $this->dokuUtils->formatPhoneNumber($order->get_billing_phone());
 
         $params = array(
             'customerId' => 0 !== $order->get_customer_id() ? $order->get_customer_id() : null,
@@ -246,8 +281,8 @@ class DokuCheckoutModule extends WC_Payment_Gateway
             'invoiceNumber' => $order->get_order_number(),
             'expiryTime' => $this->expiredTime,
             'phone' => $formattedPhoneNumber,
-            'country' => $order->billing_country,
-            'address' => preg_replace($pattern, "", $order->shipping_address_1),
+            'country' => $order->get_billing_country(),
+            'address' => preg_replace($pattern, "", $order->get_shipping_address_1()),
             'itemQty' => $this->get_order_data($order),
             'payment_method' => $this->payment_method,
             'postcode' => $order_data['billing']['postcode'],
@@ -262,10 +297,10 @@ class DokuCheckoutModule extends WC_Payment_Gateway
             'sac_check' => $this->sac_check,
             'auto_redirect' => $this->auto_redirect_jokul,
             'sac_textbox' => $this->sac_textbox,
-            'first_name_shipping' => $order->shipping_first_name,
-            'address_shipping' => preg_replace($pattern, "",$order->shipping_address_1),
-            'city_shipping' => $order->shipping_city,
-            'postal_code_shipping' => $order->shipping_postcode,
+            'first_name_shipping' => $order->get_shipping_first_name(),
+            'address_shipping' => preg_replace($pattern, "", $order->get_shipping_address_1()),
+            'city_shipping' => $order->get_shipping_city(),
+            'postal_code_shipping' => $order->get_shipping_postcode(),
             'recoverAbandonedCart' => ($this->abandonedCart === 'yes'),
             'expiredRecoveredCart' => $this->calculateMinutes($this->abandonedCart, $this->timeRangeAbandonedCart, $this->customExpireDate)
         );
@@ -290,7 +325,7 @@ class DokuCheckoutModule extends WC_Payment_Gateway
         $this->dokuCheckoutService = new DokuCheckoutService();
         $response = $this->dokuCheckoutService->generated($config, $params);
         if (!is_wp_error($response)) {
-            if ($response['message'][0] == "SUCCESS" && isset($response['response']['payment']['url'])) {
+            if (isset($response['message']) && is_array($response['message']) && isset($response['message'][0]) && $response['message'][0] == "SUCCESS" && isset($response['response']['payment']['url'])) {
                 update_post_meta($order_id, 'checkoutUrl', $response['response']['payment']['url']);
                 $resultDb = DokuCheckoutModule::addDb($response, $amount);
                 if($resultDb === false || $resultDb === 0){
@@ -301,13 +336,33 @@ class DokuCheckoutModule extends WC_Payment_Gateway
                 $this->orderId = $order_id;
                 return array(
                     'result' => 'success',
-                    'redirect' => $this->get_return_url($order) . "&jokul=show&" . $order_id
+                    'redirect' => $response['response']['payment']['url']
                 );
             } else {
-                wc_add_notice('There is something wrong. Please try again. ' . $response['message'][0], 'error');
+                $error_msg = 'Unknown error';
+                if (isset($response['error']['message']) && is_string($response['error']['message'])) {
+                    $error_msg = $response['error']['message'];
+                } elseif (isset($response['message'])) {
+                    if (is_array($response['message']) && !empty($response['message'][0])) {
+                        $error_msg = is_string($response['message'][0]) ? $response['message'][0] : json_encode($response['message'][0]);
+                    } elseif (is_string($response['message'])) {
+                        $error_msg = $response['message'];
+                    }
+                } elseif (isset($response['error']) && is_string($response['error'])) {
+                    $error_msg = $response['error'];
+                }
+                wc_add_notice('There is something wrong. Please try again. ' . $error_msg, 'error');
+                return array(
+                    'result' => 'failure',
+                    'redirect' => ''
+                );
             }
         } else {
             wc_add_notice('There is something wrong. Please try again.', 'error');
+            return array(
+                'result' => 'failure',
+                'redirect' => ''
+            );
         }
     }
 
@@ -465,5 +520,186 @@ class DokuCheckoutModule extends WC_Payment_Gateway
             return $title;
         }
     }
-}
 
+    public static function doku_add_check_status_button( $order ) {
+        if ( $order->get_payment_method() === 'doku_checkout' && $order->has_status( array( 'pending', 'on-hold', 'cancelled' ) ) ) {
+            wp_enqueue_script(
+                'doku-admin-check-status', 
+                plugin_dir_url(__FILE__) . '../Js/doku-admin-check-status.js', 
+                array('jquery'),
+                '1.0.0',
+                true
+            );
+            
+            wp_localize_script('doku-admin-check-status', 'dokuAdminCheckStatusData', array(
+                'ajaxurl'  => admin_url('admin-ajax.php'),
+                'nonce'    => wp_create_nonce( "doku_check_status_nonce" ),
+                'order_id' => $order->get_id()
+            ));
+            ?>
+            <div class="form-field form-field-wide" style="border-top: 1px solid #eee; padding-top: 15px; margin-top: 15px; clear: both;">
+                <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                    <button type="button" id="doku-check-status-btn" class="button button-primary button-large">
+                        <?php _e( 'Check Payment Status', 'doku-payment' ); ?>
+                    </button>
+                    <span id="doku-status-spinner" class="spinner" style="float: none; margin: 0; vertical-align: middle;"></span>
+                </div>
+                <div style="margin-top: 10px; min-height: 20px;">
+                    <div id="doku-status-feedback" style="font-weight: bold; font-size: 13px; display: inline-block;"></div>
+                </div>
+            </div>
+            <?php
+        }
+    }
+
+    public static function doku_handle_ajax_check_status() {
+        check_ajax_referer( 'doku_check_status_nonce', 'security' );
+
+        if ( ! current_user_can( 'manage_woocommerce' ) && ! current_user_can( 'edit_shop_orders' ) ) {
+            wp_send_json_error( array( 'message' => 'Unauthorized' ), 403 );
+        }
+        
+        $order_id = isset( $_POST['order_id'] ) ? absint( $_POST['order_id'] ) : 0;
+        if ( ! $order_id ) {
+            wp_send_json_error( array( 'message' => 'Invalid Order ID.' ) );
+        }
+        
+        $order = wc_get_order( $order_id );
+        if ( ! $order ) {
+            wp_send_json_error( array( 'message' => 'Order not found.' ) );
+        }
+        
+        $paramsValue = get_post_meta( $order_id, 'checkoutParams', true );
+        $configValue = get_post_meta( $order_id, 'checkoutConfig', true );
+        
+        if ( ! is_array( $paramsValue ) || ! is_array( $configValue ) ) {
+            wp_send_json_error( array( 'message' => 'DOKU parameters/config not found for this order.' ) );
+        }
+        
+        require_once( DOKU_PAYMENT_PLUGIN_PATH . '/Service/JokulCheckStatusService.php' );
+        $checkStatusService = new DokuCheckStatusService();
+        $response = $checkStatusService->generated( $configValue, $paramsValue );
+        
+        $dokuUtils = new DokuUtils();
+        $dokuDB = new DokuDB();
+        
+        // Log to debug.log and doku_log (Dual Logging)
+        error_log('Manual Check Status Request for Invoice: ' . $paramsValue['invoiceNumber']);
+        $dokuUtils->doku_log('DokuCheckoutModule', '===== MANUAL CHECK STATUS START =====', $paramsValue['invoiceNumber']);
+        $dokuUtils->doku_log('DokuCheckoutModule', 'Manual Check Status Request config: ' . json_encode( $configValue ), $paramsValue['invoiceNumber']);
+        
+        if ( is_wp_error( $response ) || ! is_array( $response ) ) {
+            error_log('Manual Check Status Error for Invoice: ' . $paramsValue['invoiceNumber'] . ' - Connection failed');
+            $dokuUtils->doku_log('DokuCheckoutModule', 'Manual Check Status Error: Connection failed or invalid response format', $paramsValue['invoiceNumber']);
+            $dokuUtils->doku_log('DokuCheckoutModule', '===== MANUAL CHECK STATUS END - HTTP 500 =====', $paramsValue['invoiceNumber']);
+            wp_send_json_error( array( 'message' => 'Failed to connect to DOKU API.' ) );
+        }
+        
+        error_log('Manual Check Status Response for Invoice: ' . $paramsValue['invoiceNumber'] . ' - Status: ' . ($response['transaction']['status'] ?? 'UNKNOWN'));
+        $dokuUtils->doku_log('DokuCheckoutModule', 'Manual Check Status Response: ' . json_encode( $response, JSON_PRETTY_PRINT ), $paramsValue['invoiceNumber']);
+        
+        if ( ! isset( $response['transaction'] ) ) {
+            $error_detail = 'Invalid API Response';
+            if ( isset( $response['error']['message'] ) ) {
+                $error_detail = $response['error']['message'];
+            } elseif ( isset( $response['message'] ) ) {
+                $error_detail = $response['message'];
+            }
+            
+            $dokuUtils->doku_log('DokuCheckoutModule', 'Manual Check Status API/Credential Error. Status remains unchanged. Response: ' . json_encode( $response ), $paramsValue['invoiceNumber']);
+            $dokuUtils->doku_log('DokuCheckoutModule', '===== MANUAL CHECK STATUS END =====', $paramsValue['invoiceNumber']);
+            
+            wp_send_json_error( array( 
+                'message' => 'API Error: ' . $error_detail,
+                'should_reload' => false
+            ) );
+        }
+        
+        if ( isset( $response['transaction']['status'] ) && strtolower( $response['transaction']['status'] ) == strtolower( 'SUCCESS' ) ) {
+            // Update database jokuldb
+            $dokuDB->updateData( $paramsValue['invoiceNumber'], 'PAYMENT_COMPLETED' );
+            
+            // Complete order in WooCommerce
+            $order->update_status( 'processing' );
+            $order->payment_complete();
+            $order->add_order_note( __( 'DOKU: Manual Check Status succeeded. Payment marked as completed.', 'doku-payment' ) );
+            
+            $dokuUtils->doku_log('DokuCheckoutModule', 'Manual Check Status SUCCESS. Order updated to processing.', $paramsValue['invoiceNumber']);
+            $dokuUtils->doku_log('DokuCheckoutModule', '===== MANUAL CHECK STATUS END - HTTP 200 =====', $paramsValue['invoiceNumber']);
+            wp_send_json_success( array( 'message' => 'Payment SUCCESS! Order status updated to Processing.' ) );
+        } else {
+            $status = isset( $response['transaction']['status'] ) ? $response['transaction']['status'] : 'UNKNOWN';
+            
+            if ( strtolower( $status ) == 'failed' ) {
+                // Update database jokuldb to failed
+                $dokuDB->updateData( $paramsValue['invoiceNumber'], 'PAYMENT_FAILED' );
+                
+                // Fail order in WooCommerce
+                $order->update_status( 'failed', __( 'DOKU: Manual Check Status detected failed payment. Status updated to Failed.', 'doku-payment' ) );
+                
+                $dokuUtils->doku_log('DokuCheckoutModule', 'Manual Check Status FAILED. Order updated to failed. Response: ' . json_encode( $response ), $paramsValue['invoiceNumber']);
+                $dokuUtils->doku_log('DokuCheckoutModule', '===== MANUAL CHECK STATUS END - HTTP 200 =====', $paramsValue['invoiceNumber']);
+                wp_send_json_error( array( 
+                    'message' => 'Payment FAILED! Order status updated to Failed.',
+                    'should_reload' => true
+                ) );
+            } elseif ( strtolower( $status ) == 'expired' ) {
+                // Update database jokuldb to expired
+                $dokuDB->updateData( $paramsValue['invoiceNumber'], 'PAYMENT_EXPIRED' );
+                
+                // Cancel order in WooCommerce
+                if ( ! $order->has_status( 'cancelled' ) ) {
+                    $order->update_status( 'cancelled', __( 'DOKU: Manual Check Status detected expired payment. Status updated to Cancelled.', 'doku-payment' ) );
+                }
+                
+                $dokuUtils->doku_log('DokuCheckoutModule', 'Manual Check Status EXPIRED. Order updated to cancelled. Response: ' . json_encode( $response ), $paramsValue['invoiceNumber']);
+                $dokuUtils->doku_log('DokuCheckoutModule', '===== MANUAL CHECK STATUS END - HTTP 200 =====', $paramsValue['invoiceNumber']);
+                wp_send_json_error( array( 
+                    'message' => 'Payment EXPIRED! Order status updated to Cancelled.',
+                    'should_reload' => true
+                ) );
+            } else {
+                $order->add_order_note( sprintf( __( 'DOKU: Manual Check Status returned status: %s.', 'doku-payment' ), $status ) );
+                
+                $dokuUtils->doku_log('DokuCheckoutModule', 'Manual Check Status result: ' . $status . ' - Response: ' . json_encode( $response ), $paramsValue['invoiceNumber']);
+                $dokuUtils->doku_log('DokuCheckoutModule', '===== MANUAL CHECK STATUS END =====', $paramsValue['invoiceNumber']);
+                wp_send_json_error( array( 
+                    'message' => 'Payment status is currently: ' . $status,
+                    'should_reload' => false
+                ) );
+            }
+        }
+    }
+
+    public static function doku_display_payment_status_in_billing( $order ) {
+        if ( $order->get_payment_method() === 'doku_checkout' ) {
+            global $wpdb;
+            $table = $wpdb->prefix . 'jokuldb';
+            $trx_status = $wpdb->get_var( $wpdb->prepare( "SELECT process_type FROM $table WHERE invoice_number = %s ORDER BY trx_id DESC LIMIT 1", $order->get_id() ) );
+            
+            // Format status label and color
+            $status_label = 'PENDING';
+            $status_color = '#ecc715'; // Yellow/Orange for pending
+            
+            if ( $trx_status ) {
+                if ( strpos( strtoupper( $trx_status ), 'COMPLETED' ) !== false || strtoupper( $trx_status ) === 'SUCCESS' ) {
+                    $status_label = 'SUCCESS';
+                    $status_color = '#46b450'; // Green for success
+                } elseif ( strpos( strtoupper( $trx_status ), 'FAILED' ) !== false ) {
+                    $status_label = 'FAILED';
+                    $status_color = '#dc3232'; // Red for failed
+                } elseif ( strpos( strtoupper( $trx_status ), 'EXPIRED' ) !== false ) {
+                    $status_label = 'EXPIRED';
+                    $status_color = '#767676'; // Dark Gray for expired
+                } else {
+                    $status_label = strtoupper( $trx_status );
+                }
+            }
+            
+            echo '<div style="margin-top: 15px; border-top: 1px dashed #ccc; padding-top: 10px;">';
+            echo '<p><strong>DOKU Payment Status:</strong><br />';
+            echo '<span style="display: inline-block; margin-top: 5px; font-weight: bold; color: #fff; background-color: ' . esc_attr( $status_color ) . '; padding: 4px 10px; border-radius: 4px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;">' . esc_html( $status_label ) . '</span></p>';
+            echo '</div>';
+        }
+    }
+}

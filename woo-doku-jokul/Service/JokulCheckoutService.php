@@ -6,6 +6,8 @@ require_once(DOKU_PAYMENT_PLUGIN_PATH . '/Common/JokulConfig.php');
 require_once(DOKU_PAYMENT_PLUGIN_PATH . '/Common/JokulUtils.php');
 
 class DokuCheckoutService {
+    public $dokuUtils;
+    public $dokuConfig;
 
     public function generated($config, $params)
     {
@@ -76,7 +78,7 @@ class DokuCheckoutService {
             "additional_info" => array (
                 "integration" => array (
                     "name" => "woocommerce-plugin",
-                    "version" => "1.3.29",
+                    "version" => "1.3.30",
                     "cms_version" => $params['woo_version']
                 ),
                 "account" => array(
@@ -143,7 +145,7 @@ class DokuCheckoutService {
             "additional_info" => array (
                 "integration" => array (
                     "name" => "woocommerce-plugin",
-                    "version" => "1.3.29",
+                    "version" => "1.3.30",
                     "cms_version" => $params['woo_version']
                 ),
                 "method" => "Jokul Checkout",

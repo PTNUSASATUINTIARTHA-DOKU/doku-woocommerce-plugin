@@ -4,7 +4,7 @@ Donate link: https://doku.com/
 Tags: Payment Gateway, Payment, Credit Card, DOKU, woocommerce                                                                 
 Requires at least: 2.2
 Tested up to: 6.7
-Stable tag: 1.3.29
+Stable tag: 1.3.30
 Requires PHP: 8.2v
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -23,11 +23,19 @@ Refer to our [documentation](https://docs.doku.com/accept-payments/integration-t
 
 == Upgrade Notice ==
 
-= 1.3.29 =
-Support notification URL that have subdirectory path
-Enable Go To Merchant button after customer success payment
+= 1.3.30 =
+Improved plugin performance and loading speed.
+Optimized internal checks to reduce unnecessary processing.
+Added a Check Payment Status button to the WooCommerce order details page.
+Merchants can now manually check and refresh the payment status of an order without waiting for an automatic status update.
  
 == Change Log ==
+
+= 1.3.30 =
+Improved plugin performance and loading speed.
+Optimized internal checks to reduce unnecessary processing.
+Added a Check Payment Status button to the WooCommerce order details page.
+Merchants can now manually check and refresh the payment status of an order without waiting for an automatic status update.
 
 = 1.3.29 =
 Support notification URL that have subdirectory path
