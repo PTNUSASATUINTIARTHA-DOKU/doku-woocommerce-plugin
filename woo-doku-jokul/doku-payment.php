@@ -63,22 +63,15 @@ function doku_payment_init_gateway_class()
 			{
 				$methods[] = 'DokuCheckoutModule';
 
-				$is_wc_admin = false;
+				$is_block_editor = false;
 				if ( is_admin() ) {
-					$is_post_edit = ( isset( $GLOBALS['pagenow'] ) && ( $GLOBALS['pagenow'] === 'post.php' || $GLOBALS['pagenow'] === 'post-new.php' ) );
-					if ( ! $is_post_edit ) {
-						$is_wc_admin = true;
-					}
-				} elseif ( defined( 'REST_REQUEST' ) && REST_REQUEST ) {
-					$uri = isset( $_SERVER['REQUEST_URI'] ) ? $_SERVER['REQUEST_URI'] : '';
-					$is_wc_rest = ( strpos( $uri, 'wp-json/wc/' ) !== false || strpos( $uri, 'wp-json/wc-admin/' ) !== false );
-					$is_store_api = ( strpos( $uri, '/store/' ) !== false );
-					if ( $is_wc_rest && ! $is_store_api ) {
-						$is_wc_admin = true;
+					$pagenow = isset( $GLOBALS['pagenow'] ) ? $GLOBALS['pagenow'] : '';
+					if ( in_array( $pagenow, array( 'post.php', 'post-new.php', 'site-editor.php' ), true ) ) {
+						$is_block_editor = true;
 					}
 				}
 
-				if ( $is_wc_admin || wp_doing_ajax() ) {
+				if ( ! $is_block_editor ) {
 					$methods[] = 'DokuMainModule';
 				}
 
