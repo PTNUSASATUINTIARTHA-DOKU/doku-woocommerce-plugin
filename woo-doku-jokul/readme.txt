@@ -29,12 +29,6 @@ Refer to our [documentation](https://docs.doku.com/accept-payments/integration-t
 Fixed an issue where the DOKU Integration menu may not appear correctly on new installations.
 Improved the reliability of DOKU settings, including when setting up the integration for the first time.
 Updated compatibility with WordPress 7.0.2 and WooCommerce 11.0.0.
-
-= 1.3.30 =
-Improved plugin performance and loading speed.
-Optimized internal checks to reduce unnecessary processing.
-Added a Check Payment Status button to the WooCommerce order details page.
-Merchants can now manually check and refresh the payment status of an order without waiting for an automatic status update.
  
 == Change Log ==
 
