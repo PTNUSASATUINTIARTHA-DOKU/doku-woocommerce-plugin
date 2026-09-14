@@ -2,10 +2,12 @@
 Contributors: dokuplugin
 Donate link: https://doku.com/
 Tags: Payment Gateway, Payment, Credit Card, DOKU, woocommerce                                                                 
-Requires at least: 2.2
-Tested up to: 6.7
-Stable tag: 1.3.30
-Requires PHP: 8.2v
+Requires at least: 4.9
+Tested up to: 7.0.2
+Requires PHP: 7.3
+WC requires at least: 5.0
+WC tested up to: 11.0.0
+Stable tag: 1.3.31
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 DOKU plugin offers a secure payment with DOKU Checkout, letting customers choose from various payment methods and complete transactions seamlessly.
@@ -23,6 +25,11 @@ Refer to our [documentation](https://docs.doku.com/accept-payments/integration-t
 
 == Upgrade Notice ==
 
+= 1.3.31 =
+Fixed an issue where the DOKU Integration menu may not appear correctly on new installations.
+Improved the reliability of DOKU settings, including when setting up the integration for the first time.
+Updated compatibility with WordPress 7.0.2 and WooCommerce 11.0.0.
+
 = 1.3.30 =
 Improved plugin performance and loading speed.
 Optimized internal checks to reduce unnecessary processing.
@@ -30,6 +37,11 @@ Added a Check Payment Status button to the WooCommerce order details page.
 Merchants can now manually check and refresh the payment status of an order without waiting for an automatic status update.
  
 == Change Log ==
+
+= 1.3.31 =
+Fixed an issue where the DOKU Integration menu may not appear correctly on new installations.
+Improved the reliability of DOKU settings, including when setting up the integration for the first time.
+Updated compatibility with WordPress 7.0.2 and WooCommerce 11.0.0.
 
 = 1.3.30 =
 Improved plugin performance and loading speed.
