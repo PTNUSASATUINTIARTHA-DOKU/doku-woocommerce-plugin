@@ -6,12 +6,16 @@ if ( ! defined( 'ABSPATH' ) ) exit;
  * Plugin Name: DOKU Payment
  * Plugin URI: https://github.com/PTNUSASATUINTIARTHA-DOKU/doku-woocommerce-plugin
  * Description: Accept payment through various payment channels with DOKU. Make it easy for your customers to purchase on your store.
- * Version: 1.3.30
+ * Version: 1.3.31
  * Author: DOKU
  * Author URI: http://www.doku.com
  * License: GPLv2 or later
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
- * WC requires at least: 2.2
+ * Requires at least: 4.9
+ * Tested up to: 7.0.2
+ * Requires PHP: 7.3
+ * WC requires at least: 5.0
+ * WC tested up to: 11.0.0
  **/
 
 /*
@@ -63,22 +67,15 @@ function doku_payment_init_gateway_class()
 			{
 				$methods[] = 'DokuCheckoutModule';
 
-				$is_wc_admin = false;
+				$is_block_editor = false;
 				if ( is_admin() ) {
-					$is_post_edit = ( isset( $GLOBALS['pagenow'] ) && ( $GLOBALS['pagenow'] === 'post.php' || $GLOBALS['pagenow'] === 'post-new.php' ) );
-					if ( ! $is_post_edit ) {
-						$is_wc_admin = true;
-					}
-				} elseif ( defined( 'REST_REQUEST' ) && REST_REQUEST ) {
-					$uri = isset( $_SERVER['REQUEST_URI'] ) ? $_SERVER['REQUEST_URI'] : '';
-					$is_wc_rest = ( strpos( $uri, 'wp-json/wc/' ) !== false || strpos( $uri, 'wp-json/wc-admin/' ) !== false );
-					$is_store_api = ( strpos( $uri, '/store/' ) !== false );
-					if ( $is_wc_rest && ! $is_store_api ) {
-						$is_wc_admin = true;
+					$pagenow = isset( $GLOBALS['pagenow'] ) ? $GLOBALS['pagenow'] : '';
+					if ( in_array( $pagenow, array( 'post.php', 'post-new.php', 'site-editor.php' ), true ) ) {
+						$is_block_editor = true;
 					}
 				}
 
-				if ( $is_wc_admin || wp_doing_ajax() ) {
+				if ( ! $is_block_editor ) {
 					$methods[] = 'DokuMainModule';
 				}
 

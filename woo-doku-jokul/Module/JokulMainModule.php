@@ -94,12 +94,17 @@ class DokuMainModule extends WC_Payment_Gateway
         return update_option($this->get_option_key(), apply_filters('woocommerce_settings_api_sanitized_fields_' . $this->id, $this->settings), 'yes');
     }
 
+    public function is_available()
+    {
+        return false;
+    }
+
     public function check_gateway_status($gateways)
     {
         if ($this->id == 'doku_gateway') {
             unset($gateways[$this->id]);
-            return $gateways;
         }
+        return $gateways;
     }
 
     public function admin_options()

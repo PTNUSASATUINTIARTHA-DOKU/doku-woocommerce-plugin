@@ -48,16 +48,19 @@ class DokuCheckoutModule extends WC_Payment_Gateway
 
         $this->init_settings();
         $mainSettings = get_option('woocommerce_doku_gateway_settings');
-        $this->environmentPaymentJokul = $mainSettings['environment_payment_jokul'];
-        $this->sandboxClientId = $mainSettings['sandbox_client_id'];
-        $this->sandboxSharedKey = $mainSettings['sandbox_shared_key'];
-        $this->prodClientId = $mainSettings['prod_client_id'];
-        $this->prodSharedKey = $mainSettings['prod_shared_key'];
-        $this->expiredTime = $mainSettings['expired_time'];
-        $this->emailNotifications = $mainSettings['email_notifications'];
-        $this->abandonedCart =  $mainSettings['abandoned_cart'];
-        $this->timeRangeAbandonedCart =  $mainSettings['time_range_abandoned_cart'];
-        $this->customExpireDate =  $mainSettings['custom_time_range_abandoned_cart'];
+        if (!is_array($mainSettings)) {
+            $mainSettings = array();
+        }
+        $this->environmentPaymentJokul = $mainSettings['environment_payment_jokul'] ?? 'false';
+        $this->sandboxClientId = $mainSettings['sandbox_client_id'] ?? '';
+        $this->sandboxSharedKey = $mainSettings['sandbox_shared_key'] ?? '';
+        $this->prodClientId = $mainSettings['prod_client_id'] ?? '';
+        $this->prodSharedKey = $mainSettings['prod_shared_key'] ?? '';
+        $this->expiredTime = $mainSettings['expired_time'] ?? '60';
+        $this->emailNotifications = $mainSettings['email_notifications'] ?? 'yes';
+        $this->abandonedCart = $mainSettings['abandoned_cart'] ?? 'no';
+        $this->timeRangeAbandonedCart = $mainSettings['time_range_abandoned_cart'] ?? 'Tomorrow';
+        $this->customExpireDate = $mainSettings['custom_time_range_abandoned_cart'] ?? '1';
 
         $this->enabled = $this->get_option('enabled');
         $this->channelName = $this->get_option('channel_name');
@@ -66,8 +69,8 @@ class DokuCheckoutModule extends WC_Payment_Gateway
         $this->payment_method = $this->get_option('payment_method');
         $this->auto_redirect_jokul = $this->get_option('auto_redirect_jokul');
         
-        $this->sac_check = $mainSettings['sac_check' ];
-        $this->sac_textbox = $mainSettings['sac_textbox'];
+        $this->sac_check = $mainSettings['sac_check'] ?? 'no';
+        $this->sac_textbox = $mainSettings['sac_textbox'] ?? '';
 
         if (empty($paymentDescription)) {
             $this->paymentDescription   = 'Bayar Pesanan Dengan DOKU Checkout';
