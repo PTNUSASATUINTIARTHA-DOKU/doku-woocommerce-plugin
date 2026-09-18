@@ -27,6 +27,7 @@ class DokuMainModule extends WC_Payment_Gateway
         $this->title                = !empty($this->get_option('channel_name')) ? $this->get_option('channel_name') : $this->method_name;
         $this->method_title         = __('DOKU Integration', 'doku-payment');
         $this->method_description   = sprintf(__('Configure your DOKU connection details such as environment, credentials, notification URL, and payment expiry time.', 'doku-payment'));
+        $this->icon                 = plugin_dir_url(DOKU_PAYMENT_MAIN_FILE) . 'assets/images/doku-vertical-logo.svg';
 
         $this->init_settings();
         $this->enabled = $this->get_option('enabled');
