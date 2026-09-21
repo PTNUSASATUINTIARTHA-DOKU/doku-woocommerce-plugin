@@ -5,6 +5,7 @@ Tags: Payment Gateway, Payment, Credit Card, DOKU, woocommerce
 Requires at least: 4.9
 Tested up to: 7.0.2
 Requires PHP: 7.3
+Requires Plugins: woocommerce
 WC requires at least: 5.0
 WC tested up to: 11.0.0
 Stable tag: 1.3.31
