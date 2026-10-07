@@ -3,10 +3,10 @@
 if ( ! defined( 'ABSPATH' ) ) exit;
 
 /*
- * Plugin Name: DOKU Payment
+ * Plugin Name: DOKU Accept Payments
  * Plugin URI: https://github.com/PTNUSASATUINTIARTHA-DOKU/doku-woocommerce-plugin
  * Description: Accept payment through various payment channels with DOKU. Make it easy for your customers to purchase on your store.
- * Version: 1.3.31
+ * Version: 1.3.32
  * Author: DOKU
  * Author URI: http://www.doku.com
  * License: GPLv2 or later
@@ -14,6 +14,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
  * Requires at least: 4.9
  * Tested up to: 7.0.2
  * Requires PHP: 7.3
+ * Requires Plugins: woocommerce
  * WC requires at least: 5.0
  * WC tested up to: 11.0.0
  **/
@@ -244,4 +245,16 @@ function doku_payment_plugin_template($template, $template_name, $template_path)
 	}
 
 	return $template;
+}
+
+add_filter('plugin_action_links_' . plugin_basename(__FILE__), 'doku_payment_action_links');
+function doku_payment_action_links($links)
+{
+	$plugin_links = array(
+		'<a href="' . esc_url(admin_url('admin.php?page=wc-settings&tab=checkout&section=doku_gateway')) . '">' . __('Settings', 'doku-payment') . '</a>',
+		'<a href="https://docs.doku.com/accept-payments/integration-tools/e-commerce-and-plugins/woocommerce-wordpress" target="_blank" rel="noopener noreferrer">' . __('Docs', 'doku-payment') . '</a>',
+		'<a href="https://help.doku.com/en/support/home" target="_blank" rel="noopener noreferrer">' . __('Support', 'doku-payment') . '</a>',
+	);
+
+	return is_array($links) ? array_merge($plugin_links, $links) : $plugin_links;
 }
