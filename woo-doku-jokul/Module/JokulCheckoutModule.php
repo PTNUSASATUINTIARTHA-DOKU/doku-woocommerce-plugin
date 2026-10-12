@@ -45,6 +45,7 @@ class DokuCheckoutModule extends WC_Payment_Gateway
         $this->method_title         = __('DOKU Payment', 'doku-payment');
         $this->method_description   = sprintf(__('Customize how DOKU payment methods appear to your customers at checkout, including payment labels and QRIS configuration.', 'doku-payment'));
         $this->checkout_msg         = 'This your payment on DOKU Checkout : ';
+        $this->icon                 = plugin_dir_url(DOKU_PAYMENT_MAIN_FILE) . 'assets/images/doku-vertical-logo.svg';
 
         $this->init_settings();
         $mainSettings = get_option('woocommerce_doku_gateway_settings');
