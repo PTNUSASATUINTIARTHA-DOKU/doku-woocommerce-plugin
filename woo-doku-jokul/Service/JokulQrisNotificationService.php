@@ -50,12 +50,20 @@ class DokuQrisNotificationService
         $dokuUtils->doku_log($dokuUtils, 'NOTIFICATION  : ' . json_encode($raw_notification, JSON_PRETTY_PRINT), $raw_notification['order']['invoice_number']);
         $dokuUtils->doku_log($dokuUtils, 'NOTIFICATION HEADER : ' . json_encode($headerData, JSON_PRETTY_PRINT), $raw_notification['order']['invoice_number']);
 
-         if ($mainSettings['environment_payment_jokul'] == 'false') {
-            $sharedKey = $mainSettings['sandbox_shared_key'];
-            $dokuUtils->doku_log($dokuUtils, 'Environment: SANDBOX', $raw_notification['order']['invoice_number']);
-        } else if ($mainSettings['environment_payment_jokul'] == 'true') {
-            $sharedKey = $mainSettings['prod_shared_key'];
-            $dokuUtils->doku_log($dokuUtils, 'Environment: PRODUCTION', $raw_notification['order']['invoice_number']);
+        $sharedKey = '';
+        if (isset($mainSettings['environment_payment_jokul']) && $mainSettings['environment_payment_jokul'] == 'false') {
+            $sharedKey = isset($mainSettings['sandbox_shared_key']) ? trim($mainSettings['sandbox_shared_key']) : '';
+            $dokuUtils->doku_log($dokuUtils, 'Environment: SANDBOX', isset($raw_notification['order']['invoice_number']) ? $raw_notification['order']['invoice_number'] : '');
+        } else if (isset($mainSettings['environment_payment_jokul']) && $mainSettings['environment_payment_jokul'] == 'true') {
+            $sharedKey = isset($mainSettings['prod_shared_key']) ? trim($mainSettings['prod_shared_key']) : '';
+            $dokuUtils->doku_log($dokuUtils, 'Environment: PRODUCTION', isset($raw_notification['order']['invoice_number']) ? $raw_notification['order']['invoice_number'] : '');
+        }
+
+        if (empty($sharedKey)) {
+            $dokuUtils->doku_log($dokuUtils, '[SECURITY REJECTED] Secret/Shared Key is not configured or empty.', isset($raw_notification['order']['invoice_number']) ? $raw_notification['order']['invoice_number'] : '');
+            error_log('[DOKU] [SECURITY REJECTED] Secret/Shared Key is not configured or empty.');
+            http_response_code(500);
+            return new WP_REST_Response('Gateway configuration error: Secret Key is not configured.', 500);
         }
 
         $parsed_url = parse_url( get_site_url() );
@@ -92,11 +100,12 @@ class DokuQrisNotificationService
             $dokuUtils->doku_log($dokuUtils, 'Transaction Found: ' . $invoiceNumber . ' | Amount: ' . $amount . ' | Channel: ' . $paymentChannel, $invoiceNumber);
 
             $signature = $dokuUtils->generateSignatureNotification($headerData, $request->get_body(), $sharedKey, $requestTarget);
- 			error_log("Signature From DOKU: " . $headerData['signature'][0]);
+            $incomingSignature = isset($headerData['signature'][0]) ? $headerData['signature'][0] : '';
+ 			error_log("Signature From DOKU: " . $incomingSignature);
           	error_log("Signature From MERCHANT: " . $signature);
- 			$dokuUtils->doku_log($dokuUtils, "Signature From DOKU: " . $headerData['signature'][0], $raw_notification['order']['invoice_number']);
+ 			$dokuUtils->doku_log($dokuUtils, "Signature From DOKU: " . $incomingSignature, $raw_notification['order']['invoice_number']);
           	$dokuUtils->doku_log($dokuUtils, "Signature From MERCHANT: " . $signature, $raw_notification['order']['invoice_number']);
-            if ($signature == $headerData['signature'][0]) {
+            if (!empty($incomingSignature) && hash_equals($signature, $incomingSignature)) {
                         $dokuUtils->doku_log($dokuUtils, 'TRANSACTION SIGNATURE VALID', $raw_notification['order']['invoice_number']);
 
                 if (strtolower($raw_notification['transaction']['status']) == strtolower('SUCCESS')) {
@@ -116,7 +125,7 @@ class DokuQrisNotificationService
                             http_response_code(500);
                             echo esc_html(http_response_code());
                             $dokuUtils->doku_log($dokuUtils, '===== QRIS NOTIFICATION END - HTTP 500 =====', $invoiceNumber);
-                            return new WP_REST_Response(data: 'Failed to insert payment_completed to DB', status: 500);
+                            return new WP_REST_Response('Failed to insert payment_completed to DB', 500);
                         }
                     } else {
                         $dokuUtils->doku_log($dokuUtils, 'PAYMENT_COMPLETED already exists, skipping duplicate notify', $invoiceNumber);

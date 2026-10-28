@@ -8,7 +8,7 @@ Requires PHP: 7.3
 Requires Plugins: woocommerce
 WC requires at least: 5.0
 WC tested up to: 11.0.0
-Stable tag: 1.3.32
+Stable tag: 1.3.33
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 DOKU plugin offers a secure payment with DOKU Checkout, letting customers choose from various payment methods and complete transactions seamlessly.
@@ -26,11 +26,17 @@ Refer to our [documentation](https://docs.doku.com/accept-payments/integration-t
 
 == Upgrade Notice ==
 
-= 1.3.32 =
-Change Logo
-Added Settings Options for quicker access
+= 1.3.33 =
+Improved webhook security and request verification.
+Strengthened validation for payment gateway credentials and settings.
+Improved QRIS notification handling and response processingImproved compatibility with PHP 7.3 and newer versions.
  
 == Change Log ==
+
+= 1.3.33 =
+Improved webhook security and request verification.
+Strengthened validation for payment gateway credentials and settings.
+Improved QRIS notification handling and response processingImproved compatibility with PHP 7.3 and newer versions.
 
 = 1.3.32 =
 Change Logo
