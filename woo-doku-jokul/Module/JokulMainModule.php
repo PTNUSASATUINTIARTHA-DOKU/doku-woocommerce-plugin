@@ -69,6 +69,23 @@ class DokuMainModule extends WC_Payment_Gateway
             }
         }
 
+        $environment = isset($post_data['woocommerce_' . $this->id . '_environment_payment_jokul']) ? $post_data['woocommerce_' . $this->id . '_environment_payment_jokul'] : 'false';
+        if ($environment === 'false') {
+            $sandbox_client_id = isset($post_data['woocommerce_' . $this->id . '_sandbox_client_id']) ? trim($post_data['woocommerce_' . $this->id . '_sandbox_client_id']) : '';
+            $sandbox_shared_key = isset($post_data['woocommerce_' . $this->id . '_sandbox_shared_key']) ? trim($post_data['woocommerce_' . $this->id . '_sandbox_shared_key']) : '';
+            if (empty($sandbox_client_id) || empty($sandbox_shared_key)) {
+                \WC_Admin_Settings::add_error(__('Sandbox Client ID and Sandbox Secret Key are required when Environment is set to Sandbox.', 'doku-payment'));
+                return false;
+            }
+        } else if ($environment === 'true') {
+            $prod_client_id = isset($post_data['woocommerce_' . $this->id . '_prod_client_id']) ? trim($post_data['woocommerce_' . $this->id . '_prod_client_id']) : '';
+            $prod_shared_key = isset($post_data['woocommerce_' . $this->id . '_prod_shared_key']) ? trim($post_data['woocommerce_' . $this->id . '_prod_shared_key']) : '';
+            if (empty($prod_client_id) || empty($prod_shared_key)) {
+                \WC_Admin_Settings::add_error(__('Production Client ID and Production Secret Key are required when Environment is set to Production.', 'doku-payment'));
+                return false;
+            }
+        }
+
         foreach ($this->get_form_fields() as $key => $field) {
             if ('title' !== $this->get_field_type($field)) {
                 try {

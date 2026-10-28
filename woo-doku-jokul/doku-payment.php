@@ -6,7 +6,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
  * Plugin Name: DOKU Accept Payments
  * Plugin URI: https://github.com/PTNUSASATUINTIARTHA-DOKU/doku-woocommerce-plugin
  * Description: Accept payment through various payment channels with DOKU. Make it easy for your customers to purchase on your store.
- * Version: 1.3.32
+ * Version: 1.3.33
  * Author: DOKU
  * Author URI: http://www.doku.com
  * License: GPLv2 or later
@@ -173,6 +173,7 @@ function doku_payment_order_update_status_qris($path, $request)
 {
 	$qrisNotificationService = new DokuQrisNotificationService();
 	$response = $qrisNotificationService->getQrisNotification($path,$request);
+	return $response;
 }
 
 add_action('woocommerce_thankyou', 'doku_payment_thank_you_page_credit_card', 1, 10);
