@@ -110,7 +110,15 @@ class DokuNotificationService
                     $dokuUtils->doku_log($dokuUtils, 'Transaction Status from DOKU: SUCCESS', $invoiceNumber);
                     $checkTrxStatus = $dokuDB->checkStatusTrx($invoiceNumber, $amount, 'PAYMENT_COMPLETED');
                     if ($checkTrxStatus == '') {
-                        $order = wc_get_order($invoiceNumber);
+                        $order = $dokuUtils->get_order_by_invoice($invoiceNumber);
+
+                        if (!$order) {
+                            $dokuUtils->doku_log($dokuUtils, 'Order NOT Found in WooCommerce: ' . $invoiceNumber, $invoiceNumber);
+                            http_response_code(404);
+                            echo esc_html(http_response_code());
+                            $dokuUtils->doku_log($dokuUtils, '===== NOTIFICATION END - HTTP 404 (Order Not Found) =====', $invoiceNumber);
+                            return new WP_REST_Response('Order not found', 404);
+                        }
                         $orderStatusBefore = $order->get_status();
                         $dokuUtils->doku_log($dokuUtils, 'Order Status Before Update: ' . $orderStatusBefore, $invoiceNumber);
                         $order->update_status('processing');
@@ -129,13 +137,23 @@ class DokuNotificationService
                     }
                 } else if (strtolower($raw_notification['transaction']['status']) == strtolower('FAILED')) {
                     $dokuUtils->doku_log($dokuUtils, 'Transaction Status from DOKU: FAILED', $invoiceNumber);
+
+                    $order = $dokuUtils->get_order_by_invoice($invoiceNumber);
+                    
+                    if (!$order) {
+                        $dokuUtils->doku_log($dokuUtils, 'Order NOT Found in WooCommerce: ' . $invoiceNumber, $invoiceNumber);
+                        http_response_code(404);
+                        echo esc_html(http_response_code());
+                        $dokuUtils->doku_log($dokuUtils, '===== NOTIFICATION END - HTTP 404 (Order Not Found) =====', $invoiceNumber);
+                        return new WP_REST_Response('Order not found', 404);
+                    }
+
                     $checkTrxStatus = $dokuDB->checkStatusTrx($invoiceNumber, $amount, $paymentCode == "" ? "" : $paymentCode, 'PAYMENT_COMPLETED');
 
                     if ($checkTrxStatus == '') {
                         $this->addDb($invoiceNumber, $amount, $paymentCode, $paymentDate, $paymentChannel, $transactionStatus,$raw_notification);
                     }
 
-                    $order = wc_get_order($invoiceNumber);
                     $orderStatusBefore = $order->get_status();
                     $dokuUtils->doku_log($dokuUtils, 'Order Status Before Update: ' . $orderStatusBefore, $invoiceNumber);
                     $order->update_status('failed');

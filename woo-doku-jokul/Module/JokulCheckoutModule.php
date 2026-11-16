@@ -323,6 +323,7 @@ class DokuCheckoutModule extends WC_Payment_Gateway
             'environment' => $this->environmentPaymentJokul
         );
         
+        update_post_meta($order_id, '_doku_invoice_number', (string) $params['invoiceNumber']);
         update_post_meta($order_id, 'checkoutParams', $params);
         update_post_meta($order_id, 'checkoutConfig', $config); 
 
@@ -505,13 +506,15 @@ class DokuCheckoutModule extends WC_Payment_Gateway
                         $dokuUtils->doku_log($dokuUtils, 'Jokul Acquirer : ' . $response['acquirer']['id'], $paramsValue['invoiceNumber']);
                         if (isset($response['transaction']['status']) && strtolower($response['transaction']['status']) == strtolower('SUCCESS')) {
                             $dokuDB->updateData($paramsValue['invoiceNumber'], $response['transaction']['status']);
-                            $order = wc_get_order($paramsValue['invoiceNumber']);
+                            $order = $dokuUtils->get_order_by_invoice($paramsValue['invoiceNumber']);
+                            if (!$order) return $title;
                             $order->update_status('processing');
                             $order->payment_complete();
                             $dokuUtils->doku_log($dokuUtils, 'DOKU Check Status Update Status : ' . 'processing', $paramsValue['invoiceNumber']);
                         } else {
                             $dokuDB->updateData($paramsValue['invoiceNumber'], $response['transaction']['status'] ?? 'FAILED');
-                            $order = wc_get_order($paramsValue['invoiceNumber']);
+                            $order = $dokuUtils->get_order_by_invoice($paramsValue['invoiceNumber']);
+                            if (!$order) return $title;
                             $order->update_status('failed');
                             $dokuUtils->doku_log($dokuUtils, 'DOKU Check Status Update Status : ' . 'failed', $paramsValue['invoiceNumber']);
                         }
@@ -679,7 +682,18 @@ class DokuCheckoutModule extends WC_Payment_Gateway
         if ( $order->get_payment_method() === 'doku_checkout' ) {
             global $wpdb;
             $table = $wpdb->prefix . 'jokuldb';
-            $trx_status = $wpdb->get_var( $wpdb->prepare( "SELECT process_type FROM $table WHERE invoice_number = %s ORDER BY trx_id DESC LIMIT 1", $order->get_id() ) );
+            $order_id = $order->get_id();
+            $order_number = get_post_meta($order_id, '_doku_invoice_number', true);
+            if ($order_number === '') {
+                $params = get_post_meta($order_id, 'checkoutParams', true);
+                $order_number = isset($params['invoiceNumber']) ? $params['invoiceNumber'] : $order->get_order_number();
+            }
+
+            $trx_status = $wpdb->get_var( $wpdb->prepare(
+                "SELECT process_type FROM $table WHERE invoice_number = %s OR invoice_number = %s ORDER BY trx_id DESC LIMIT 1",
+                $order_number,
+                $order_id
+            ) );
             
             // Format status label and color
             $status_label = 'PENDING';

@@ -6,6 +6,50 @@ define("DOKU_PAYMENT_HTML_EMAIL_HEADERS", array('Content-Type: text/html; charse
 
 class DokuUtils
 {
+    
+    public function get_order_by_invoice($invoiceNumber)
+    {
+        $invoiceNumber = (string) $invoiceNumber;
+        if ($invoiceNumber === '') {
+            return false;
+        }
+
+        $order = false;
+        if (ctype_digit($invoiceNumber)) {
+            $candidateOrder = wc_get_order((int) $invoiceNumber);
+            if ($candidateOrder && ((string) $candidateOrder->get_order_number() === $invoiceNumber || (string) get_post_meta($candidateOrder->get_id(), '_doku_invoice_number', true) === $invoiceNumber)) {
+                $order = $candidateOrder;
+            }
+        }
+
+        if (!$order && function_exists('wc_get_order_id_by_order_number')) {
+            $resolvedOrderId = wc_get_order_id_by_order_number($invoiceNumber);
+            if ($resolvedOrderId) {
+                $candidateOrder = wc_get_order($resolvedOrderId);
+                if ($candidateOrder && ((string) $candidateOrder->get_order_number() === $invoiceNumber || (string) get_post_meta($candidateOrder->get_id(), '_doku_invoice_number', true) === $invoiceNumber)) {
+                    $this->doku_log($this, 'RESOLVEORDERID VIA WC FUNCTION > ' . $resolvedOrderId, $invoiceNumber);
+                    $order = $candidateOrder;
+                }
+            }
+        }
+
+        if (!$order) {
+            foreach (array('_order_number', '_doku_invoice_number') as $metaKey) {
+                $matchingOrders = wc_get_orders(array(
+                    'limit'      => 1,
+                    'meta_key'   => $metaKey,
+                    'meta_value' => $invoiceNumber,
+                ));
+                if (!empty($matchingOrders)) {
+                    $order = reset($matchingOrders);
+                    $this->doku_log($this, 'RESOLVEORDERID VIA WC_GET_ORDERS (' . $metaKey . ') > ' . $order->get_id(), $invoiceNumber);
+                    break;
+                }
+            }
+        }
+
+        return $order ? $order : false;
+    }
     public function generateSignatureCheckStatus($headers, $secret)
     {
         $rawSignature = "Client-Id:" . $headers['Client-Id'] . "\n"
