@@ -97,6 +97,25 @@ class DokuDB {
         }
     }
 
+    public function getLatestProcessType($invoice_number) {
+        global $wpdb;
+        $table = $wpdb->prefix . 'jokuldb';
+
+        if ($invoice_number === null) {
+            return null;
+        }
+
+        $invoice_number = (string) $invoice_number;
+        if ($invoice_number === '') {
+            return null;
+        }
+
+        return $wpdb->get_var($wpdb->prepare(
+            "SELECT process_type FROM $table WHERE invoice_number = %s ORDER BY trx_id DESC LIMIT 1",
+            $invoice_number
+        ));
+    }
+
     function checkTrx($order_id, $amount) {
         global $wpdb;
         $table = $wpdb->prefix . 'jokuldb';

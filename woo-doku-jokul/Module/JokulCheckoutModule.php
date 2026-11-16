@@ -680,37 +680,43 @@ class DokuCheckoutModule extends WC_Payment_Gateway
 
     public static function doku_display_payment_status_in_billing( $order ) {
         if ( $order->get_payment_method() === 'doku_checkout' ) {
-            global $wpdb;
-            $table = $wpdb->prefix . 'jokuldb';
             $order_id = $order->get_id();
-            $order_number = get_post_meta($order_id, '_doku_invoice_number', true);
-            if ($order_number === '') {
+            $invoice_number = get_post_meta($order_id, '_doku_invoice_number', true);
+            if ($invoice_number === '' || $invoice_number === null) {
                 $params = get_post_meta($order_id, 'checkoutParams', true);
-                $order_number = isset($params['invoiceNumber']) ? $params['invoiceNumber'] : $order->get_order_number();
+                $invoice_number = (is_array($params) && isset($params['invoiceNumber'])) ? (string) $params['invoiceNumber'] : '';
+            } else {
+                $invoice_number = (string) $invoice_number;
             }
 
-            $trx_status = $wpdb->get_var( $wpdb->prepare(
-                "SELECT process_type FROM $table WHERE invoice_number = %s OR invoice_number = %s ORDER BY trx_id DESC LIMIT 1",
-                $order_number,
-                $order_id
-            ) );
-            
-            // Format status label and color
-            $status_label = 'PENDING';
-            $status_color = '#ecc715'; // Yellow/Orange for pending
-            
-            if ( $trx_status ) {
-                if ( strpos( strtoupper( $trx_status ), 'COMPLETED' ) !== false || strtoupper( $trx_status ) === 'SUCCESS' ) {
-                    $status_label = 'SUCCESS';
-                    $status_color = '#46b450'; // Green for success
-                } elseif ( strpos( strtoupper( $trx_status ), 'FAILED' ) !== false ) {
-                    $status_label = 'FAILED';
-                    $status_color = '#dc3232'; // Red for failed
-                } elseif ( strpos( strtoupper( $trx_status ), 'EXPIRED' ) !== false ) {
-                    $status_label = 'EXPIRED';
-                    $status_color = '#767676'; // Dark Gray for expired
+            if ($invoice_number === '') {
+                $status_label = 'STATUS UNVERIFIED';
+                $status_color = '#767676';
+            } else {
+                $dokuDB = new DokuDB();
+                $trx_status = $dokuDB->getLatestProcessType($invoice_number);
+
+                if (!$trx_status) {
+                    $status_label = 'STATUS UNAVAILABLE';
+                    $status_color = '#767676';
                 } else {
-                    $status_label = strtoupper( $trx_status );
+                    $upper_status = strtoupper(trim((string) $trx_status));
+                    if (in_array($upper_status, array('PAYMENT_COMPLETED', 'SUCCESS'), true)) {
+                        $status_label = 'SUCCESS';
+                        $status_color = '#46b450';
+                    } elseif (in_array($upper_status, array('PAYMENT_FAILED', 'FAILED'), true)) {
+                        $status_label = 'FAILED';
+                        $status_color = '#dc3232';
+                    } elseif (in_array($upper_status, array('PAYMENT_EXPIRED', 'EXPIRED'), true)) {
+                        $status_label = 'EXPIRED';
+                        $status_color = '#767676';
+                    } elseif (in_array($upper_status, array('PAYMENT_PENDING', 'PENDING'), true)) {
+                        $status_label = 'PENDING';
+                        $status_color = '#ecc715';
+                    } else {
+                        $status_label = $upper_status;
+                        $status_color = '#ecc715';
+                    }
                 }
             }
             
