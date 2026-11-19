@@ -529,7 +529,7 @@ class DokuCheckoutModule extends WC_Payment_Gateway
     }
 
     public static function doku_add_check_status_button( $order ) {
-        if ( $order->get_payment_method() === 'doku_checkout' && $order->has_status( array( 'pending', 'on-hold', 'cancelled' ) ) ) {
+        if ( $order->get_payment_method() === 'doku_checkout' && $order->has_status( array( 'pending', 'on-hold', 'cancelled', 'failed' ) ) ) {
             wp_enqueue_script(
                 'doku-admin-check-status', 
                 plugin_dir_url(__FILE__) . '../Js/doku-admin-check-status.js', 
@@ -664,6 +664,28 @@ class DokuCheckoutModule extends WC_Payment_Gateway
                 wp_send_json_error( array( 
                     'message' => 'Payment EXPIRED! Order status updated to Cancelled.',
                     'should_reload' => true
+                ) );
+            } elseif ( strtolower( $status ) == 'pending' ) {
+                $shouldReload = false;
+                $currentProcessType = $dokuDB->getLatestProcessType( $paramsValue['invoiceNumber'] );
+
+                if ( strtoupper( trim( (string) $currentProcessType ) ) !== 'PAYMENT_PENDING' ) {
+                    $dokuDB->updateData( $paramsValue['invoiceNumber'], 'PAYMENT_PENDING' );
+                    $shouldReload = true;
+                }
+
+                if ( $order->has_status( 'failed' ) ) {
+                    $order->update_status( 'pending', __( 'DOKU: Manual Check Status detected pending payment. Status updated to Pending payment.', 'doku-payment' ) );
+                    $shouldReload = true;
+                } else {
+                    $order->add_order_note( sprintf( __( 'DOKU: Manual Check Status returned status: %s.', 'doku-payment' ), $status ) );
+                }
+
+                $dokuUtils->doku_log('DokuCheckoutModule', 'Manual Check Status PENDING. Reload: ' . ($shouldReload ? 'true' : 'false') . ' - Response: ' . json_encode( $response ), $paramsValue['invoiceNumber']);
+                $dokuUtils->doku_log('DokuCheckoutModule', '===== MANUAL CHECK STATUS END =====', $paramsValue['invoiceNumber']);
+                wp_send_json_error( array(
+                    'message' => $shouldReload ? 'Payment status is currently: ' . $status . '. Order synced to Pending.' : 'Payment status is currently: ' . $status,
+                    'should_reload' => $shouldReload
                 ) );
             } else {
                 $order->add_order_note( sprintf( __( 'DOKU: Manual Check Status returned status: %s.', 'doku-payment' ), $status ) );

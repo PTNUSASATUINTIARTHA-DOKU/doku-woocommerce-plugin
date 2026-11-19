@@ -149,10 +149,10 @@ class DokuDB {
             return false;
         }
         try {
-            // Gunakan get_var() untuk mengambil satu nilai dari query
+            // Gunakan process_type untuk deteksi status yang akurat
             return $wpdb->get_var(
                 $wpdb->prepare(
-                    "SELECT payment_code FROM $table WHERE invoice_number = %s AND amount = %d AND process_type = %s ORDER BY trx_id DESC LIMIT 1",
+                    "SELECT process_type FROM $table WHERE invoice_number = %s AND amount = %d AND process_type = %s ORDER BY trx_id DESC LIMIT 1",
                     $order_id, $amount, $processType
                 )
             );

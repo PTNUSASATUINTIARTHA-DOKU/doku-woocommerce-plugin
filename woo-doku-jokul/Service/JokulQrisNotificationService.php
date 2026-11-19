@@ -77,24 +77,17 @@ class DokuQrisNotificationService
 		}
 
         $dokuDB = new DokuDB();
-        $serviceType = $raw_notification['service']['id'];
-        $invoiceNumber = $raw_notification['order']['invoice_number'];
-        $amount = $raw_notification['order']['amount'];
-        $paymentChannel = $raw_notification['channel']['id'];
-        $transactionStatus = $raw_notification['transaction']['status'];
-        $requestTarget =  $endpoint_path . '/wp-json/' . $path . '/qrisnotification';
-        if ($serviceType == "ONLINE_TO_OFFLINE") {
-            $paymentCode = isset($raw_notification['online_to_offline_info']['payment_code']) ? $raw_notification['online_to_offline_info']['payment_code'] : '';
-            $paymentDate = isset($raw_notification['transaction']['date']) ? $raw_notification['transaction']['date'] : '';
-        } else {
-            $paymentCode = isset($raw_notification['virtual_account_info']['virtual_account_number']) ? $raw_notification['virtual_account_info']['virtual_account_number'] : '';
-            $paymentDate = isset($raw_notification['virtual_account_payment']['date']) ? $raw_notification['virtual_account_payment']['date'] : '';
-        }
+        $invoiceNumber = isset($raw_notification['order']['invoice_number']) ? $raw_notification['order']['invoice_number'] : '';
+        $amount = isset($raw_notification['order']['amount']) ? $raw_notification['order']['amount'] : 0;
+        $paymentChannel = !empty($raw_notification['payment']['channel'])
+            ? $raw_notification['payment']['channel']
+            : (!empty($raw_notification['channel']['id']) ? $raw_notification['channel']['id'] : '');
+        $transactionStatus = isset($raw_notification['transaction']['status']) ? trim((string) $raw_notification['transaction']['status']) : '';
+        $requestTarget = $endpoint_path . '/wp-json/' . $path . '/qrisnotification';
 
         $dokuUtils->doku_log($dokuUtils, 'Request Target: ' . $requestTarget, $invoiceNumber);
 
-
-        $transaction = $dokuDB->checkTrx($invoiceNumber, $amount, $paymentCode);
+        $transaction = $dokuDB->checkTrx($invoiceNumber, $amount);
 
         if (!empty($transaction)){
             $dokuUtils->doku_log($dokuUtils, 'Transaction Found: ' . $invoiceNumber . ' | Amount: ' . $amount . ' | Channel: ' . $paymentChannel, $invoiceNumber);
@@ -108,9 +101,11 @@ class DokuQrisNotificationService
             if (!empty($incomingSignature) && hash_equals($signature, $incomingSignature)) {
                         $dokuUtils->doku_log($dokuUtils, 'TRANSACTION SIGNATURE VALID', $raw_notification['order']['invoice_number']);
 
-                if (strtolower($raw_notification['transaction']['status']) == strtolower('SUCCESS')) {
+                $statusLower = strtolower($transactionStatus);
+
+                if ($statusLower === 'success') {
                     $dokuUtils->doku_log($dokuUtils, 'Transaction Status from DOKU: SUCCESS', $invoiceNumber);
-                    $checkTrxStatus = $dokuDB->checkStatusTrx($invoiceNumber, $amount, $paymentCode == "" ? "" : $paymentCode, 'PAYMENT_COMPLETED');
+                    $checkTrxStatus = $dokuDB->checkStatusTrx($invoiceNumber, $amount, 'PAYMENT_COMPLETED');
 
                     if ($checkTrxStatus == '') {
                         $order = $dokuUtils->get_order_by_invoice($invoiceNumber);
@@ -128,8 +123,8 @@ class DokuQrisNotificationService
                         $order->payment_complete();
                         $dokuUtils->doku_log($dokuUtils, 'Order Updated to: processing | payment_complete() called', $invoiceNumber);
                         $resultDb = $this->updateDb($invoiceNumber, 'PAYMENT_COMPLETED');
-                        if($resultDb === false || $resultDb === 0){
-                            $dokuUtils->doku_log($dokuUtils, 'FAILED INSERT PAYMENT COMPLETED TO DB', $raw_notification['order']['invoice_number']);
+                        if ($resultDb === false || $resultDb === 0) {
+                            $dokuUtils->doku_log($dokuUtils, 'FAILED INSERT PAYMENT COMPLETED TO DB', $invoiceNumber);
                             http_response_code(500);
                             echo esc_html(http_response_code());
                             $dokuUtils->doku_log($dokuUtils, '===== QRIS NOTIFICATION END - HTTP 500 =====', $invoiceNumber);
@@ -138,29 +133,10 @@ class DokuQrisNotificationService
                     } else {
                         $dokuUtils->doku_log($dokuUtils, 'PAYMENT_COMPLETED already exists, skipping duplicate notify', $invoiceNumber);
                     }
-                } else if (strtolower($raw_notification['transaction']['status']) == strtolower('FAILED')) {
-                    $dokuUtils->doku_log($dokuUtils, 'Transaction Status from DOKU: FAILED', $invoiceNumber);
-
-                    $order = $dokuUtils->get_order_by_invoice($invoiceNumber);
-
-                    if (!$order) {
-                        $dokuUtils->doku_log($dokuUtils, 'Order NOT Found in WooCommerce: ' . $invoiceNumber, $invoiceNumber);
-                        http_response_code(404);
-                        echo esc_html(http_response_code());
-                        $dokuUtils->doku_log($dokuUtils, '===== QRIS NOTIFICATION END - HTTP 404 (Order Not Found) =====', $invoiceNumber);
-                        return new WP_REST_Response('Order not found', 404);
-                    }
-
-                    $checkTrxStatus = $dokuDB->checkStatusTrx($invoiceNumber, $amount, $paymentCode == "" ? "" : $paymentCode, 'PAYMENT_COMPLETED');
-
-                    if ($checkTrxStatus == '') {
-                        $this->addDb($invoiceNumber, $amount, $paymentCode, $paymentDate, $paymentChannel, $transactionStatus,$raw_notification);
-                    }
-
-                    $orderStatusBefore = $order->get_status();
-                    $dokuUtils->doku_log($dokuUtils, 'Order Status Before Update: ' . $orderStatusBefore, $invoiceNumber);
-                    $order->update_status('failed');
-                    $dokuUtils->doku_log($dokuUtils, 'Order Updated to: failed', $invoiceNumber);
+                } else if ($statusLower === 'failed') {
+                    $dokuUtils->doku_log($dokuUtils, 'Transaction Status from DOKU: FAILED - Existing order status and badge preserved.', $invoiceNumber);
+                } else {
+                    $dokuUtils->doku_log($dokuUtils, 'Ignored empty or unknown transaction.status: ' . ($transactionStatus === '' ? '(empty)' : $transactionStatus), $invoiceNumber);
                 }
             } else {
                 $dokuUtils->doku_log($dokuUtils, 'SIGNATURE NOT MATCH!', $raw_notification['order']['invoice_number']);
@@ -177,28 +153,6 @@ class DokuQrisNotificationService
             $dokuUtils->doku_log($dokuUtils, '===== QRIS NOTIFICATION END - HTTP 404 (Transaction Not Found) =====', $invoiceNumber);
             return new WP_REST_Response(null, 404);
         }
-    }
-
-    function addDb($invoiceNumber, $amount, $paymentCode, $paymentDate, $channel, $transactionStatus,$raw_notification)
-    {
-        $dokuUtils = new DokuUtils();
-        $getIp = $dokuUtils->getIpaddress();
-
-        $trx = array();
-        $trx['invoice_number']          = $invoiceNumber;
-        $trx['result_msg']              = "SUCCESS";
-        $trx['process_type']            = 'PAYMENT_COMPLETED';
-        $trx['raw_post_data']           = sanitize_text_field(json_encode($raw_notification, JSON_PRETTY_PRINT));
-        $trx['ip_address']              = $getIp;
-        $trx['amount']                  = $amount;
-        $trx['payment_channel']         = $channel;
-        $trx['payment_code']            = $paymentCode;
-        $trx['doku_payment_datetime']   = $paymentDate;
-        $trx['process_datetime']        = gmdate("Y-m-d H:i:s");
-        $trx['message']                 = "Payment process message come from Jokul. " . $transactionStatus . " : completed";
-
-        $dokuDB = new DokuDB();
-        $dokuDB->addData($trx);
     }
 
     function updateDb($invoiceNumber, $status) {
