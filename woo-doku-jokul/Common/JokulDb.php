@@ -36,13 +36,11 @@ class DokuDB {
         try {
             $result = $wpdb->insert($table, $datainsert, $format);
             if ($result === false) {
-                error_log('Database Insertion Error for Invoice: ' . ($datainsert['invoice_number'] ?? 'unknown') . ' - SQL Error: ' . $wpdb->last_error);
-                $this->dokuUtils->doku_log($this, 'Database Insertion Error: SQL Error: ' . $wpdb->last_error, $datainsert['invoice_number'] ?? 'unknown');
+                $this->dokuUtils->doku_log($this, 'Database Insertion Error occurred.', $datainsert['invoice_number'] ?? 'unknown');
             }
             return $result;
         } catch (Exception $e) {
-            error_log('Database Insertion Exception for Invoice: ' . ($datainsert['invoice_number'] ?? 'unknown') . ' - Message: ' . $e->getMessage());
-            $this->dokuUtils->doku_log($this, 'Database Insertion Exception: Message: ' . $e->getMessage(), $datainsert['invoice_number'] ?? 'unknown');
+            $this->dokuUtils->doku_log($this, 'Database Insertion Exception occurred.', $datainsert['invoice_number'] ?? 'unknown');
             return false;
         }
     }
@@ -78,23 +76,38 @@ class DokuDB {
         ];
     
         // Log input updates for tracing
-        error_log('Database Update for Invoice: ' . print_r($invoice, true));
-        error_log('Database Update Status: ' . print_r($status, true));
-        $this->dokuUtils->doku_log($this, 'Database Update for Invoice: ' . print_r($invoice, true) . ' - Status: ' . print_r($status, true), $invoice);
+        $this->dokuUtils->doku_log($this, 'Database Update for Invoice: ' . (string) $invoice . ' - Status: ' . (string) $status, $invoice);
 
         // Melakukan update dengan $wpdb->update()
         try {
             $result = $wpdb->update($table, $data, $where, $format, $where_format);
             if ($result === false) {
-                error_log('Database Update Error for Invoice: ' . $invoice . ' - SQL Error: ' . $wpdb->last_error);
-                $this->dokuUtils->doku_log($this, 'Database Update Error: SQL Error: ' . $wpdb->last_error, $invoice);
+                $this->dokuUtils->doku_log($this, 'Database Update Error occurred.', $invoice);
             }
             return $result;
         } catch (Exception $e) {
-            error_log('Database Update Exception for Invoice: ' . $invoice . ' - Message: ' . $e->getMessage());
-            $this->dokuUtils->doku_log($this, 'Database Update Exception: Message: ' . $e->getMessage(), $invoice);
+            $this->dokuUtils->doku_log($this, 'Database Update Exception occurred.', $invoice);
             return false;
         }
+    }
+
+    public function getLatestProcessType($invoice_number) {
+        global $wpdb;
+        $table = $wpdb->prefix . 'jokuldb';
+
+        if ($invoice_number === null) {
+            return null;
+        }
+
+        $invoice_number = (string) $invoice_number;
+        if ($invoice_number === '') {
+            return null;
+        }
+
+        return $wpdb->get_var($wpdb->prepare(
+            "SELECT process_type FROM $table WHERE invoice_number = %s ORDER BY trx_id DESC LIMIT 1",
+            $invoice_number
+        ));
     }
 
     function checkTrx($order_id, $amount) {
@@ -114,8 +127,7 @@ class DokuDB {
                 )
             );
         } catch (Exception $e) {
-            error_log('Database Query Error: ' . $e->getMessage());
-            $this->dokuUtils->doku_log($this, 'Database Query Error (checkTrx): ' . $e->getMessage(), $order_id);
+            $this->dokuUtils->doku_log($this, 'Database Query Error (checkTrx).', $order_id);
             return false;
         }
     }
@@ -130,16 +142,15 @@ class DokuDB {
             return false;
         }
         try {
-            // Gunakan get_var() untuk mengambil satu nilai dari query
+            // Gunakan process_type untuk deteksi status yang akurat
             return $wpdb->get_var(
                 $wpdb->prepare(
-                    "SELECT payment_code FROM $table WHERE invoice_number = %s AND amount = %d AND process_type = %s ORDER BY trx_id DESC LIMIT 1",
+                    "SELECT process_type FROM $table WHERE invoice_number = %s AND amount = %d AND process_type = %s ORDER BY trx_id DESC LIMIT 1",
                     $order_id, $amount, $processType
                 )
             );
         } catch (Exception $e) {
-            error_log('Database Query Error: ' . $e->getMessage());
-            $this->dokuUtils->doku_log($this, 'Database Query Error (checkStatusTrx): ' . $e->getMessage(), $order_id);
+            $this->dokuUtils->doku_log($this, 'Database Query Error (checkStatusTrx).', $order_id);
             return false;
         }
     }

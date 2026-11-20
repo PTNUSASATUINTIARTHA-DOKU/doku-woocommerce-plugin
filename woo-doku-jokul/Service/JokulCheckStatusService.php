@@ -57,12 +57,14 @@ class DokuCheckStatusService {
             return null;
         }
 
+        $http_code = wp_remote_retrieve_response_code($response);
         $responseBody = wp_remote_retrieve_body($response);
+        $decoded_body = json_decode($responseBody, true);
 
-        $this->dokuUtils->doku_log($this, 'Jokul Check Status REQUEST URL: ' . $url, $params['invoiceNumber']);
-        $this->dokuUtils->doku_log($this, 'Jokul Check Status RESPONSE: ' . json_encode($responseBody, JSON_PRETTY_PRINT), $params['invoiceNumber']);
+        $this->dokuUtils->doku_log($this, 'Jokul Check Status REQUEST URL: ' . $url . ' (HTTP ' . $http_code . ')', $params['invoiceNumber']);
+        $this->dokuUtils->doku_log_masked_payload($this, 'Jokul Check Status RESPONSE: ', $decoded_body, $params['invoiceNumber']);
 
-        return json_decode($responseBody, true);
+        return $decoded_body;
     }
 }
 
