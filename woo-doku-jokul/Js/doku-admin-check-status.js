@@ -18,13 +18,29 @@ jQuery(document).ready(function($) {
             success: function(response) {
                 $('#doku-status-spinner').removeClass('is-active');
                 if (response.success) {
-                    $('#doku-status-feedback').html('<span style="color: #46b450; background: #ecf7ed; border: 1px solid #c3e6cb; padding: 6px 12px; border-radius: 4px; display: inline-block;">' + response.data.message + '</span>');
+                    var successSpan = $('<span>').css({
+                        color: '#46b450',
+                        background: '#ecf7ed',
+                        border: '1px solid #c3e6cb',
+                        padding: '6px 12px',
+                        borderRadius: '4px',
+                        display: 'inline-block'
+                    }).text((response.data && response.data.message) ? response.data.message : '');
+                    $('#doku-status-feedback').empty().append(successSpan);
                     setTimeout(function() {
                         location.reload();
                     }, 1500);
                 } else {
                     btn.prop('disabled', false);
-                    $('#doku-status-feedback').html('<span style="color: #dc3232; background: #fbeae5; border: 1px solid #f5c6cb; padding: 6px 12px; border-radius: 4px; display: inline-block;">' + response.data.message + '</span>');
+                    var errorSpan = $('<span>').css({
+                        color: '#dc3232',
+                        background: '#fbeae5',
+                        border: '1px solid #f5c6cb',
+                        padding: '6px 12px',
+                        borderRadius: '4px',
+                        display: 'inline-block'
+                    }).text((response.data && response.data.message) ? response.data.message : '');
+                    $('#doku-status-feedback').empty().append(errorSpan);
                     if (response.data && response.data.should_reload) {
                         setTimeout(function() {
                             location.reload();

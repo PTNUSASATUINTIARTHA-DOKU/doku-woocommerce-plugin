@@ -590,20 +590,21 @@ class DokuCheckoutModule extends WC_Payment_Gateway
         $dokuUtils = new DokuUtils();
         $dokuDB = new DokuDB();
         
-        // Log to debug.log and doku_log (Dual Logging)
-        error_log('Manual Check Status Request for Invoice: ' . $paramsValue['invoiceNumber']);
         $dokuUtils->doku_log('DokuCheckoutModule', '===== MANUAL CHECK STATUS START =====', $paramsValue['invoiceNumber']);
-        $dokuUtils->doku_log('DokuCheckoutModule', 'Manual Check Status Request config: ' . json_encode( $configValue ), $paramsValue['invoiceNumber']);
         
-        if ( is_wp_error( $response ) || ! is_array( $response ) ) {
-            error_log('Manual Check Status Error for Invoice: ' . $paramsValue['invoiceNumber'] . ' - Connection failed');
+        if ( is_wp_error( $response ) ) {
             $dokuUtils->doku_log('DokuCheckoutModule', 'Manual Check Status Error: Connection failed or invalid response format', $paramsValue['invoiceNumber']);
             $dokuUtils->doku_log('DokuCheckoutModule', '===== MANUAL CHECK STATUS END - HTTP 500 =====', $paramsValue['invoiceNumber']);
             wp_send_json_error( array( 'message' => 'Failed to connect to DOKU API.' ) );
         }
-        
-        error_log('Manual Check Status Response for Invoice: ' . $paramsValue['invoiceNumber'] . ' - Status: ' . ($response['transaction']['status'] ?? 'UNKNOWN'));
-        $dokuUtils->doku_log('DokuCheckoutModule', 'Manual Check Status Response: ' . json_encode( $response, JSON_PRETTY_PRINT ), $paramsValue['invoiceNumber']);
+
+        $dokuUtils->doku_log_masked_payload('DokuCheckoutModule', 'Manual Check Status Response: ', $response, $paramsValue['invoiceNumber']);
+
+        if ( ! is_array( $response ) ) {
+            $dokuUtils->doku_log('DokuCheckoutModule', 'Manual Check Status Error: Connection failed or invalid response format', $paramsValue['invoiceNumber']);
+            $dokuUtils->doku_log('DokuCheckoutModule', '===== MANUAL CHECK STATUS END - HTTP 500 =====', $paramsValue['invoiceNumber']);
+            wp_send_json_error( array( 'message' => 'Failed to connect to DOKU API.' ) );
+        }
         
         if ( ! isset( $response['transaction'] ) ) {
             $error_detail = 'Invalid API Response';
@@ -613,7 +614,7 @@ class DokuCheckoutModule extends WC_Payment_Gateway
                 $error_detail = $response['message'];
             }
             
-            $dokuUtils->doku_log('DokuCheckoutModule', 'Manual Check Status API/Credential Error. Status remains unchanged. Response: ' . json_encode( $response ), $paramsValue['invoiceNumber']);
+            $dokuUtils->doku_log('DokuCheckoutModule', 'Manual Check Status API/Credential Error. Status remains unchanged.', $paramsValue['invoiceNumber']);
             $dokuUtils->doku_log('DokuCheckoutModule', '===== MANUAL CHECK STATUS END =====', $paramsValue['invoiceNumber']);
             
             wp_send_json_error( array( 
@@ -644,7 +645,7 @@ class DokuCheckoutModule extends WC_Payment_Gateway
                 // Fail order in WooCommerce
                 $order->update_status( 'failed', __( 'DOKU: Manual Check Status detected failed payment. Status updated to Failed.', 'doku-payment' ) );
                 
-                $dokuUtils->doku_log('DokuCheckoutModule', 'Manual Check Status FAILED. Order updated to failed. Response: ' . json_encode( $response ), $paramsValue['invoiceNumber']);
+                $dokuUtils->doku_log('DokuCheckoutModule', 'Manual Check Status FAILED. Order updated to failed.', $paramsValue['invoiceNumber']);
                 $dokuUtils->doku_log('DokuCheckoutModule', '===== MANUAL CHECK STATUS END - HTTP 200 =====', $paramsValue['invoiceNumber']);
                 wp_send_json_error( array( 
                     'message' => 'Payment FAILED! Order status updated to Failed.',
@@ -659,7 +660,7 @@ class DokuCheckoutModule extends WC_Payment_Gateway
                     $order->update_status( 'cancelled', __( 'DOKU: Manual Check Status detected expired payment. Status updated to Cancelled.', 'doku-payment' ) );
                 }
                 
-                $dokuUtils->doku_log('DokuCheckoutModule', 'Manual Check Status EXPIRED. Order updated to cancelled. Response: ' . json_encode( $response ), $paramsValue['invoiceNumber']);
+                $dokuUtils->doku_log('DokuCheckoutModule', 'Manual Check Status EXPIRED. Order updated to cancelled.', $paramsValue['invoiceNumber']);
                 $dokuUtils->doku_log('DokuCheckoutModule', '===== MANUAL CHECK STATUS END - HTTP 200 =====', $paramsValue['invoiceNumber']);
                 wp_send_json_error( array( 
                     'message' => 'Payment EXPIRED! Order status updated to Cancelled.',
@@ -681,7 +682,7 @@ class DokuCheckoutModule extends WC_Payment_Gateway
                     $order->add_order_note( sprintf( __( 'DOKU: Manual Check Status returned status: %s.', 'doku-payment' ), $status ) );
                 }
 
-                $dokuUtils->doku_log('DokuCheckoutModule', 'Manual Check Status PENDING. Reload: ' . ($shouldReload ? 'true' : 'false') . ' - Response: ' . json_encode( $response ), $paramsValue['invoiceNumber']);
+                $dokuUtils->doku_log('DokuCheckoutModule', 'Manual Check Status PENDING. Reload: ' . ($shouldReload ? 'true' : 'false'), $paramsValue['invoiceNumber']);
                 $dokuUtils->doku_log('DokuCheckoutModule', '===== MANUAL CHECK STATUS END =====', $paramsValue['invoiceNumber']);
                 wp_send_json_error( array(
                     'message' => $shouldReload ? 'Payment status is currently: ' . $status . '. Order synced to Pending.' : 'Payment status is currently: ' . $status,
@@ -690,7 +691,7 @@ class DokuCheckoutModule extends WC_Payment_Gateway
             } else {
                 $order->add_order_note( sprintf( __( 'DOKU: Manual Check Status returned status: %s.', 'doku-payment' ), $status ) );
                 
-                $dokuUtils->doku_log('DokuCheckoutModule', 'Manual Check Status result: ' . $status . ' - Response: ' . json_encode( $response ), $paramsValue['invoiceNumber']);
+                $dokuUtils->doku_log('DokuCheckoutModule', 'Manual Check Status result: ' . $status, $paramsValue['invoiceNumber']);
                 $dokuUtils->doku_log('DokuCheckoutModule', '===== MANUAL CHECK STATUS END =====', $paramsValue['invoiceNumber']);
                 wp_send_json_error( array( 
                     'message' => 'Payment status is currently: ' . $status,

@@ -25,16 +25,13 @@ class DokuQrisNotificationService
         }
         return $array;
     }
-    public function getQrisNotification($path, $request){
 
+    public function getQrisNotification($path, $request)
+    {
         $dokuUtils = new DokuUtils();
         $dokuUtils->doku_log($dokuUtils, '===== QRIS NOTIFICATION START =====');
 
         $raw_input = $request->get_json_params();
-        $dokuUtils->doku_log('Qris Notify', 'Jokul - Notification Controller Notification Raw Request: ' . json_encode($raw_input, JSON_PRETTY_PRINT));
-
-        $dokuUtils->doku_log($dokuUtils, 'raw input notif : ' . json_encode($raw_input, JSON_PRETTY_PRINT));
-        $raw_notification = $raw_input;
         $mainSettings = get_option('woocommerce_doku_gateway_settings');
         $headerData = $request->get_headers();
 
@@ -45,105 +42,101 @@ class DokuQrisNotificationService
             return new WP_REST_Response('Invalid JSON input', 400);
         }
 
-        $raw_notification = $this->sanitize_array($raw_notification);
-
-        $dokuUtils->doku_log($dokuUtils, 'NOTIFICATION  : ' . json_encode($raw_notification, JSON_PRETTY_PRINT), $raw_notification['order']['invoice_number']);
-        $dokuUtils->doku_log($dokuUtils, 'NOTIFICATION HEADER : ' . json_encode($headerData, JSON_PRETTY_PRINT), $raw_notification['order']['invoice_number']);
-
-        $sharedKey = '';
-        if (isset($mainSettings['environment_payment_jokul']) && $mainSettings['environment_payment_jokul'] == 'false') {
-            $sharedKey = isset($mainSettings['sandbox_shared_key']) ? trim($mainSettings['sandbox_shared_key']) : '';
-            $dokuUtils->doku_log($dokuUtils, 'Environment: SANDBOX', isset($raw_notification['order']['invoice_number']) ? $raw_notification['order']['invoice_number'] : '');
-        } else if (isset($mainSettings['environment_payment_jokul']) && $mainSettings['environment_payment_jokul'] == 'true') {
-            $sharedKey = isset($mainSettings['prod_shared_key']) ? trim($mainSettings['prod_shared_key']) : '';
-            $dokuUtils->doku_log($dokuUtils, 'Environment: PRODUCTION', isset($raw_notification['order']['invoice_number']) ? $raw_notification['order']['invoice_number'] : '');
-        }
-
-        if (empty($sharedKey)) {
-            $dokuUtils->doku_log($dokuUtils, '[SECURITY REJECTED] Secret/Shared Key is not configured or empty.', isset($raw_notification['order']['invoice_number']) ? $raw_notification['order']['invoice_number'] : '');
-            error_log('[DOKU] [SECURITY REJECTED] Secret/Shared Key is not configured or empty.');
-            http_response_code(500);
-            return new WP_REST_Response('Gateway configuration error: Secret Key is not configured.', 500);
-        }
-
-        $parsed_url = parse_url( get_site_url() );
-        $endpoint_path = '';
-		if ( isset( $parsed_url['path'] ) ) {
-    		$endpoint_path = $parsed_url['path'];
-		}
-
-		if ( isset( $parsed_url['query'] ) ) {
-    		$endpoint_path .= '?' . $parsed_url['query'];
-		}
-
-        $dokuDB = new DokuDB();
+        $raw_notification = is_array($raw_input) ? $this->sanitize_array($raw_input) : array();
         $invoiceNumber = isset($raw_notification['order']['invoice_number']) ? $raw_notification['order']['invoice_number'] : '';
         $amount = isset($raw_notification['order']['amount']) ? $raw_notification['order']['amount'] : 0;
         $paymentChannel = !empty($raw_notification['payment']['channel'])
             ? $raw_notification['payment']['channel']
             : (!empty($raw_notification['channel']['id']) ? $raw_notification['channel']['id'] : '');
         $transactionStatus = isset($raw_notification['transaction']['status']) ? trim((string) $raw_notification['transaction']['status']) : '';
-        $requestTarget = $endpoint_path . '/wp-json/' . $path . '/qrisnotification';
 
+        $sharedKey = '';
+        if (isset($mainSettings['environment_payment_jokul']) && $mainSettings['environment_payment_jokul'] == 'false') {
+            $sharedKey = isset($mainSettings['sandbox_shared_key']) ? trim($mainSettings['sandbox_shared_key']) : '';
+            $dokuUtils->doku_log($dokuUtils, 'Environment: SANDBOX', $invoiceNumber);
+        } else if (isset($mainSettings['environment_payment_jokul']) && $mainSettings['environment_payment_jokul'] == 'true') {
+            $sharedKey = isset($mainSettings['prod_shared_key']) ? trim($mainSettings['prod_shared_key']) : '';
+            $dokuUtils->doku_log($dokuUtils, 'Environment: PRODUCTION', $invoiceNumber);
+        }
+
+        if (empty($sharedKey)) {
+            $dokuUtils->doku_log($dokuUtils, '[SECURITY REJECTED] Secret/Shared Key is not configured or empty.', $invoiceNumber);
+            http_response_code(500);
+            return new WP_REST_Response('Gateway configuration error: Secret Key is not configured.', 500);
+        }
+
+        $parsed_url = parse_url( get_site_url() );
+        $endpoint_path = '';
+        if ( isset( $parsed_url['path'] ) ) {
+            $endpoint_path = $parsed_url['path'];
+        }
+
+        if ( isset( $parsed_url['query'] ) ) {
+            $endpoint_path .= '?' . $parsed_url['query'];
+        }
+
+        $requestTarget = $endpoint_path . '/wp-json/' . $path . '/qrisnotification';
         $dokuUtils->doku_log($dokuUtils, 'Request Target: ' . $requestTarget, $invoiceNumber);
 
+        $clientId = isset($headerData['client_id'][0]) ? trim((string) $headerData['client_id'][0]) : '';
+        $requestId = isset($headerData['request_id'][0]) ? trim((string) $headerData['request_id'][0]) : '';
+        $requestTimestamp = isset($headerData['request_timestamp'][0]) ? trim((string) $headerData['request_timestamp'][0]) : '';
+        $incomingSignature = isset($headerData['signature'][0]) ? trim((string) $headerData['signature'][0]) : '';
+
+        $signature = $dokuUtils->generateSignatureNotification($headerData, $request->get_body(), $sharedKey, $requestTarget);
+        if ($clientId === '' || $requestId === '' || $requestTimestamp === '' || $incomingSignature === '' || !hash_equals($signature, $incomingSignature)) {
+            $dokuUtils->doku_log($dokuUtils, 'SIGNATURE NOT MATCH!', $invoiceNumber);
+            http_response_code(400);
+            echo esc_html(http_response_code());
+            $dokuUtils->doku_log($dokuUtils, '===== QRIS NOTIFICATION END - HTTP 400 (Signature Mismatch) =====', $invoiceNumber);
+            return new WP_REST_Response(null, 400);
+        }
+
+        $dokuUtils->doku_log($dokuUtils, 'TRANSACTION SIGNATURE VALID', $invoiceNumber);
+        $dokuUtils->doku_log_masked_payload($dokuUtils, 'NOTIFICATION  : ', $raw_notification, $invoiceNumber);
+
+        $dokuDB = new DokuDB();
         $transaction = $dokuDB->checkTrx($invoiceNumber, $amount);
 
-        if (!empty($transaction)){
+        if (!empty($transaction)) {
             $dokuUtils->doku_log($dokuUtils, 'Transaction Found: ' . $invoiceNumber . ' | Amount: ' . $amount . ' | Channel: ' . $paymentChannel, $invoiceNumber);
 
-            $signature = $dokuUtils->generateSignatureNotification($headerData, $request->get_body(), $sharedKey, $requestTarget);
-            $incomingSignature = isset($headerData['signature'][0]) ? $headerData['signature'][0] : '';
- 			error_log("Signature From DOKU: " . $incomingSignature);
-          	error_log("Signature From MERCHANT: " . $signature);
- 			$dokuUtils->doku_log($dokuUtils, "Signature From DOKU: " . $incomingSignature, $raw_notification['order']['invoice_number']);
-          	$dokuUtils->doku_log($dokuUtils, "Signature From MERCHANT: " . $signature, $raw_notification['order']['invoice_number']);
-            if (!empty($incomingSignature) && hash_equals($signature, $incomingSignature)) {
-                        $dokuUtils->doku_log($dokuUtils, 'TRANSACTION SIGNATURE VALID', $raw_notification['order']['invoice_number']);
+            $statusLower = strtolower($transactionStatus);
 
-                $statusLower = strtolower($transactionStatus);
+            if ($statusLower === 'success') {
+                $dokuUtils->doku_log($dokuUtils, 'Transaction Status from DOKU: SUCCESS', $invoiceNumber);
+                $checkTrxStatus = $dokuDB->checkStatusTrx($invoiceNumber, $amount, 'PAYMENT_COMPLETED');
 
-                if ($statusLower === 'success') {
-                    $dokuUtils->doku_log($dokuUtils, 'Transaction Status from DOKU: SUCCESS', $invoiceNumber);
-                    $checkTrxStatus = $dokuDB->checkStatusTrx($invoiceNumber, $amount, 'PAYMENT_COMPLETED');
+                if ($checkTrxStatus == '') {
+                    $order = $dokuUtils->get_order_by_invoice($invoiceNumber);
 
-                    if ($checkTrxStatus == '') {
-                        $order = $dokuUtils->get_order_by_invoice($invoiceNumber);
-
-                        if (!$order) {
-                            $dokuUtils->doku_log($dokuUtils, 'Order NOT Found in WooCommerce: ' . $invoiceNumber, $invoiceNumber);
-                            http_response_code(404);
-                            echo esc_html(http_response_code());
-                            $dokuUtils->doku_log($dokuUtils, '===== QRIS NOTIFICATION END - HTTP 404 (Order Not Found) =====', $invoiceNumber);
-                            return new WP_REST_Response('Order not found', 404);
-                        }
-                        $orderStatusBefore = $order->get_status();
-                        $dokuUtils->doku_log($dokuUtils, 'Order Status Before Update: ' . $orderStatusBefore, $invoiceNumber);
-                        $order->update_status('processing');
-                        $order->payment_complete();
-                        $dokuUtils->doku_log($dokuUtils, 'Order Updated to: processing | payment_complete() called', $invoiceNumber);
-                        $resultDb = $this->updateDb($invoiceNumber, 'PAYMENT_COMPLETED');
-                        if ($resultDb === false || $resultDb === 0) {
-                            $dokuUtils->doku_log($dokuUtils, 'FAILED INSERT PAYMENT COMPLETED TO DB', $invoiceNumber);
-                            http_response_code(500);
-                            echo esc_html(http_response_code());
-                            $dokuUtils->doku_log($dokuUtils, '===== QRIS NOTIFICATION END - HTTP 500 =====', $invoiceNumber);
-                            return new WP_REST_Response('Failed to insert payment_completed to DB', 500);
-                        }
-                    } else {
-                        $dokuUtils->doku_log($dokuUtils, 'PAYMENT_COMPLETED already exists, skipping duplicate notify', $invoiceNumber);
+                    if (!$order) {
+                        $dokuUtils->doku_log($dokuUtils, 'Order NOT Found in WooCommerce: ' . $invoiceNumber, $invoiceNumber);
+                        http_response_code(404);
+                        echo esc_html(http_response_code());
+                        $dokuUtils->doku_log($dokuUtils, '===== QRIS NOTIFICATION END - HTTP 404 (Order Not Found) =====', $invoiceNumber);
+                        return new WP_REST_Response('Order not found', 404);
                     }
-                } else if ($statusLower === 'failed') {
-                    $dokuUtils->doku_log($dokuUtils, 'Transaction Status from DOKU: FAILED - Existing order status and badge preserved.', $invoiceNumber);
+                    $orderStatusBefore = $order->get_status();
+                    $dokuUtils->doku_log($dokuUtils, 'Order Status Before Update: ' . $orderStatusBefore, $invoiceNumber);
+                    $order->update_status('processing');
+                    $order->payment_complete();
+                    $dokuUtils->doku_log($dokuUtils, 'Order Updated to: processing | payment_complete() called', $invoiceNumber);
+                    $resultDb = $this->updateDb($invoiceNumber, 'PAYMENT_COMPLETED');
+                    if ($resultDb === false || $resultDb === 0) {
+                        $dokuUtils->doku_log($dokuUtils, 'FAILED INSERT PAYMENT COMPLETED TO DB', $invoiceNumber);
+                        http_response_code(500);
+                        echo esc_html(http_response_code());
+                        $dokuUtils->doku_log($dokuUtils, '===== QRIS NOTIFICATION END - HTTP 500 =====', $invoiceNumber);
+                        return new WP_REST_Response('Failed to insert payment_completed to DB', 500);
+                    }
                 } else {
-                    $dokuUtils->doku_log($dokuUtils, 'Ignored empty or unknown transaction.status: ' . ($transactionStatus === '' ? '(empty)' : $transactionStatus), $invoiceNumber);
+                    $dokuUtils->doku_log($dokuUtils, 'PAYMENT_COMPLETED already exists, skipping duplicate notify', $invoiceNumber);
                 }
+            } else if ($statusLower === 'failed') {
+                $dokuUtils->doku_log($dokuUtils, 'Transaction Status from DOKU: FAILED - Existing order status and badge preserved.', $invoiceNumber);
             } else {
-                $dokuUtils->doku_log($dokuUtils, 'SIGNATURE NOT MATCH!', $raw_notification['order']['invoice_number']);
-                http_response_code(400);
-                echo esc_html(http_response_code());
-                $dokuUtils->doku_log($dokuUtils, '===== QRIS NOTIFICATION END - HTTP 400 (Signature Mismatch) =====', $invoiceNumber);
-                return new WP_REST_Response(null, 400);
+                $dokuUtils->doku_log($dokuUtils, 'Ignored empty or unknown transaction.status: ' . ($transactionStatus === '' ? '(empty)' : $transactionStatus), $invoiceNumber);
             }
             $dokuUtils->doku_log($dokuUtils, '===== QRIS NOTIFICATION END - HTTP 200 =====', $invoiceNumber);
         } else {

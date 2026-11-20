@@ -76,22 +76,20 @@ class DokuUtils
 
     public function generateSignatureNotification($headers, $body, $secret, $requestTarget)
     {
-      	$clientId = $headers['client_id'][0];
-        $digest = base64_encode(hash('sha256', $body, true));
-      	
-      $clientId = $headers['client_id'][0];
-      $requestId = $headers['request_id'][0];
-      $requestTimestamp = $headers['request_timestamp'][0];
-      
-      $rawSignature = "Client-Id:" . $clientId . "\n"
-          . "Request-Id:" . $requestId . "\n"
-          . "Request-Timestamp:" . $requestTimestamp . "\n"
-          . "Request-Target:" . $requestTarget . "\n"
-          . "Digest:" . $digest;
+        $clientId = isset($headers['client_id'][0]) ? (string) $headers['client_id'][0] : '';
+        $requestId = isset($headers['request_id'][0]) ? (string) $headers['request_id'][0] : '';
+        $requestTimestamp = isset($headers['request_timestamp'][0]) ? (string) $headers['request_timestamp'][0] : '';
+        $digest = base64_encode(hash('sha256', (string) $body, true));
 
-      $signature = base64_encode(hash_hmac('sha256', $rawSignature, htmlspecialchars_decode($secret), true));
+        $rawSignature = "Client-Id:" . $clientId . "\n"
+            . "Request-Id:" . $requestId . "\n"
+            . "Request-Timestamp:" . $requestTimestamp . "\n"
+            . "Request-Target:" . $requestTarget . "\n"
+            . "Digest:" . $digest;
 
-      return 'HMACSHA256=' . $signature;
+        $signature = base64_encode(hash_hmac('sha256', $rawSignature, htmlspecialchars_decode((string) $secret), true));
+
+        return 'HMACSHA256=' . $signature;
     }
 
     // public function getIpaddress()
@@ -141,6 +139,220 @@ class DokuUtils
         }
         $log_file_data = $log_filename . '/log_' . gmdate('d-M-Y') . '.log';
         file_put_contents($log_file_data, $log_header . $log_msg . "\n", FILE_APPEND);
+    }
+
+    public function doku_log_masked_payload($class, $prefix, $payload, $invoice_number = '')
+    {
+        try {
+            if (is_object($payload)) {
+                $payload = get_object_vars($payload);
+            }
+
+            if (!is_array($payload)) {
+                $this->doku_log($class, $prefix . '[Response body omitted: unsupported format]', $invoice_number);
+                return;
+            }
+
+            $masked = $this->mask_sensitive_data($payload);
+            $encoded = json_encode($masked, JSON_PRETTY_PRINT);
+            if ($encoded === false) {
+                $this->doku_log($class, $prefix . '[Log payload omitted: sanitization or encoding failed]', $invoice_number);
+                return;
+            }
+
+            $this->doku_log($class, $prefix . $encoded, $invoice_number);
+        } catch (\Throwable $e) {
+            $this->doku_log($class, $prefix . '[Log payload omitted: sanitization or encoding failed]', $invoice_number);
+        }
+    }
+
+    public function mask_sensitive_data($data, $parentKey = '')
+    {
+        if (is_object($data)) {
+            $data = get_object_vars($data);
+        }
+        if (!is_array($data)) {
+            return $data;
+        }
+
+        $customerContexts = array('customer', 'billing_address', 'shipping_address', 'payer');
+        $parentLower = strtolower((string) $parentKey);
+        $masked = array();
+
+        foreach ($data as $key => $value) {
+            $keyLower = strtolower((string) $key);
+
+            if (is_array($value)) {
+                $nextParent = is_string($key) ? $key : $parentKey;
+                $masked[$key] = $this->mask_sensitive_data($value, $nextParent);
+                continue;
+            }
+
+            if (is_object($value)) {
+                $nextParent = is_string($key) ? $key : $parentKey;
+                $masked[$key] = $this->mask_sensitive_data(get_object_vars($value), $nextParent);
+                continue;
+            }
+
+            if ($value === null || $value === '') {
+                $masked[$key] = $value;
+                continue;
+            }
+
+            if (in_array($keyLower, array('shared_key', 'secret_key', 'signature'), true)) {
+                $masked[$key] = '***';
+                continue;
+            }
+
+            if ($keyLower === 'url' && $parentLower === 'payment') {
+                $masked[$key] = '***';
+                continue;
+            }
+
+            if (in_array($parentLower, $customerContexts, true) && in_array($keyLower, array('id', 'city', 'state'), true)) {
+                $masked[$key] = '***';
+                continue;
+            }
+
+            if (in_array($keyLower, array('email', 'customeremail'), true)) {
+                $masked[$key] = $this->mask_email($value);
+                continue;
+            }
+
+            if ($keyLower === 'phone') {
+                $masked[$key] = $this->mask_phone($value);
+                continue;
+            }
+
+            if ($keyLower === 'callback_url_result' || strpos($keyLower, 'callback_url') !== false) {
+                $masked[$key] = $this->mask_callback_url($value);
+                continue;
+            }
+
+            if (
+                in_array($keyLower, array('first_name', 'last_name', 'customername', 'address', 'address_shipping', 'postcode', 'postal_code', 'postal_code_shipping'), true)
+                || ($keyLower === 'name' && in_array($parentLower, $customerContexts, true))
+            ) {
+                $masked[$key] = $this->mask_partial_string($value);
+                continue;
+            }
+
+            $masked[$key] = $value;
+        }
+
+        return $masked;
+    }
+
+    private function mask_partial_string($value)
+    {
+        if (!is_scalar($value)) {
+            return '***';
+        }
+        $str = (string) $value;
+        if ($str === '') {
+            return '';
+        }
+        if (!function_exists('mb_strlen') || !function_exists('mb_substr')) {
+            return '***';
+        }
+        if (function_exists('mb_check_encoding') && !mb_check_encoding($str, 'UTF-8')) {
+            return '***';
+        }
+        $len = mb_strlen($str, 'UTF-8');
+        if ($len <= 2) {
+            return '***';
+        }
+        return mb_substr($str, 0, 1, 'UTF-8') . '***' . mb_substr($str, -1, 1, 'UTF-8');
+    }
+
+    private function mask_email($value)
+    {
+        if (!is_scalar($value)) {
+            return '***';
+        }
+        $str = trim((string) $value);
+        if ($str === '') {
+            return '';
+        }
+        $atPos = strpos($str, '@');
+        if ($atPos === false) {
+            return $this->mask_partial_string($str);
+        }
+        $local = substr($str, 0, $atPos);
+        $domain = substr($str, $atPos + 1);
+        if ($domain === '') {
+            return '***';
+        }
+        if (!function_exists('mb_strlen') || !function_exists('mb_substr')) {
+            return '***@' . $domain;
+        }
+        if (function_exists('mb_check_encoding') && (!mb_check_encoding($local, 'UTF-8') || !mb_check_encoding($domain, 'UTF-8'))) {
+            return '***';
+        }
+        $localLen = mb_strlen($local, 'UTF-8');
+        $maskedLocal = ($localLen <= 2)
+            ? '***'
+            : mb_substr($local, 0, 1, 'UTF-8') . '***' . mb_substr($local, -1, 1, 'UTF-8');
+        return $maskedLocal . '@' . $domain;
+    }
+
+    private function mask_phone($value)
+    {
+        if (!is_scalar($value)) {
+            return '***';
+        }
+        $str = trim((string) $value);
+        if ($str === '') {
+            return '';
+        }
+        $digits = preg_replace('/\D+/', '', $str);
+        if ($digits === null || strlen($digits) <= 3) {
+            return '***';
+        }
+        return '***' . substr($digits, -3);
+    }
+
+    private function mask_callback_url($value)
+    {
+        if (!is_scalar($value)) {
+            return '***';
+        }
+        $url = trim((string) $value);
+        if ($url === '') {
+            return '';
+        }
+        $parsed = parse_url($url);
+        if ($parsed === false || empty($parsed['scheme']) || empty($parsed['host'])) {
+            return '***';
+        }
+
+        $rebuilt = $parsed['scheme'] . '://';
+        if (isset($parsed['user'])) {
+            $rebuilt .= '***';
+            if (isset($parsed['pass'])) {
+                $rebuilt .= ':***';
+            }
+            $rebuilt .= '@';
+        }
+        $rebuilt .= $parsed['host'];
+        if (isset($parsed['port'])) {
+            $rebuilt .= ':' . $parsed['port'];
+        }
+        if (isset($parsed['path'])) {
+            $rebuilt .= $parsed['path'];
+        }
+        if (isset($parsed['query']) && $parsed['query'] !== '') {
+            $maskedQuery = preg_replace('/(^|&)(key=)([^&]*)/i', '$1$2***', $parsed['query']);
+            if ($maskedQuery === null) {
+                return '***';
+            }
+            $rebuilt .= '?' . $maskedQuery;
+        }
+        if (isset($parsed['fragment']) && $parsed['fragment'] !== '') {
+            $rebuilt .= '#' . $parsed['fragment'];
+        }
+
+        return $rebuilt;
     }
 
     public function send_email($order, $emailParams, $howToPayUrl)

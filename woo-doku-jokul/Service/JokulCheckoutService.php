@@ -178,15 +178,16 @@ class DokuCheckoutService {
             'timeout' => 45,
         );
         $response = wp_remote_post($url, $args);
-        $response_body = wp_remote_retrieve_body($response);
-        $this->dokuUtils->doku_log($this, 'Jokul Checkout REQUEST : ' . json_encode($data), $params['invoiceNumber']);
-        $this->dokuUtils->doku_log($this, 'Jokul Checkout REQUEST Header: ' . json_encode($header), $params['invoiceNumber']);
-        $this->dokuUtils->doku_log($this, 'Jokul Checkout REQUEST URL : ' . $url, $params['invoiceNumber']);
-        $this->dokuUtils->doku_log($this, 'Jokul Checkout RESPONSE : ' . json_encode($response, JSON_PRETTY_PRINT), $params['invoiceNumber']);
-        $this->dokuUtils->doku_log($this, 'Jokul Checkout RESPONSE Body: ' . json_encode($response_body, JSON_PRETTY_PRINT), $params['invoiceNumber']);
-        
+        $http_code = is_wp_error($response) ? 0 : wp_remote_retrieve_response_code($response);
+        $response_body = is_wp_error($response) ? '' : wp_remote_retrieve_body($response);
+        $decoded_response = json_decode($response_body, true);
 
-        return json_decode($response_body, true);
+        $this->dokuUtils->doku_log_masked_payload($this, 'Jokul Checkout REQUEST : ', $data, $params['invoiceNumber']);
+        $this->dokuUtils->doku_log($this, 'Jokul Checkout REQUEST URL : ' . $url, $params['invoiceNumber']);
+        $this->dokuUtils->doku_log($this, 'Jokul Checkout RESPONSE HTTP Code: ' . $http_code, $params['invoiceNumber']);
+        $this->dokuUtils->doku_log_masked_payload($this, 'Jokul Checkout RESPONSE Body: ', $decoded_response, $params['invoiceNumber']);
+
+        return $decoded_response;
     }
 }
 
