@@ -154,5 +154,116 @@ class DokuDB {
             return false;
         }
     }
-    
+
+    // Retrieve latest transaction row by invoice number
+    public function getLatestTrxByInvoice($invoice_number) {
+        global $wpdb;
+        $table = $wpdb->prefix . 'jokuldb';
+
+        if ($invoice_number === null) {
+            return null;
+        }
+
+        $invoice_number = (string) $invoice_number;
+        if ($invoice_number === '') {
+            return null;
+        }
+
+        try {
+            return $wpdb->get_row(
+                $wpdb->prepare(
+                    "SELECT * FROM $table WHERE invoice_number = %s ORDER BY trx_id DESC LIMIT 1",
+                    $invoice_number
+                )
+            );
+        } catch (Exception $e) {
+            $this->dokuUtils->doku_log($this, 'Database Query Error (getLatestTrxByInvoice).', $invoice_number);
+            return null;
+        } catch (\Throwable $t) {
+            $this->dokuUtils->doku_log($this, 'Database Query Exception (getLatestTrxByInvoice).', $invoice_number);
+            return null;
+        }
+    }
+
+    // Update transaction status by trx_id
+    public function updateDataById($trx_id, $status, $invoice_number = '') {
+        global $wpdb;
+        $table = $wpdb->prefix . 'jokuldb';
+
+        $trx_id = (int) $trx_id;
+        if ($trx_id <= 0 || empty($status)) {
+            return false;
+        }
+
+        $this->dokuUtils->doku_log($this, 'Database Update for Trx ID: ' . $trx_id . ' - Status: ' . (string) $status, (string) $invoice_number);
+
+        try {
+            $result = $wpdb->update(
+                $table,
+                array('process_type' => $status),
+                array('trx_id' => $trx_id),
+                array('%s'),
+                array('%d')
+            );
+            if ($result === false) {
+                $this->dokuUtils->doku_log($this, 'Database Update Error occurred (updateDataById).', (string) $invoice_number);
+            }
+            return $result;
+        } catch (Exception $e) {
+            $this->dokuUtils->doku_log($this, 'Database Update Exception occurred (updateDataById).', (string) $invoice_number);
+            return false;
+        } catch (\Throwable $t) {
+            $this->dokuUtils->doku_log($this, 'Database Update Exception occurred (updateDataById).', (string) $invoice_number);
+            return false;
+        }
+    }
+
+    // Acquire MySQL advisory lock for invoice number
+    public function acquireInvoiceLock($invoice_number, $timeout = 10) {
+        global $wpdb;
+
+        if ($invoice_number === null || (string) $invoice_number === '') {
+            return false;
+        }
+
+        $lockName = 'doku_inv_' . md5((string) $invoice_number);
+        try {
+            $res = $wpdb->get_var($wpdb->prepare(
+                "SELECT GET_LOCK(%s, %d)",
+                $lockName,
+                (int) $timeout
+            ));
+            return ((string) $res === '1');
+        } catch (Exception $e) {
+            $this->dokuUtils->doku_log($this, 'Database Lock Error (acquireInvoiceLock).', (string) $invoice_number);
+            return false;
+        } catch (\Throwable $t) {
+            $this->dokuUtils->doku_log($this, 'Database Lock Exception (acquireInvoiceLock).', (string) $invoice_number);
+            return false;
+        }
+    }
+
+    // Release MySQL advisory lock for invoice number
+    public function releaseInvoiceLock($invoice_number) {
+        global $wpdb;
+
+        if ($invoice_number === null || (string) $invoice_number === '') {
+            return false;
+        }
+
+        $lockName = 'doku_inv_' . md5((string) $invoice_number);
+        try {
+            $res = $wpdb->get_var($wpdb->prepare(
+                "SELECT RELEASE_LOCK(%s)",
+                $lockName
+            ));
+            return ((string) $res === '1');
+        } catch (Exception $e) {
+            $this->dokuUtils->doku_log($this, 'Database Lock Error (releaseInvoiceLock).', (string) $invoice_number);
+            return false;
+        } catch (\Throwable $t) {
+            $this->dokuUtils->doku_log($this, 'Database Lock Exception (releaseInvoiceLock).', (string) $invoice_number);
+            return false;
+        }
+    }
 }
