@@ -8,21 +8,52 @@ require_once(DOKU_PAYMENT_PLUGIN_PATH . '/Common/JokulUtils.php');
 class DokuCheckStatusService {
     private $dokuUtils;
     private $dokuConfig;
+    private $lastHttpCode = 0;
+    private $lastError = null;
 
-    public function generated($config, $params)
+    public function getLastHttpCode()
     {
-        $header = array();
-        $this->dokuUtils = new DokuUtils();
+        return (int) $this->lastHttpCode;
+    }
 
-        // Guard clause: pastikan $params dan $config valid
-        if (!is_array($params) || empty($params['invoiceNumber']) || !is_array($config) || empty($config['client_id'])) {
-            $invoiceLog = (is_array($params) && !empty($params['invoiceNumber'])) ? $params['invoiceNumber'] : 'unknown';
+    public function getLastError()
+    {
+        return $this->lastError !== null ? (string) $this->lastError : null;
+    }
+
+    public function generated($config, $params, $options = array())
+    {
+        // Reset state for each call
+        $this->lastHttpCode = 0;
+        $this->lastError = null;
+
+        // Guard clause: validate params and config
+        $hasValidInvoice = is_array($params)
+            && isset($params['invoiceNumber'])
+            && is_scalar($params['invoiceNumber'])
+            && trim((string) $params['invoiceNumber']) !== '';
+        $hasValidClientId = is_array($config)
+            && isset($config['client_id'])
+            && is_scalar($config['client_id'])
+            && trim((string) $config['client_id']) !== '';
+
+        if (!$hasValidInvoice || !$hasValidClientId) {
+            $this->lastError = 'Invalid params or config';
+            $this->lastHttpCode = 0;
+            $invoiceLog = $hasValidInvoice ? trim((string) $params['invoiceNumber']) : 'unknown';
+            $this->dokuUtils = new DokuUtils();
             $this->dokuUtils->doku_log($this, 'Jokul Check Status ERROR: Invalid params or config passed to generated()', $invoiceLog);
             return null;
         }
 
+        $invoiceNumberStr = trim((string) $params['invoiceNumber']);
+
+        // Build request headers and signature
+        $header = array();
+        $this->dokuUtils = new DokuUtils();
+
         $requestId = $this->dokuUtils->guidv4();
-        $targetPath = "/orders/v1/status/" . $params['invoiceNumber'];
+        $targetPath = "/orders/v1/status/" . $invoiceNumberStr;
         $dateTimeFinal = gmdate("Y-m-d\TH:i:s\Z");
 
         $this->dokuConfig = new DokuConfig();
@@ -49,21 +80,32 @@ class DokuCheckStatusService {
             'timeout' => 45
         );
 
+        // Disable redirects if requested (e.g. SSRF defense)
+        if (is_array($options) && array_key_exists('redirection', $options)) {
+            $args['redirection'] = (int) $options['redirection'];
+        }
+
+        // Execute remote GET request
         $response = wp_remote_get($url, $args);
 
         if (is_wp_error($response)) {
-            $error_message = $response->get_error_message();
-            $this->dokuUtils->doku_log($this, 'Jokul Check Status ERROR: ' . $error_message, $params['invoiceNumber']);
+            $this->lastError = $response->get_error_message();
+            $this->lastHttpCode = 0;
+            $this->dokuUtils->doku_log($this, 'Jokul Check Status ERROR: ' . $this->lastError, $invoiceNumberStr);
             return null;
         }
 
+        // Parse and record response
+        $this->lastHttpCode = (int) wp_remote_retrieve_response_code($response);
+        $this->lastError = null;
+
+        $http_code = $this->lastHttpCode;
         $responseBody = wp_remote_retrieve_body($response);
+        $decoded_body = json_decode($responseBody, true);
 
-        $this->dokuUtils->doku_log($this, 'Jokul Check Status REQUEST URL: ' . $url, $params['invoiceNumber']);
-        $this->dokuUtils->doku_log($this, 'Jokul Check Status RESPONSE: ' . json_encode($responseBody, JSON_PRETTY_PRINT), $params['invoiceNumber']);
+        $this->dokuUtils->doku_log($this, 'Jokul Check Status REQUEST URL: ' . $url . ' (HTTP ' . $http_code . ')', $invoiceNumberStr);
+        $this->dokuUtils->doku_log_masked_payload($this, 'Jokul Check Status RESPONSE: ', $decoded_body, $invoiceNumberStr);
 
-        return json_decode($responseBody, true);
+        return $decoded_body;
     }
 }
-
-?>

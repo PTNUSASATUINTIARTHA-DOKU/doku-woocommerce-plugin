@@ -6,7 +6,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
  * Plugin Name: DOKU Accept Payments
  * Plugin URI: https://github.com/PTNUSASATUINTIARTHA-DOKU/doku-woocommerce-plugin
  * Description: Accept payment through various payment channels with DOKU. Make it easy for your customers to purchase on your store.
- * Version: 1.3.33
+ * Version: 1.3.34
  * Author: DOKU
  * Author URI: http://www.doku.com
  * License: GPLv2 or later
@@ -258,4 +258,115 @@ function doku_payment_action_links($links)
 	);
 
 	return is_array($links) ? array_merge($plugin_links, $links) : $plugin_links;
+}
+
+add_action('admin_init', 'doku_payment_admin_init_security_check');
+function doku_payment_admin_init_security_check()
+{
+	global $pagenow;
+	if (
+		(function_exists('wp_doing_ajax') && wp_doing_ajax())
+		|| (function_exists('wp_doing_cron') && wp_doing_cron())
+		|| (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE)
+		|| !is_admin()
+		|| (isset($pagenow) && $pagenow === 'admin-post.php')
+	) {
+		return;
+	}
+
+	if (
+		!current_user_can('manage_options')
+		&& !current_user_can('manage_woocommerce')
+	) {
+		return;
+	}
+
+	$legacy_dir = defined('ABSPATH') ? ABSPATH . 'doku_log' : '';
+	if ($legacy_dir === '' || !is_dir($legacy_dir)) {
+		if (function_exists('delete_option')) {
+			delete_option('doku_legacy_log_notice_status');
+		}
+		return;
+	}
+
+	// Shield legacy folder if not already shielded (DO NOT overwrite existing files)
+	$htaccess_file = rtrim($legacy_dir, '/\\') . '/.htaccess';
+	if (!file_exists($htaccess_file)) {
+		$htaccess_content = "# Protect DOKU legacy logs\n<IfModule mod_authz_core.c>\n    Require all denied\n</IfModule>\n<IfModule !mod_authz_core.c>\n    Deny from all\n</IfModule>\n";
+		@file_put_contents($htaccess_file, $htaccess_content);
+	}
+
+	$index_file = rtrim($legacy_dir, '/\\') . '/index.php';
+	if (!file_exists($index_file)) {
+		$index_content = "<?php\n// Silence is golden.\nexit;\n";
+		@file_put_contents($index_file, $index_content);
+	}
+
+	// Scan for *.log files
+	$scan_items = @scandir($legacy_dir);
+	if ($scan_items === false) {
+		if (function_exists('update_option')) {
+			update_option('doku_legacy_log_notice_status', 'unreadable', false);
+		}
+		return;
+	}
+
+	$has_logs = false;
+	foreach ($scan_items as $item) {
+		if ($item === '.' || $item === '..') {
+			continue;
+		}
+		if (substr(strtolower($item), -4) === '.log') {
+			$has_logs = true;
+			break;
+		}
+	}
+
+	if ($has_logs) {
+		if (function_exists('update_option')) {
+			update_option('doku_legacy_log_notice_status', 'logs_found', false);
+		}
+	} else {
+		// Verification succeeded and no *.log files found (including empty directory)
+		if (function_exists('delete_option')) {
+			delete_option('doku_legacy_log_notice_status');
+		}
+	}
+}
+
+add_action('admin_notices', 'doku_payment_security_admin_notices');
+function doku_payment_security_admin_notices()
+{
+	if (
+		!current_user_can('manage_options')
+		&& !current_user_can('manage_woocommerce')
+	) {
+		return;
+	}
+
+	// Banner 1
+	$log_error_reason = function_exists('get_option') ? get_option('doku_log_error_reason') : '';
+	if (!empty($log_error_reason)) {
+		$banner1_text = 'DOKU Accept Payment: Private log directory is unavailable or cannot be verified outside DOCUMENT_ROOT. File logging has been safely disabled. Define DOKU_LOG_DIR outside the public web root in wp-config.php to enable logging.';
+		?>
+		<div class="notice notice-warning">
+			<p><?php echo esc_html($banner1_text); ?></p>
+		</div>
+		<?php
+	}
+
+	// Banner 2
+	$legacy_status = function_exists('get_option') ? get_option('doku_legacy_log_notice_status') : '';
+	if ($legacy_status === 'logs_found' || $legacy_status === 'unreadable') {
+		if ($legacy_status === 'unreadable') {
+			$banner2_text = 'DOKU Security Notice: Legacy log folder cannot be inspected (check directory permissions). Please locate the /doku_log folder in your WordPress root directory and move it to a private directory or delete the existing folder.';
+		} else {
+			$banner2_text = 'DOKU Security Notice: Please locate the /doku_log folder in your WordPress root directory and move it to a private directory or delete the existing folder.';
+		}
+		?>
+		<div class="notice notice-error">
+			<p><?php echo esc_html($banner2_text); ?></p>
+		</div>
+		<?php
+	}
 }
